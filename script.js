@@ -2,7 +2,7 @@ const windowInnerWidth = document.documentElement.clientWidth - 20
 const windowInnerHeight = document.documentElement.clientHeight - 20
 
 var player;
-var stars;
+// var stars;
 var bombs;
 var bomb
 var bx
@@ -60,7 +60,7 @@ class BootScene extends Phaser.Scene {
         houses.create(750, 220, 'house');
 
         //     // The player and its settings
-        player = this.physics.add.sprite(400, 300, 'dude').setScale(4);
+        player = this.physics.add.sprite(400, 300, 'dude');
 
 
         //     //  Player physics properties. Give the little guy a slight bounce.
