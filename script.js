@@ -15,6 +15,8 @@ var hpText;
 var timer;
 var button;
 
+var game = new Phaser.Game(config);
+
 class Controls extends Phaser.Scene {
 
     preload() {
@@ -382,5 +384,3 @@ function ChaseThePlayer(player, bomb) {
     }
 
 }
-
-var game = new Phaser.Game(config);
