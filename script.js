@@ -12,18 +12,24 @@ var cursors;
 var hp = 100;
 // var gameOver = false;
 var hpText;
-var timer
+var timer;
+var button;
 
 class Controls extends Phaser.Scene {
 
-    preload ()
-    {
+    preload() {
         // this.load.image('face', 'assets/pics/bw-face.png');
     }
 
-    create (data)
-    {
-        hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });     
+    create(data) {
+        hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });
+
+        button = game.add.button(80, 300, 'button', actionOnClick, this, 2, 1, 0);
+
+        button.onInputOver.add(over, this);
+        button.onInputOut.add(out, this);
+        button.onInputUp.add(up, this);
+
     }
 
     update(p1, p2) {
@@ -290,7 +296,7 @@ var config = {
             debug: false
         }
     },
-    scene: BootScene   
+    scene: BootScene
 };
 
 function ChaseThePlayer(player, bomb) {
