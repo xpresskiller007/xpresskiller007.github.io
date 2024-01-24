@@ -2,7 +2,7 @@ const windowInnerWidth = document.documentElement.clientWidth - 20
 const windowInnerHeight = document.documentElement.clientHeight - 20
 
 var player;
-var stars;
+// var stars;
 var bombs;
 var bomb
 var bx
