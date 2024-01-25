@@ -40,9 +40,9 @@ class Controls extends Phaser.Scene {
 
 }
 
-function actionOnClick(){
+// function actionOnClick(){
 
-}
+// }
 
 class BootScene extends Phaser.Scene {
 
