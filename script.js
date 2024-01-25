@@ -15,31 +15,55 @@ var hpText;
 var timer;
 var btn;
 
+
 class Controls extends Phaser.Scene {
 
     preload() {
-        // this.load.image('face', 'assets/pics/bw-face.png');
+        this.load.image('btn', 'assets/star.png');
+        // game.load.spritesheet('button', 'assets/star.png', 193, 71);
+        // this.load.spritesheet("buttons", "assets/star.png",{ frameWidth: 236, frameHeight: 65 })
     }
 
     create() {
         hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });
+        var image = this.add.sprite(100, 100, 'btn').setInteractive();
+        image.on('pointerdown', function (pointer)
+        {
 
-        btn = game.add.button(0, 50, 'button', actionOnClick, this, 2, 1, 0);
+            this.setTint(0xff0000);
+            hpText.visible = !hpText.visible;
 
-        btn.onInputOver.add(over, this);
-        btn.onInputOut.add(out, this);
-        btn.onInputUp.add(up, this);
+        });
+
+        image.on('pointerout', function (pointer)
+        {
+
+            this.clearTint();
+
+        });
+
+        image.on('pointerup', function (pointer)
+        {
+
+            this.clearTint();
+
+        });
+
     }
 
     update(p1, p2) {
         hpText.setText('HP: ' + hp);
+
     }
+
 
 }
 
-function actionOnClick () {
 
-    hpText.visible =! hpText.visible;
+
+function actionOnClick() {
+
+
 
 }
 
