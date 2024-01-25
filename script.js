@@ -40,6 +40,10 @@ class Controls extends Phaser.Scene {
 
 }
 
+function actionOnClick(){
+    
+}
+
 class BootScene extends Phaser.Scene {
 
     preload() {
