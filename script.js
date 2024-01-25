@@ -26,11 +26,11 @@ class Controls extends Phaser.Scene {
     create(data) {
         hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });
 
-        button = game.add.button(80, 300, 'button', actionOnClick, this, 2, 1, 0);
+        // button = game.add.button(80, 300, 'button', actionOnClick, this, 2, 1, 0);
 
-        button.onInputOver.add(over, this);
-        button.onInputOut.add(out, this);
-        button.onInputUp.add(up, this);
+        // button.onInputOver.add(over, this);
+        // button.onInputOut.add(out, this);
+        // button.onInputUp.add(up, this);
 
     }
 
@@ -41,7 +41,7 @@ class Controls extends Phaser.Scene {
 }
 
 function actionOnClick(){
-    
+
 }
 
 class BootScene extends Phaser.Scene {
