@@ -12,7 +12,8 @@ var cursors;
 var hp = 100;
 // var gameOver = false;
 var hpText;
-var timer
+var timer;
+var btn;
 
 class Controls extends Phaser.Scene {
 
@@ -23,7 +24,9 @@ class Controls extends Phaser.Scene {
 
     create ()
     {
-        hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });     
+        hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' }); 
+        
+        btn = game.add.button(game.world.centerX - 95, 400, 'button', actionOnClick, this, 2, 1, 0);
     }
 
     update(p1, p2) {
