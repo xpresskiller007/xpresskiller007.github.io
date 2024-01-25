@@ -10,9 +10,10 @@ var by
 var chase = false
 var cursors;
 var hp = 100;
-// var gameOver = false;
+var gameOver = false;
 var hpText;
 var timer
+
 
 class Controls extends Phaser.Scene {
 
