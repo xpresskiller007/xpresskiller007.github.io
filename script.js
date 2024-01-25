@@ -26,7 +26,7 @@ class Controls extends Phaser.Scene {
     {
         hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' }); 
         
-        btn = game.add.button(game.world.centerX - 95, 400, 'button', actionOnClick, this, 2, 1, 0);
+        btn = game.add.button(0, 50, 'button', actionOnClick, this, 2, 1, 0);
     }
 
     update(p1, p2) {
