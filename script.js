@@ -17,21 +17,29 @@ var btn;
 
 class Controls extends Phaser.Scene {
 
-    preload ()
-    {
+    preload() {
         // this.load.image('face', 'assets/pics/bw-face.png');
     }
 
-    create ()
-    {
-        hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' }); 
-        
+    create() {
+        hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });
+
         btn = game.add.button(0, 50, 'button', actionOnClick, this, 2, 1, 0);
+
+        btn.onInputOver.add(over, this);
+        btn.onInputOut.add(out, this);
+        btn.onInputUp.add(up, this);
     }
 
     update(p1, p2) {
         hpText.setText('HP: ' + hp);
     }
+
+}
+
+function actionOnClick () {
+
+    hpText.visible =! hpText.visible;
 
 }
 
@@ -293,7 +301,7 @@ var config = {
             debug: false
         }
     },
-    scene: BootScene   
+    scene: BootScene
 };
 
 function ChaseThePlayer(player, bomb) {
