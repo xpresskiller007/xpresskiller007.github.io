@@ -12,26 +12,18 @@ var cursors;
 var hp = 100;
 // var gameOver = false;
 var hpText;
-var timer;
-var button;
-
-var game = new Phaser.Game(config);
+var timer
 
 class Controls extends Phaser.Scene {
 
-    preload() {
+    preload ()
+    {
         // this.load.image('face', 'assets/pics/bw-face.png');
     }
 
-    create(data) {
-        hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });
-
-        // button = game.add.button(80, 300, 'button', actionOnClick, this, 2, 1, 0);
-
-        // button.onInputOver.add(over, this);
-        // button.onInputOut.add(out, this);
-        // button.onInputUp.add(up, this);
-
+    create (data)
+    {
+        hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });     
     }
 
     update(p1, p2) {
@@ -39,10 +31,6 @@ class Controls extends Phaser.Scene {
     }
 
 }
-
-// function actionOnClick(){
-
-// }
 
 class BootScene extends Phaser.Scene {
 
@@ -72,7 +60,7 @@ class BootScene extends Phaser.Scene {
         houses.create(750, 220, 'house');
 
         //     // The player and its settings
-        player = this.physics.add.sprite(400, 300, 'dude');
+        player = this.physics.add.sprite(400, 300, 'dude').setScale(4);
 
 
         //     //  Player physics properties. Give the little guy a slight bounce.
@@ -302,7 +290,7 @@ var config = {
             debug: false
         }
     },
-    scene: BootScene
+    scene: BootScene   
 };
 
 function ChaseThePlayer(player, bomb) {
@@ -388,3 +376,5 @@ function ChaseThePlayer(player, bomb) {
     }
 
 }
+
+var game = new Phaser.Game(config);
