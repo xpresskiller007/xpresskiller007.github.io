@@ -15,8 +15,6 @@ var hpText;
 var timer;
 var btn;
 
-var pointer;
-
 var run = false;
 var pointx = 0;
 var pointy = 0;
@@ -193,6 +191,26 @@ class BootScene extends Phaser.Scene {
         bx = player.x + 50
         by = player.y + 50
         bomb = bombs.create(bx, by, 'bomb');
+        bomb.setInteractive();
+        bomb.on('pointerdown', function (pointer) {
+
+            this.setTint(0xff0000);
+            hpText.visible = !hpText.visible;
+            // hp = hp - 10;
+
+        });
+
+        bomb.on('pointerout', function (pointer) {
+
+            this.clearTint();
+
+        });
+
+        bomb.on('pointerup', function (pointer) {
+
+            this.clearTint();
+
+        });
 
         //     //  The score
         //     scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
