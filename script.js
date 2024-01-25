@@ -21,7 +21,7 @@ class Controls extends Phaser.Scene {
         // this.load.image('face', 'assets/pics/bw-face.png');
     }
 
-    create (data)
+    create ()
     {
         hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });     
     }
