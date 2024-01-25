@@ -10,10 +10,9 @@ var by
 var chase = false
 var cursors;
 var hp = 100;
-var gameOver = false;
+// var gameOver = false;
 var hpText;
 var timer
-
 
 class Controls extends Phaser.Scene {
 
@@ -281,6 +280,19 @@ class BootScene extends Phaser.Scene {
 
 }
 
+var config = {
+    type: Phaser.AUTO,
+    width: windowInnerWidth,
+    height: windowInnerHeight,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false
+        }
+    },
+    scene: BootScene   
+};
+
 function ChaseThePlayer(player, bomb) {
 
     distancepb = Math.sqrt((player.x - bomb.x) ** 2 + (player.y - bomb.y) ** 2);
@@ -364,18 +376,5 @@ function ChaseThePlayer(player, bomb) {
     }
 
 }
-
-var config = {
-    type: Phaser.AUTO,
-    width: windowInnerWidth,
-    height: windowInnerHeight,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            debug: false
-        }
-    },
-    scene: BootScene   
-};
 
 var game = new Phaser.Game(config);
