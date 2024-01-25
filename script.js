@@ -281,7 +281,7 @@ class BootScene extends Phaser.Scene {
 }
 
 var config = {
-    type: Phaser.AUTO,
+    type: Phaser.CANVAS,
     width: windowInnerWidth,
     height: windowInnerHeight,
     physics: {
