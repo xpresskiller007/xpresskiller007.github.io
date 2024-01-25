@@ -15,6 +15,12 @@ var hpText;
 var timer;
 var btn;
 
+var pointer;
+
+var run = false;
+var pointx = 0;
+var pointy = 0;
+
 
 class Controls extends Phaser.Scene {
 
@@ -27,23 +33,21 @@ class Controls extends Phaser.Scene {
     create() {
         hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });
         var image = this.add.sprite(100, 100, 'btn').setInteractive();
-        image.on('pointerdown', function (pointer)
-        {
+        image.on('pointerdown', function (pointer) {
 
             this.setTint(0xff0000);
-            hpText.visible = !hpText.visible;
+            // hpText.visible = !hpText.visible;
+            // hp = hp - 10;
 
         });
 
-        image.on('pointerout', function (pointer)
-        {
+        image.on('pointerout', function (pointer) {
 
             this.clearTint();
 
         });
 
-        image.on('pointerup', function (pointer)
-        {
+        image.on('pointerup', function (pointer) {
 
             this.clearTint();
 
@@ -76,6 +80,7 @@ class BootScene extends Phaser.Scene {
         this.load.image('platform', 'platform.png');
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'chars.png', { frameWidth: 16, frameHeight: 24 });
+        this.load.image('btn', 'assets/star.png');
     }
 
     create() {
@@ -188,7 +193,6 @@ class BootScene extends Phaser.Scene {
         bx = player.x + 50
         by = player.y + 50
         bomb = bombs.create(bx, by, 'bomb');
-        bomb.setBounce(1);
 
         //     //  The score
         //     scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
@@ -211,9 +215,37 @@ class BootScene extends Phaser.Scene {
 
         this.scene.add('Controls', Controls, true, { x: 400, y: 300 });
 
+        this.input.on('pointerdown', () => {
+            pointx = this.input.x
+            pointy = this.input.y
+            run = true
+        });
+
+        var image = this.add.sprite(100, 100, 'btn').setInteractive();
+        image.on('pointerdown', function (pointer) {
+
+            this.setTint(0xff0000);
+            hpText.visible = !hpText.visible;
+            // hp = hp - 10;
+
+        });
+
+        image.on('pointerout', function (pointer) {
+
+            this.clearTint();
+
+        });
+
+        image.on('pointerup', function (pointer) {
+
+            this.clearTint();
+
+        });
+
     }
 
     update(p1, p2) {
+
 
         let speed = 150
 
