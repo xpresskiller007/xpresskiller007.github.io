@@ -260,6 +260,25 @@ class BootScene extends Phaser.Scene {
 
         });
 
+        var drag = this.add.sprite(200, 200, 'btn').setInteractive({draggable: true});
+        drag.on('drag', function (pointer, dragX, dragY) {
+
+            drag.setPosition(dragX, dragY)
+
+        });
+
+        drag.on('pointerout', function (pointer) {
+
+            drag.setPosition(200, 200)
+
+        });
+
+        drag.on('pointerup', function (pointer) {
+
+            drag.setPosition(200, 200)
+
+        });
+
     }
 
     update(p1, p2) {
