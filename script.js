@@ -29,13 +29,12 @@ class Controls extends Phaser.Scene {
     }
 
     create() {
+
         hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });
         var image = this.add.sprite(100, 100, 'btn').setInteractive();
         image.on('pointerdown', function (pointer) {
 
             this.setTint(0xff0000);
-            // hpText.visible = !hpText.visible;
-            // hp = hp - 10;
 
         });
 
@@ -51,6 +50,32 @@ class Controls extends Phaser.Scene {
 
         });
 
+        let dragpx = windowInnerWidth - 200
+        let dragpy = windowInnerHeight - 200
+        var drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
+        drag.setScale(3)
+        drag.on('drag', function (pointer, dragX, dragY) {
+
+            let distance = Math.sqrt((dragX - dragpx) ** 2 + (dragY - dragpy) ** 2);
+            if ((distance > 50)) {
+
+            }
+            else {
+                drag.setPosition(dragX, dragY)
+            }
+            let atn = Math.atan((dragY-dragpy)/(dragX-dragpx))
+            console.log(atn);
+
+        });
+
+        drag.on('pointerup', function (pointer) {
+
+            drag.setPosition(dragpx, dragpy)
+
+            
+
+        });
+
     }
 
     update(p1, p2) {
@@ -61,13 +86,6 @@ class Controls extends Phaser.Scene {
 
 }
 
-
-
-function actionOnClick() {
-
-
-
-}
 
 class BootScene extends Phaser.Scene {
 
@@ -233,12 +251,6 @@ class BootScene extends Phaser.Scene {
 
         this.scene.add('Controls', Controls, true, { x: 400, y: 300 });
 
-        this.input.on('pointerdown', () => {
-            pointx = this.input.x
-            pointy = this.input.y
-            run = true
-        });
-
         var image = this.add.sprite(100, 100, 'btn').setInteractive();
         image.on('pointerdown', function (pointer) {
 
@@ -260,24 +272,6 @@ class BootScene extends Phaser.Scene {
 
         });
 
-        var drag = this.add.sprite(200, 200, 'btn').setInteractive({draggable: true});
-        drag.on('drag', function (pointer, dragX, dragY) {
-
-            drag.setPosition(dragX, dragY)
-
-        });
-
-        drag.on('pointerout', function (pointer) {
-
-            drag.setPosition(200, 200)
-
-        });
-
-        drag.on('pointerup', function (pointer) {
-
-            drag.setPosition(200, 200)
-
-        });
 
     }
 
@@ -384,18 +378,6 @@ class BootScene extends Phaser.Scene {
 
 }
 
-var config = {
-    type: Phaser.AUTO,
-    width: windowInnerWidth,
-    height: windowInnerHeight,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            debug: false
-        }
-    },
-    scene: BootScene
-};
 
 function ChaseThePlayer(player, bomb) {
 
@@ -480,5 +462,18 @@ function ChaseThePlayer(player, bomb) {
     }
 
 }
+
+var config = {
+    type: Phaser.AUTO,
+    width: windowInnerWidth,
+    height: windowInnerHeight,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: false
+        }
+    },
+    scene: BootScene
+};
 
 var game = new Phaser.Game(config);
