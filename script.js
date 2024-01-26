@@ -59,11 +59,48 @@ class Controls extends Phaser.Scene {
             let distance = Math.sqrt((dragX - dragpx) ** 2 + (dragY - dragpy) ** 2);
             if ((distance > 50)) {
 
+                // newx = dragX
+                // newy = dragY
+
+                // sp = 50 / distance
+
+
+                // if (dragY < dragpy && dragX < dragpx) {
+                //     // x-
+                //     // y-
+                //     newx = newx + 10
+                //     newy = newy + 1
+                // }
+                // if ((dragY > dragpy && dragX > dragpx)) {
+                //     // x+
+                //     // y+
+                //     newx = newx - 1
+                //     newy = newy - 1
+                // }
+                // if ((dragY < dragpy && dragX > dragpx)) {
+                //     // x+
+                //     // y-
+                //     newx = newx - 1
+                //     newy = newy + 1
+                // }
+                // if ((dragY > dragpy && dragX < dragpx)) {
+                //     // x-
+                //     // y+
+                //     newx = newx + 1
+                //     newy = newy - 1
+                // }
+
+                // drag.setPosition(newx, newy)
+
+                // console.log("" + newx + "," + newy);
+
+
+
             }
             else {
                 drag.setPosition(dragX, dragY)
             }
-            let atn = Math.atan((dragY-dragpy)/(dragX-dragpx))
+            let atn = Math.atan((dragY - dragpy) / (dragX - dragpx))
             console.log(atn);
 
         });
@@ -72,7 +109,13 @@ class Controls extends Phaser.Scene {
 
             drag.setPosition(dragpx, dragpy)
 
-            
+
+
+        });
+
+        image.on('pointerout', function (pointer) {
+
+            drag.setPosition(dragpx, dragpy)
 
         });
 
