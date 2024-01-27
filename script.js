@@ -15,9 +15,11 @@ var hpText;
 var timer;
 var btn;
 
-var run = false;
-var pointx = 0;
-var pointy = 0;
+var dragpx = windowInnerWidth - 200
+var dragpy = windowInnerHeight - 200
+
+var drgX;
+var drgY;
 
 
 class Controls extends Phaser.Scene {
@@ -50,65 +52,23 @@ class Controls extends Phaser.Scene {
 
         });
 
-        let dragpx = windowInnerWidth - 200
-        let dragpy = windowInnerHeight - 200
-        var drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
+        let drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
         drag.setScale(3)
         drag.on('drag', function (pointer, dragX, dragY) {
 
-            let distance = Math.sqrt((dragX - dragpx) ** 2 + (dragY - dragpy) ** 2);
-            if ((distance > 50)) {
 
-                // newx = dragX
-                // newy = dragY
+            drag.setPosition(dragX, dragY)
 
-                // sp = 50 / distance
-
-
-                // if (dragY < dragpy && dragX < dragpx) {
-                //     // x-
-                //     // y-
-                //     newx = newx + 10
-                //     newy = newy + 1
-                // }
-                // if ((dragY > dragpy && dragX > dragpx)) {
-                //     // x+
-                //     // y+
-                //     newx = newx - 1
-                //     newy = newy - 1
-                // }
-                // if ((dragY < dragpy && dragX > dragpx)) {
-                //     // x+
-                //     // y-
-                //     newx = newx - 1
-                //     newy = newy + 1
-                // }
-                // if ((dragY > dragpy && dragX < dragpx)) {
-                //     // x-
-                //     // y+
-                //     newx = newx + 1
-                //     newy = newy - 1
-                // }
-
-                // drag.setPosition(newx, newy)
-
-                // console.log("" + newx + "," + newy);
-
-
-
-            }
-            else {
-                drag.setPosition(dragX, dragY)
-            }
-            let atn = Math.atan((dragY - dragpy) / (dragX - dragpx))
-            console.log(atn);
+            drgX = dragX;
+            drgY = dragY;
 
         });
 
         drag.on('pointerup', function (pointer) {
 
             drag.setPosition(dragpx, dragpy)
-
+            drgX = dragpx;
+            drgY = dragpy;
 
 
         });
@@ -116,6 +76,8 @@ class Controls extends Phaser.Scene {
         image.on('pointerout', function (pointer) {
 
             drag.setPosition(dragpx, dragpy)
+            drgX = dragpx;
+            drgY = dragpy;
 
         });
 
@@ -321,48 +283,53 @@ class BootScene extends Phaser.Scene {
     update(p1, p2) {
 
 
+        let left = drgX < dragpx-25;
+        let right = drgX > dragpx+25;
+        let up = drgY < dragpy-25;
+        let down = drgY > dragpy+25;
+
         let speed = 150
 
-        if (cursors.left.isDown && cursors.up.isDown) {
+        if ((cursors.left.isDown && cursors.up.isDown)||(left&&up)) {
             speed = Math.sqrt((speed ** 2) / 2)
             player.setVelocityX(-1 * speed);
             player.setVelocityY(-1 * speed);
             player.anims.play('upleft');
         }
-        else if (cursors.right.isDown && cursors.up.isDown) {
+        else if ((cursors.right.isDown && cursors.up.isDown||(right&&up))) {
             speed = Math.sqrt((speed ** 2) / 2)
             player.setVelocityX(speed);
             player.setVelocityY(-1 * speed);
             player.anims.play('upright');
         }
-        else if (cursors.left.isDown && cursors.down.isDown) {
+        else if ((cursors.left.isDown && cursors.down.isDown)||(left&&down)) {
             speed = Math.sqrt((speed ** 2) / 2)
             player.setVelocityX(-1 * speed);
             player.setVelocityY(speed);
             player.anims.play('downleft');
         }
-        else if (cursors.right.isDown && cursors.down.isDown) {
+        else if ((cursors.right.isDown && cursors.down.isDown)||(right&&down)) {
             speed = Math.sqrt((speed ** 2) / 2)
             player.setVelocityX(speed);
             player.setVelocityY(speed);
             player.anims.play('downright');
         }
-        else if (cursors.left.isDown) {
+        else if (cursors.left.isDown||left) {
             player.setVelocityX(-1 * speed);
             player.setVelocityY(0);
             player.anims.play('left');
         }
-        else if (cursors.right.isDown) {
+        else if (cursors.right.isDown||right) {
             player.setVelocityX(speed);
             player.setVelocityY(0);
             player.anims.play('right');
         }
-        else if (cursors.up.isDown) {
+        else if (cursors.up.isDown||up) {
             player.setVelocityX(0);
             player.setVelocityY(-1 * speed);
             player.anims.play('up');
         }
-        else if (cursors.down.isDown) {
+        else if (cursors.down.isDown||down) {
             player.setVelocityX(0);
             player.setVelocityY(speed);
             player.anims.play('down');
