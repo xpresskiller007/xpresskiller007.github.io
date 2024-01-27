@@ -95,10 +95,7 @@ class Controls extends Phaser.Scene {
 class BootScene extends Phaser.Scene {
 
     preload() {
-        // this.load.image('sky', 'assets/sky.png');
-        this.load.image('ground', 'ground.png');
         this.load.image('house', 'house.png');
-        this.load.image('platform', 'platform.png');
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'chars.png', { frameWidth: 16, frameHeight: 24 });
         this.load.image('btn', 'assets/star.png');
