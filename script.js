@@ -102,11 +102,20 @@ class BootScene extends Phaser.Scene {
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'chars.png', { frameWidth: 16, frameHeight: 24 });
         this.load.image('btn', 'assets/star.png');
+        this.load.image('map', 'assets/map/map.png') 
+        this.load.tilemapTiledJSON('map', 'assets/map/map.json')
     }
 
     create() {
         //  A simple background for our game
-        this.add.image(400, 300, 'ground');
+        // this.add.image(400, 300, 'ground');
+
+        const map = this.make.tilemap({key: 'map'})
+        const tiles = map.addTilesetImage('map','map')
+        const layer = map.createLayer('layer1', tiles, -2400, -2400);
+
+        const layer2 = map.createLayer('layer2', tiles, -2400, -2400);
+        layer2.setCollisionByProperty({colide: true})
 
         //     //  The platforms group contains the ground and the 2 ledges we can jump on
         let houses = this.physics.add.staticGroup();
@@ -282,57 +291,65 @@ class BootScene extends Phaser.Scene {
 
     update(p1, p2) {
 
-
-        let left = drgX < dragpx-25;
-        let right = drgX > dragpx+25;
-        let up = drgY < dragpy-25;
-        let down = drgY > dragpy+25;
-
         let speed = 150
 
-        if ((cursors.left.isDown && cursors.up.isDown)||(left&&up)) {
+        let left = (drgX < dragpx-25)||cursors.left.isDown;
+        let right = (drgX > dragpx+25)||cursors.right.isDown;
+        let up = (drgY < dragpy-25)||cursors.up.isDown;
+        let down = (drgY > dragpy+25)||cursors.down.isDown;
+
+        
+        if (left&&up) {
             speed = Math.sqrt((speed ** 2) / 2)
             player.setVelocityX(-1 * speed);
             player.setVelocityY(-1 * speed);
             player.anims.play('upleft');
+            console.log('x: '+player.x+' y: '+player.y);
         }
-        else if ((cursors.right.isDown && cursors.up.isDown||(right&&up))) {
+        else if (right&&up) {
             speed = Math.sqrt((speed ** 2) / 2)
             player.setVelocityX(speed);
             player.setVelocityY(-1 * speed);
             player.anims.play('upright');
+            console.log('x: '+player.x+' y: '+player.y);
         }
-        else if ((cursors.left.isDown && cursors.down.isDown)||(left&&down)) {
+        else if (left&&down) {
             speed = Math.sqrt((speed ** 2) / 2)
             player.setVelocityX(-1 * speed);
             player.setVelocityY(speed);
             player.anims.play('downleft');
+            console.log('x: '+player.x+' y: '+player.y);
         }
-        else if ((cursors.right.isDown && cursors.down.isDown)||(right&&down)) {
+        else if (right&&down) {
             speed = Math.sqrt((speed ** 2) / 2)
             player.setVelocityX(speed);
             player.setVelocityY(speed);
             player.anims.play('downright');
+            console.log('x: '+player.x+' y: '+player.y);
         }
-        else if (cursors.left.isDown||left) {
+        else if (left) {
             player.setVelocityX(-1 * speed);
             player.setVelocityY(0);
             player.anims.play('left');
+            console.log('x: '+player.x+' y: '+player.y);
         }
-        else if (cursors.right.isDown||right) {
+        else if (right) {
             player.setVelocityX(speed);
             player.setVelocityY(0);
             player.anims.play('right');
+            console.log('x: '+player.x+' y: '+player.y);
         }
-        else if (cursors.up.isDown||up) {
+        else if (up) {
             player.setVelocityX(0);
             player.setVelocityY(-1 * speed);
             player.anims.play('up');
+            console.log('x: '+player.x+' y: '+player.y);
         }
-        else if (cursors.down.isDown||down) {
+        else if (down) {
             player.setVelocityX(0);
             player.setVelocityY(speed);
             player.anims.play('down');
+            console.log('x: '+player.x+' y: '+player.y);
         }
         else {
             player.anims.play('turn');

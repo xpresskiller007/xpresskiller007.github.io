@@ -1,0 +1,31 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        "map.json": {
+            "scale": 0.75,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 567.9999999999999,
+                "y": 740.6666666666665
+            }
+        },
+        "map.json#map": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "E:/game/rpg/assets/map",
+    "openFiles": [
+        "map.json"
+    ],
+    "project": "map.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "map.json"
+    ]
+}
