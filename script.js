@@ -1,18 +1,26 @@
 const windowInnerWidth = document.documentElement.clientWidth - 20
 const windowInnerHeight = document.documentElement.clientHeight - 20
 
+const mobStatus = {expectation:'expectation', chase:'chase'}
 var player;
 var playerclass;
+var players = [];
 // var stars;
 var bombs;
-var bomb
-var bx
-var by
+var bomb;
+var mobs = [];
+
+var bx;
+var by;
 var chase = false
 var cursors;
-var hp = 100;
 // var gameOver = false;
 var hpText;
+var mpText;
+
+var hpTexttarget;
+var mpTexttarget;
+
 var timer;
 var btn;
 
@@ -23,46 +31,47 @@ var drgX;
 var drgY;
 
 
+
 class Player {
 
     constructor(obj) {
-      this.obj = obj;
-      this.name = 'Milhard';
-      this.hp = 100;
-      this.maxhp = 100;
-      this.mp = 100;
-      this.maxhp = 100;
-      this.speed = 150;
-      this.target = null;     
+        this.obj = obj;
+        this.name = 'Milhard';
+        this.hp = 100;
+        this.maxhp = 100;
+        this.mp = 100;
+        this.maxhp = 100;
+        this.speed = 150;
+        this.target = null;
     }
 
-    moving(){
+    moving() {
 
-        let left = (drgX < dragpx-25)||cursors.left.isDown;
-        let right = (drgX > dragpx+25)||cursors.right.isDown;
-        let up = (drgY < dragpy-25)||cursors.up.isDown;
-        let down = (drgY > dragpy+25)||cursors.down.isDown;
+        let left = (drgX < dragpx - 25) || cursors.left.isDown;
+        let right = (drgX > dragpx + 25) || cursors.right.isDown;
+        let up = (drgY < dragpy - 25) || cursors.up.isDown;
+        let down = (drgY > dragpy + 25) || cursors.down.isDown;
 
-        
-        if (left&&up) {
+
+        if (left && up) {
             let speed = Math.sqrt((this.speed ** 2) / 2)
             this.obj.setVelocityX(-1 * speed);
             this.obj.setVelocityY(-1 * speed);
             this.obj.anims.play('upleft');
         }
-        else if (right&&up) {
+        else if (right && up) {
             let speed = Math.sqrt((this.speed ** 2) / 2)
             this.obj.setVelocityX(speed);
             this.obj.setVelocityY(-1 * speed);
             this.obj.anims.play('upright');
         }
-        else if (left&&down) {
+        else if (left && down) {
             let speed = Math.sqrt((this.speed ** 2) / 2)
             this.obj.setVelocityX(-1 * speed);
             this.obj.setVelocityY(speed);
             this.obj.anims.play('downleft');
         }
-        else if (right&&down) {
+        else if (right && down) {
             let speed = Math.sqrt((this.speed ** 2) / 2)
             this.obj.setVelocityX(speed);
             this.obj.setVelocityY(speed);
@@ -94,10 +103,87 @@ class Player {
             this.obj.setVelocityY(0);
         }
     }
-  
-    
-  
-  }
+
+
+
+}
+
+class Mob {
+
+    constructor(obj) {
+        this.obj = obj;
+        this.status = null
+        this.name = 'Шляпа';
+        this.hp = 100;
+        this.maxhp = 100;
+        this.mp = 100;
+        this.maxhp = 100;
+        this.speed = 150;
+        this.target = null;
+    }
+
+    moving() {
+
+        let left = (drgX < dragpx - 25) || cursors.left.isDown;
+        let right = (drgX > dragpx + 25) || cursors.right.isDown;
+        let up = (drgY < dragpy - 25) || cursors.up.isDown;
+        let down = (drgY > dragpy + 25) || cursors.down.isDown;
+
+
+        if (left && up) {
+            let speed = Math.sqrt((this.speed ** 2) / 2)
+            this.obj.setVelocityX(-1 * speed);
+            this.obj.setVelocityY(-1 * speed);
+            this.obj.anims.play('upleft');
+        }
+        else if (right && up) {
+            let speed = Math.sqrt((this.speed ** 2) / 2)
+            this.obj.setVelocityX(speed);
+            this.obj.setVelocityY(-1 * speed);
+            this.obj.anims.play('upright');
+        }
+        else if (left && down) {
+            let speed = Math.sqrt((this.speed ** 2) / 2)
+            this.obj.setVelocityX(-1 * speed);
+            this.obj.setVelocityY(speed);
+            this.obj.anims.play('downleft');
+        }
+        else if (right && down) {
+            let speed = Math.sqrt((this.speed ** 2) / 2)
+            this.obj.setVelocityX(speed);
+            this.obj.setVelocityY(speed);
+            this.obj.anims.play('downright');
+        }
+        else if (left) {
+            this.obj.setVelocityX(-1 * this.speed);
+            this.obj.setVelocityY(0);
+            this.obj.anims.play('left');
+        }
+        else if (right) {
+            this.obj.setVelocityX(this.speed);
+            this.obj.setVelocityY(0);
+            this.obj.anims.play('right');
+        }
+        else if (up) {
+            this.obj.setVelocityX(0);
+            this.obj.setVelocityY(-1 * this.speed);
+            this.obj.anims.play('up');
+        }
+        else if (down) {
+            this.obj.setVelocityX(0);
+            this.obj.setVelocityY(this.speed);
+            this.obj.anims.play('down');
+        }
+        else {
+            this.obj.anims.play('turn');
+            this.obj.setVelocityX(0);
+            this.obj.setVelocityY(0);
+        }
+    }
+
+
+
+}
 
 class Controls extends Phaser.Scene {
 
@@ -109,8 +195,13 @@ class Controls extends Phaser.Scene {
 
     create() {
 
-        hpText = this.add.text(0, 0, 'HP: ' + hp, { fontSize: '32px', fill: '#000' });
-        var image = this.add.sprite(100, 100, 'btn').setInteractive();
+        hpText = this.add.text(0, 0, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
+        mpText = this.add.text(0, 35, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
+
+        hpTexttarget = this.add.text(windowInnerWidth/2, 0, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
+        mpTexttarget = this.add.text(windowInnerWidth/2, 35, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
+
+        let image = this.add.sprite(100, 100, 'btn').setInteractive();
         image.on('pointerdown', function (pointer) {
 
             this.setTint(0xff0000);
@@ -161,7 +252,20 @@ class Controls extends Phaser.Scene {
     }
 
     update(p1, p2) {
-        hpText.setText('HP: ' + hp);
+
+        hpText.setText('HP: ' + playerclass.hp);
+        mpText.setText('MP: ' + playerclass.mp);
+
+        if (playerclass.target != null) {
+            hpTexttarget.setText('HP: ' + playerclass.target.hp);
+            mpTexttarget.setText('MP: ' + playerclass.target.mp);
+            hpTexttarget.visible = true;
+            mpTexttarget.visible = true;
+        }
+        else {
+            hpTexttarget.visible = false;
+            mpTexttarget.visible = false;
+        }
 
     }
 
@@ -175,7 +279,7 @@ class BootScene extends Phaser.Scene {
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'chars.png', { frameWidth: 16, frameHeight: 24 });
         this.load.image('btn', 'assets/star.png');
-        this.load.image('grass', 'assets/map/Texture/TX Tileset Grass.png') 
+        this.load.image('grass', 'assets/map/Texture/TX Tileset Grass.png')
         this.load.tilemapTiledJSON('map', 'assets/map/map.json')
     }
 
@@ -183,10 +287,10 @@ class BootScene extends Phaser.Scene {
         //  A simple background for our game
         // this.add.image(400, 300, 'ground');
 
-        const map = this.make.tilemap({key: 'map'})
-        const tiles = map.addTilesetImage('grass','grass')
-        let pw = 32*map.layers[0].width/2*-1;
-        let ph = 32*map.layers[0].height/2*-1;
+        const map = this.make.tilemap({ key: 'map' })
+        const tiles = map.addTilesetImage('grass', 'grass')
+        let pw = 32 * map.layers[0].width / 2 * -1;
+        let ph = 32 * map.layers[0].height / 2 * -1;
         const layer = map.createLayer('layer1', tiles, pw, ph);
 
         // const layer2 = map.createLayer('layer2', tiles, -2400, -2400);
@@ -281,8 +385,6 @@ class BootScene extends Phaser.Scene {
         });
 
 
-
-        //     //  Input Events
         cursors = this.input.keyboard.createCursorKeys();
 
         //     //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
@@ -306,23 +408,23 @@ class BootScene extends Phaser.Scene {
         bomb.setInteractive();
         bomb.on('pointerdown', function (pointer) {
 
-            this.setTint(0xff0000);
-            hpText.visible = !hpText.visible;
+            // this.setTint(0xff0000);
+            // hpText.visible = !hpText.visible;
             // hp = hp - 10;
 
         });
 
-        bomb.on('pointerout', function (pointer) {
+        // bomb.on('pointerout', function (pointer) {
 
-            this.clearTint();
+        //     this.clearTint();
 
-        });
+        // });
 
-        bomb.on('pointerup', function (pointer) {
+        // bomb.on('pointerup', function (pointer) {
 
-            this.clearTint();
+        //     this.clearTint();
 
-        });
+        // });
 
         //     //  The score
         //     scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
