@@ -95,11 +95,10 @@ class Controls extends Phaser.Scene {
 class BootScene extends Phaser.Scene {
 
     preload() {
-        this.load.image('house', 'house.png');
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'chars.png', { frameWidth: 16, frameHeight: 24 });
         this.load.image('btn', 'assets/star.png');
-        this.load.image('map', 'assets/map/map.png') 
+        this.load.image('grass', 'assets/map/Texture/TX Tileset Grass.png') 
         this.load.tilemapTiledJSON('map', 'assets/map/map.json')
     }
 
@@ -108,26 +107,29 @@ class BootScene extends Phaser.Scene {
         // this.add.image(400, 300, 'ground');
 
         const map = this.make.tilemap({key: 'map'})
-        const tiles = map.addTilesetImage('map','map')
-        const layer = map.createLayer('layer1', tiles, -2400, -2400);
+        const tiles = map.addTilesetImage('grass','grass')
+        let pw = 32*map.layers[0].width/2*-1;
+        let ph = 32*map.layers[0].height/2*-1;
+        const layer = map.createLayer('layer1', tiles, pw, ph);
 
-        const layer2 = map.createLayer('layer2', tiles, -2400, -2400);
-        layer2.setCollisionByProperty({colide: true})
+        // const layer2 = map.createLayer('layer2', tiles, -2400, -2400);
+        // layer2.setCollisionByProperty({colide: true})
 
         //     //  The platforms group contains the ground and the 2 ledges we can jump on
-        let houses = this.physics.add.staticGroup();
+        // let houses = this.physics.add.staticGroup();
 
-        //     //  Here we create the ground.
-        //     //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-        //     platforms.create(400, 568, 'ground').setScale(2).refreshBody();
+        // //     //  Here we create the ground.
+        // //     //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
+        // //     platforms.create(400, 568, 'ground').setScale(2).refreshBody();
 
-        //     //  Now let's create some ledges
-        houses.create(500, 600, 'house');
-        houses.create(50, 250, 'house');
-        houses.create(750, 220, 'house');
+        // //     //  Now let's create some ledges
+        // houses.create(500, 600, 'house');
+        // houses.create(50, 250, 'house');
+        // houses.create(750, 220, 'house');
 
         //     // The player and its settings
-        player = this.physics.add.sprite(400, 300, 'dude').setScale(4);
+        player = this.physics.add.sprite(0, 0, 'dude').setScale(3);
+        // this.physics.add.collider(player, layer2);
 
 
         //     //  Player physics properties. Give the little guy a slight bounce.
@@ -245,7 +247,7 @@ class BootScene extends Phaser.Scene {
         //     scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
         //     //  Collide the player and the stars with the platforms
-        this.physics.add.collider(player, houses)
+        // this.physics.add.collider(player, houses)
         // this.physics.add.collider(player, platforms)
 
         //     //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function

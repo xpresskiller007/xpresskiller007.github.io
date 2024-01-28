@@ -1,31 +1,45 @@
 {
-    "activeFile": "",
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "map.json",
     "expandedProjectPaths": [
     ],
     "fileStates": {
         "": {
-            "scaleInDock": 1
+            "scaleInEditor": 1
         },
         "map.json": {
-            "scale": 0.75,
-            "selectedLayer": 1,
+            "scale": 0.25,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 567.9999999999999,
-                "y": 740.6666666666665
+                "x": 390,
+                "y": 830
             }
         },
-        "map.json#map": {
-            "scaleInDock": 2,
-            "scaleInEditor": 1
+        "map.json#StoneGround": {
+            "scaleInDock": 1
+        },
+        "map.json#grass": {
+            "scaleInDock": 3
+        },
+        "map.json#plant": {
+            "scaleInDock": 3
+        },
+        "map.json#props": {
+            "scaleInDock": 1
         }
     },
-    "last.imagePath": "E:/game/rpg/assets/map",
+    "last.imagePath": "E:/game/rpg/assets/map/Texture",
+    "map.fixedSize": false,
+    "map.lastUsedFormat": "json",
     "openFiles": [
         "map.json"
     ],
     "project": "map.tiled-project",
-    "property.type": "bool",
     "recentFiles": [
         "map.json"
-    ]
+    ],
+    "tileset.embedInMap": true
 }
