@@ -2,6 +2,7 @@ const windowInnerWidth = document.documentElement.clientWidth - 20
 const windowInnerHeight = document.documentElement.clientHeight - 20
 
 var player;
+var playerclass;
 // var stars;
 var bombs;
 var bomb
@@ -21,6 +22,82 @@ var dragpy = windowInnerHeight - 200
 var drgX;
 var drgY;
 
+
+class Player {
+
+    constructor(obj) {
+      this.obj = obj;
+      this.name = 'Milhard';
+      this.hp = 100;
+      this.maxhp = 100;
+      this.mp = 100;
+      this.maxhp = 100;
+      this.speed = 150;
+      this.target = null;     
+    }
+
+    moving(){
+
+        let left = (drgX < dragpx-25)||cursors.left.isDown;
+        let right = (drgX > dragpx+25)||cursors.right.isDown;
+        let up = (drgY < dragpy-25)||cursors.up.isDown;
+        let down = (drgY > dragpy+25)||cursors.down.isDown;
+
+        
+        if (left&&up) {
+            let speed = Math.sqrt((this.speed ** 2) / 2)
+            this.obj.setVelocityX(-1 * speed);
+            this.obj.setVelocityY(-1 * speed);
+            this.obj.anims.play('upleft');
+        }
+        else if (right&&up) {
+            let speed = Math.sqrt((this.speed ** 2) / 2)
+            this.obj.setVelocityX(speed);
+            this.obj.setVelocityY(-1 * speed);
+            this.obj.anims.play('upright');
+        }
+        else if (left&&down) {
+            let speed = Math.sqrt((this.speed ** 2) / 2)
+            this.obj.setVelocityX(-1 * speed);
+            this.obj.setVelocityY(speed);
+            this.obj.anims.play('downleft');
+        }
+        else if (right&&down) {
+            let speed = Math.sqrt((this.speed ** 2) / 2)
+            this.obj.setVelocityX(speed);
+            this.obj.setVelocityY(speed);
+            this.obj.anims.play('downright');
+        }
+        else if (left) {
+            this.obj.setVelocityX(-1 * this.speed);
+            this.obj.setVelocityY(0);
+            this.obj.anims.play('left');
+        }
+        else if (right) {
+            this.obj.setVelocityX(this.speed);
+            this.obj.setVelocityY(0);
+            this.obj.anims.play('right');
+        }
+        else if (up) {
+            this.obj.setVelocityX(0);
+            this.obj.setVelocityY(-1 * this.speed);
+            this.obj.anims.play('up');
+        }
+        else if (down) {
+            this.obj.setVelocityX(0);
+            this.obj.setVelocityY(this.speed);
+            this.obj.anims.play('down');
+        }
+        else {
+            this.obj.anims.play('turn');
+            this.obj.setVelocityX(0);
+            this.obj.setVelocityY(0);
+        }
+    }
+  
+    
+  
+  }
 
 class Controls extends Phaser.Scene {
 
@@ -128,8 +205,12 @@ class BootScene extends Phaser.Scene {
         // houses.create(750, 220, 'house');
 
         //     // The player and its settings
-        player = this.physics.add.sprite(0, 0, 'dude').setScale(3);
+        player = this.physics.add.sprite(400, 300, 'dude').setScale(3);
         // this.physics.add.collider(player, layer2);
+
+        // let player2 = this.physics.add.sprite(500, 300, 'dude').setScale(3);
+
+        playerclass = new Player(player)
 
 
         //     //  Player physics properties. Give the little guy a slight bounce.
@@ -290,73 +371,8 @@ class BootScene extends Phaser.Scene {
 
     update(p1, p2) {
 
-        let speed = 150
-
-        let left = (drgX < dragpx-25)||cursors.left.isDown;
-        let right = (drgX > dragpx+25)||cursors.right.isDown;
-        let up = (drgY < dragpy-25)||cursors.up.isDown;
-        let down = (drgY > dragpy+25)||cursors.down.isDown;
-
-        
-        if (left&&up) {
-            speed = Math.sqrt((speed ** 2) / 2)
-            player.setVelocityX(-1 * speed);
-            player.setVelocityY(-1 * speed);
-            player.anims.play('upleft');
-            console.log('x: '+player.x+' y: '+player.y);
-        }
-        else if (right&&up) {
-            speed = Math.sqrt((speed ** 2) / 2)
-            player.setVelocityX(speed);
-            player.setVelocityY(-1 * speed);
-            player.anims.play('upright');
-            console.log('x: '+player.x+' y: '+player.y);
-        }
-        else if (left&&down) {
-            speed = Math.sqrt((speed ** 2) / 2)
-            player.setVelocityX(-1 * speed);
-            player.setVelocityY(speed);
-            player.anims.play('downleft');
-            console.log('x: '+player.x+' y: '+player.y);
-        }
-        else if (right&&down) {
-            speed = Math.sqrt((speed ** 2) / 2)
-            player.setVelocityX(speed);
-            player.setVelocityY(speed);
-            player.anims.play('downright');
-            console.log('x: '+player.x+' y: '+player.y);
-        }
-        else if (left) {
-            player.setVelocityX(-1 * speed);
-            player.setVelocityY(0);
-            player.anims.play('left');
-            console.log('x: '+player.x+' y: '+player.y);
-        }
-        else if (right) {
-            player.setVelocityX(speed);
-            player.setVelocityY(0);
-            player.anims.play('right');
-            console.log('x: '+player.x+' y: '+player.y);
-        }
-        else if (up) {
-            player.setVelocityX(0);
-            player.setVelocityY(-1 * speed);
-            player.anims.play('up');
-            console.log('x: '+player.x+' y: '+player.y);
-        }
-        else if (down) {
-            player.setVelocityX(0);
-            player.setVelocityY(speed);
-            player.anims.play('down');
-            console.log('x: '+player.x+' y: '+player.y);
-        }
-        else {
-            player.anims.play('turn');
-            player.setVelocityX(0);
-            player.setVelocityY(0);
-        }
-
-        ChaseThePlayer(player, bomb)
+        playerclass.moving();
+        ChaseThePlayer(playerclass.obj, bomb);
 
 
         // width: windowInnerWidth,
