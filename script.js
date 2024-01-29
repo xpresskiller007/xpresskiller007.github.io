@@ -391,15 +391,6 @@ class MainScene extends Phaser.Scene {
                     }
                 }
 
-                for (let i in mobs) {
-                    let mobelement = mobs[i];
-                    if (mobelement.obj == gameObject[0]){
-                        player.target = mobelement;
-                        break
-                    }
-                }
-
-                console.log(gameObject);
             }
             else{
                 player.target = null;
