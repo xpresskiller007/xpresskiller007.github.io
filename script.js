@@ -4,16 +4,13 @@ const windowInnerHeight = document.documentElement.clientHeight - 20
 const mobStatus = { expectation: 'expectation', chase: 'chase' }
 var player;
 var players = [];
-// var stars;
 var bombs;
-// const mobscontainer = this.add.container();
 var mobs = [];
 
 var bx;
 var by;
 var chase = false
 var cursors;
-// var gameOver = false;
 var hpText;
 var mpText;
 
@@ -24,8 +21,8 @@ var mpTexttarget;
 var timer;
 var btn;
 
-var dragpx = windowInnerWidth - 200
-var dragpy = windowInnerHeight - 200
+var dragpx = 100
+var dragpy = windowInnerHeight - 100
 
 var drgX;
 var drgY;
@@ -109,8 +106,6 @@ class Player {
         }
     }
 
-
-
 }
 
 class Mob {
@@ -193,6 +188,7 @@ class Controls extends Phaser.Scene {
 
     preload() {
         this.load.image('btn', 'assets/star.png');
+        this.load.image('SilverSword', 'assets/SilverSword.png')
     }
 
     create() {
@@ -201,7 +197,7 @@ class Controls extends Phaser.Scene {
         hpText = this.add.text(0, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
         mpText = this.add.text(0, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
 
-        nameTexttarget = this.add.text(windowInnerWidth / 2, 0, '...' + 0, { fontSize: '32px', fill: '#000' });
+        nameTexttarget = this.add.text(windowInnerWidth / 2, 0, '...', { fontSize: '32px', fill: '#000' });
         hpTexttarget = this.add.text(windowInnerWidth / 2, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
         mpTexttarget = this.add.text(windowInnerWidth / 2, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
 
@@ -482,9 +478,6 @@ class MainScene extends Phaser.Scene {
     }
 
 }
-
-
-
 
 
 var config = {
