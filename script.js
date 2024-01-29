@@ -3,7 +3,6 @@ const windowInnerHeight = document.documentElement.clientHeight - 20
 
 const mobStatus = {expectation:'expectation', chase:'chase'}
 var player;
-var playerclass;
 var players = [];
 // var stars;
 var bombs;
@@ -36,6 +35,7 @@ class Player {
 
     constructor(obj) {
         this.obj = obj;
+        this.thisplayer = true
         this.name = 'Milhard';
         this.hp = 100;
         this.maxhp = 100;
@@ -43,6 +43,10 @@ class Player {
         this.maxhp = 100;
         this.speed = 150;
         this.target = null;
+    }
+
+    update(){
+        this.moving()   
     }
 
     moving() {
@@ -118,70 +122,84 @@ class Mob {
         this.maxhp = 100;
         this.mp = 100;
         this.maxhp = 100;
-        this.speed = 150;
+        this.speed = 120;
         this.target = null;
     }
 
-    moving() {
+    update() {
 
-        let left = (drgX < dragpx - 25) || cursors.left.isDown;
-        let right = (drgX > dragpx + 25) || cursors.right.isDown;
-        let up = (drgY < dragpy - 25) || cursors.up.isDown;
-        let down = (drgY > dragpy + 25) || cursors.down.isDown;
+        this.ChaseThePlayer() 
 
-
-        if (left && up) {
-            let speed = Math.sqrt((this.speed ** 2) / 2)
-            this.obj.setVelocityX(-1 * speed);
-            this.obj.setVelocityY(-1 * speed);
-            this.obj.anims.play('upleft');
-        }
-        else if (right && up) {
-            let speed = Math.sqrt((this.speed ** 2) / 2)
-            this.obj.setVelocityX(speed);
-            this.obj.setVelocityY(-1 * speed);
-            this.obj.anims.play('upright');
-        }
-        else if (left && down) {
-            let speed = Math.sqrt((this.speed ** 2) / 2)
-            this.obj.setVelocityX(-1 * speed);
-            this.obj.setVelocityY(speed);
-            this.obj.anims.play('downleft');
-        }
-        else if (right && down) {
-            let speed = Math.sqrt((this.speed ** 2) / 2)
-            this.obj.setVelocityX(speed);
-            this.obj.setVelocityY(speed);
-            this.obj.anims.play('downright');
-        }
-        else if (left) {
-            this.obj.setVelocityX(-1 * this.speed);
-            this.obj.setVelocityY(0);
-            this.obj.anims.play('left');
-        }
-        else if (right) {
-            this.obj.setVelocityX(this.speed);
-            this.obj.setVelocityY(0);
-            this.obj.anims.play('right');
-        }
-        else if (up) {
-            this.obj.setVelocityX(0);
-            this.obj.setVelocityY(-1 * this.speed);
-            this.obj.anims.play('up');
-        }
-        else if (down) {
-            this.obj.setVelocityX(0);
-            this.obj.setVelocityY(this.speed);
-            this.obj.anims.play('down');
-        }
-        else {
-            this.obj.anims.play('turn');
-            this.obj.setVelocityX(0);
-            this.obj.setVelocityY(0);
-        }
     }
 
+    ChaseThePlayer() {
 
+        if (this.target = null){
+            return
+        }
+
+        let distance = Math.sqrt((this.target.x - this.obj.x) ** 2 + (this.target.y - this.obj.y) ** 2);
+    
+        let chase = (distance > 30 && distance < 250)
+        let velocityx = 0
+        let velocityy = 0
+    
+    
+        if (chase) {
+    
+            newx = this.target.x - this.obj.x
+            newy = this.target.y - this.obj.y
+    
+            if (newx < 0) {
+                newx = newx * -1
+            }
+            if (newy < 0) {
+                newy = newy * -1
+            }
+    
+            sp = Math.sqrt(this.speed**2 / (newx ** 2 + newy ** 2))
+    
+            velocityx = sp * newx
+            velocityy = sp * newy
+    
+            if (this.target.x < this.obj.x) {
+                velocityx = velocityx * -1
+            }
+    
+            if (this.target.y < this.obj.y) {
+                velocityy = velocityy * -1
+            }
+    
+            this.obj.setVelocityX(velocityx)
+            this.obj.setVelocityY(velocityy);
+    
+        }
+        else {
+            this.obj.setVelocityX(0);
+            this.obj.setVelocityY(0);    
+        }
+    
+    }
+
+    getTarget(){
+
+        if (this.target != null){
+            return
+        }
+
+        for (let i = 0; i < players.length; i++) {
+            trgt = players[i];
+
+            let distance = Math.sqrt((this.target.x - this.obj.x) ** 2 + (this.target.y - this.obj.y) ** 2);
+    
+            if (distance > 30 && distance < 250){
+                this.target = trgt
+                break
+            }
+          }
+
+
+    }
 
 }
 
@@ -189,8 +207,6 @@ class Controls extends Phaser.Scene {
 
     preload() {
         this.load.image('btn', 'assets/star.png');
-        // game.load.spritesheet('button', 'assets/star.png', 193, 71);
-        // this.load.spritesheet("buttons", "assets/star.png",{ frameWidth: 236, frameHeight: 65 })
     }
 
     create() {
@@ -253,12 +269,12 @@ class Controls extends Phaser.Scene {
 
     update(p1, p2) {
 
-        hpText.setText('HP: ' + playerclass.hp);
-        mpText.setText('MP: ' + playerclass.mp);
+        hpText.setText('HP: ' + player.hp);
+        mpText.setText('MP: ' + player.mp);
 
-        if (playerclass.target != null) {
-            hpTexttarget.setText('HP: ' + playerclass.target.hp);
-            mpTexttarget.setText('MP: ' + playerclass.target.mp);
+        if (player.target != null) {
+            hpTexttarget.setText('HP: ' + player.target.hp);
+            mpTexttarget.setText('MP: ' + player.target.mp);
             hpTexttarget.visible = true;
             mpTexttarget.visible = true;
         }
@@ -273,7 +289,7 @@ class Controls extends Phaser.Scene {
 }
 
 
-class BootScene extends Phaser.Scene {
+class MainScene extends Phaser.Scene {
 
     preload() {
         this.load.image('bomb', 'assets/bomb.png');
@@ -309,12 +325,13 @@ class BootScene extends Phaser.Scene {
         // houses.create(750, 220, 'house');
 
         //     // The player and its settings
-        player = this.physics.add.sprite(400, 300, 'dude').setScale(3);
         // this.physics.add.collider(player, layer2);
 
         // let player2 = this.physics.add.sprite(500, 300, 'dude').setScale(3);
 
-        playerclass = new Player(player)
+        player = new Player(this.physics.add.sprite(400, 300, 'dude').setScale(3))
+
+        players.push(player)
 
 
         //     //  Player physics properties. Give the little guy a slight bounce.
@@ -402,8 +419,8 @@ class BootScene extends Phaser.Scene {
         //     });
 
         bombs = this.physics.add.group();
-        bx = player.x + 50
-        by = player.y + 50
+        bx = player.obj.x + 50
+        by = player.obj.y + 50
         bomb = bombs.create(bx, by, 'bomb');
         bomb.setInteractive();
         bomb.on('pointerdown', function (pointer) {
@@ -440,7 +457,7 @@ class BootScene extends Phaser.Scene {
 
         this.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
         this.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
-        this.cameras.main.startFollow(player);
+        this.cameras.main.startFollow(player.obj);
 
         // game.vjoy = game.plugins.add(Phaser.Plugin.VJoy);
         // game.vjoy.inputEnable(0, 0, 400, 600);
@@ -473,8 +490,7 @@ class BootScene extends Phaser.Scene {
 
     update(p1, p2) {
 
-        playerclass.moving();
-        ChaseThePlayer(playerclass.obj, bomb);
+        player.update();
 
 
         // width: windowInnerWidth,
@@ -523,89 +539,8 @@ class BootScene extends Phaser.Scene {
 }
 
 
-function ChaseThePlayer(player, bomb) {
-
-    distancepb = Math.sqrt((player.x - bomb.x) ** 2 + (player.y - bomb.y) ** 2);
-
-    distanceb = Math.sqrt((bx - bomb.x) ** 2 + (by - bomb.y) ** 2);
-
-    chase = (distancepb > 30 && distancepb < 250)
-    velocityx = 0
-    velocityy = 0
-
-    speed = 100
 
 
-    if (chase) {
-
-        newx = player.x - bomb.x
-        newy = player.y - bomb.y
-
-        if (newx < 0) {
-            newx = newx * -1
-        }
-        if (newy < 0) {
-            newy = newy * -1
-        }
-
-        sp = Math.sqrt(10000 / (newx ** 2 + newy ** 2))
-
-        velocityx = sp * newx
-        velocityy = sp * newy
-
-        if (player.x < bomb.x) {
-            velocityx = velocityx * -1
-        }
-
-        if (player.y < bomb.y) {
-            velocityy = velocityy * -1
-        }
-
-        bomb.setVelocityX(velocityx)
-        bomb.setVelocityY(velocityy);
-
-    }
-    else {
-
-        // if (distancepb <= 30) {
-
-        // }
-        bomb.setVelocityX(0);
-        bomb.setVelocityY(0);
-
-        // if (distanceb > 5 && distancepb > 250) {
-
-        //     newx = bx - bomb.x
-        //     newy = by - bomb.y
-
-        //     if (newx < 0) {
-        //         newx = newx * -1
-        //     }
-        //     if (newy < 0) {
-        //         newy = newy * -1
-        //     }
-
-        //     sp = Math.sqrt(10000 / (newx ** 2 + newy ** 2))
-
-        //     velocityx = sp * newx
-        //     velocityy = sp * newy
-
-        //     if (bx < bomb.x) {
-        //         velocityx = velocityx * -1
-        //     }
-
-        //     if (by < bomb.y) {
-        //         velocityy = velocityy * -1
-        //     }
-
-        //     bomb.setVelocityX(velocityx)
-        //     bomb.setVelocityY(velocityy);
-
-        // }
-
-    }
-
-}
 
 var config = {
     type: Phaser.AUTO,
@@ -617,7 +552,8 @@ var config = {
             debug: false
         }
     },
-    scene: BootScene
+    scene: MainScene
 };
+
 
 var game = new Phaser.Game(config);
