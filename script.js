@@ -201,6 +201,13 @@ class Controls extends Phaser.Scene {
         hpTexttarget = this.add.text(windowInnerWidth / 2, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
         mpTexttarget = this.add.text(windowInnerWidth / 2, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
 
+        let sword = this.add.sprite(windowInnerWidth-50, windowInnerHeight-100, 'SilverSword').setInteractive(); 
+        sword.on('pointerdown', function (pointer, gameObject) {
+
+            console.log('Чет произошло');
+
+        });
+
         let drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
         drag.setScale(3)
         drag.on('drag', function (pointer, dragX, dragY) {
