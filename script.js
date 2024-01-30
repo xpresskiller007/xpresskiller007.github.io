@@ -1,6 +1,13 @@
 const windowInnerWidth = document.documentElement.clientWidth - 20
 const windowInnerHeight = document.documentElement.clientHeight - 20
 
+var client_id = Date.now()
+var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+
+ws.onmessage = function (event) {
+    console.log(JSON.parse(event.data));
+};
+
 const mobStatus = { expectation: 'expectation', chase: 'chase' }
 var player;
 var players = [];
@@ -28,23 +35,27 @@ var drgX;
 var drgY;
 
 
-
 class Player {
 
     constructor(obj) {
         this.obj = obj;
         this.thisplayer = true
-        this.name = 'Milhard';
+        this.name = String(client_id);
         this.hp = 100;
         this.maxhp = 100;
         this.mp = 100;
         this.maxhp = 100;
         this.speed = 150;
         this.target = null;
+        this.x = 0;
+        this.y = 0;
     }
 
     update() {
-        this.moving()
+        if (this.thisplayer) {
+            this.moving();
+        }
+        else { }
     }
 
     moving() {
@@ -101,16 +112,33 @@ class Player {
         }
         else {
             this.obj.anims.play('turn');
+            if (this.x != this.obj.x || this.y != this.obj.y) {
             this.obj.setVelocityX(0);
             this.obj.setVelocityY(0);
+            }
         }
+
+        if (this.x != this.obj.x || this.y != this.obj.y) {
+            this.x = this.obj.x;
+            this.y = this.obj.y;
+            let message = {
+                'type': 'moving',
+                'id': client_id,
+                'x': this.x,
+                'y': this.y
+            }
+            ws.send(JSON.stringify(message))
+        }
+
+
     }
 
 }
 
+
 class Mob {
 
-    constructor(obj,name) {
+    constructor(obj, name) {
         this.obj = obj;
         this.status = null
         this.name = name;
@@ -201,10 +229,12 @@ class Controls extends Phaser.Scene {
         hpTexttarget = this.add.text(windowInnerWidth / 2, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
         mpTexttarget = this.add.text(windowInnerWidth / 2, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
 
-        let sword = this.add.sprite(windowInnerWidth-50, windowInnerHeight-100, 'SilverSword').setInteractive(); 
+        let sword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 100, 'SilverSword').setInteractive();
         sword.on('pointerdown', function (pointer, gameObject) {
 
             console.log('Чет произошло');
+            let text = { 'message': 'пиструн' }
+            // ws.send(JSON.stringify(text))
 
         });
 
@@ -286,6 +316,8 @@ class MainScene extends Phaser.Scene {
         // this.physics.add.collider(player, layer2);
 
         player = new Player(this.physics.add.sprite(400, 300, 'dude').setScale(3))
+        player.x = 400;
+        player.y = 300;
 
         players.push(player)
 
@@ -373,14 +405,14 @@ class MainScene extends Phaser.Scene {
         by = player.obj.y
         let mob = bombs.create(bx, by, 'bomb').setScale(3);
         mob.setInteractive();
-        mobs.push(new Mob(mob,'шляпа1'))
+        mobs.push(new Mob(mob, 'шляпа1'))
 
 
         bx = player.obj.x
         by = player.obj.y + 250
         mob = bombs.create(bx, by, 'bomb').setScale(2);
         mob.setInteractive();
-        mobs.push(new Mob(mob,'шляпа2'))
+        mobs.push(new Mob(mob, 'шляпа2'))
 
         this.input.on('pointerdown', function (pointer, gameObject) {
 
@@ -388,14 +420,14 @@ class MainScene extends Phaser.Scene {
 
                 for (let i in mobs) {
                     let mobelement = mobs[i];
-                    if (mobelement.obj == gameObject[0]){
+                    if (mobelement.obj == gameObject[0]) {
                         player.target = mobelement;
                         break
                     }
                 }
 
             }
-            else{
+            else {
                 player.target = null;
             }
 
@@ -444,7 +476,7 @@ class MainScene extends Phaser.Scene {
             mob = mobs[i]
             mob.update();
         }
-    
+
     }
 
     collectStar(player, star) {
