@@ -121,11 +121,11 @@ class Player {
             }
         }
 
-        if ((this.x != this.obj.x || this.y != this.obj.y)&&this.thisplayer) {
+        if ((this.x != this.obj.x || this.y != this.obj.y) && this.thisplayer) {
             this.x = this.obj.x;
             this.y = this.obj.y;
             let message = {
-                'message': 'moving',
+                'Command': 'moving',
                 'id': client_id,
                 'x': this.x,
                 'y': this.y
@@ -236,7 +236,7 @@ class Controls extends Phaser.Scene {
         sword.on('pointerdown', function (pointer, gameObject) {
 
             console.log('Чет произошло');
-            let text = { 'message': 'пиструн' }
+            let text = { 'Command': 'пиструн' }
             // ws.send(JSON.stringify(text))
 
         });
@@ -471,7 +471,7 @@ class MainScene extends Phaser.Scene {
 
     }
 
-    playersUpdate(){
+    playersUpdate() {
 
         let player;
         for (let i in players) {
@@ -525,31 +525,51 @@ ws.onmessage = function (event) {
 
     console.log(event.data);
 
-    if( event.data == 'creategamer'){
-        createplayer()
+    if (event.data == 'CreatePlayer') {
+        createplayer();
+    }
+    else {
+        let data = JSON.parse(event.data);
+        if (data.Command == 'NewPlayer') {
+            addPlayer(data);
+        }
+        else if (data.Command == 'moving')
     }
 
 };
 
-function createplayer(){
-        let scene = game.scene.scenes[0]
-        let player = new Player(scene.physics.add.sprite(400, 300, 'dude').setScale(3))
-        player.x = 400;
-        player.y = 300;
+function createplayer() {
+    let scene = game.scene.scenes[0]
+    let player = new Player(scene.physics.add.sprite(400, 300, 'dude').setScale(3))
+    player.x = 400;
+    player.y = 300;
 
-        players.push(player)
+    players.push(player)
 
-        let inf = {
-            'message': 'newplayer',
-            'id': client_id,
-            'x': player.x,
-            'y': player.y
-        }
-        ws.send(JSON.stringify(inf))
+    let inf = {
+        'Command': 'NewPlayer',
+        'id': client_id,
+        'x': player.x,
+        'y': player.y
+    }
+    ws.send(JSON.stringify(inf))
 
-        scene.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
-        scene.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
-        scene.cameras.main.startFollow(player.obj);
+    scene.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
+    scene.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
+    scene.cameras.main.startFollow(player.obj);
+}
+
+function addPlayer(data) {
+
+    let scene = game.scene.scenes[0]
+    let player = new Player(scene.physics.add.sprite(data.x, data.y, 'dude').setScale(3)) 
+    player.id = data.id;
+    player.thisplayer = false;
+    player.x = data.x;
+    player.y = data.y;
+
+    players.push(player)
+
 }
 
 
