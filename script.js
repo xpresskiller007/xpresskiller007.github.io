@@ -57,82 +57,116 @@ class Player {
         let down = false;
 
         if (this.thisplayer) {
+
             left = (drgX < dragpx - 25) || cursors.left.isDown;
             right = (drgX > dragpx + 25) || cursors.right.isDown;
             up = (drgY < dragpy - 25) || cursors.up.isDown;
             down = (drgY > dragpy + 25) || cursors.down.isDown;
+
+            if (left && up) {
+                let speed = Math.sqrt((this.speed ** 2) / 2)
+                this.obj.setVelocityX(-1 * speed);
+                this.obj.setVelocityY(-1 * speed);
+                this.obj.anims.play('upleft');
+            }
+            else if (right && up) {
+                let speed = Math.sqrt((this.speed ** 2) / 2)
+                this.obj.setVelocityX(speed);
+                this.obj.setVelocityY(-1 * speed);
+                this.obj.anims.play('upright');
+            }
+            else if (left && down) {
+                let speed = Math.sqrt((this.speed ** 2) / 2)
+                this.obj.setVelocityX(-1 * speed);
+                this.obj.setVelocityY(speed);
+                this.obj.anims.play('downleft');
+            }
+            else if (right && down) {
+                let speed = Math.sqrt((this.speed ** 2) / 2)
+                this.obj.setVelocityX(speed);
+                this.obj.setVelocityY(speed);
+                this.obj.anims.play('downright');
+            }
+            else if (left) {
+                this.obj.setVelocityX(-1 * this.speed);
+                this.obj.setVelocityY(0);
+                this.obj.anims.play('left');
+            }
+            else if (right) {
+                this.obj.setVelocityX(this.speed);
+                this.obj.setVelocityY(0);
+                this.obj.anims.play('right');
+            }
+            else if (up) {
+                this.obj.setVelocityX(0);
+                this.obj.setVelocityY(-1 * this.speed);
+                this.obj.anims.play('up');
+            }
+            else if (down) {
+                this.obj.setVelocityX(0);
+                this.obj.setVelocityY(this.speed);
+                this.obj.anims.play('down');
+            }
+            else {
+                if (this.x != this.obj.x || this.y != this.obj.y) {
+                    this.obj.setVelocityX(0);
+                    this.obj.setVelocityY(0);
+                }
+            }
+    
+            if (this.x != this.obj.x || this.y != this.obj.y) {
+                this.x = this.obj.x;
+                this.y = this.obj.y;
+                let message = {
+                    'Command': 'Moving',
+                    'id': client_id,
+                    'x': this.x,
+                    'y': this.y
+                }
+                ws.send(JSON.stringify(message))
+            }
+
         }
         else if (this.x != this.obj.x || this.y != this.obj.y) {
             left = this.obj.x < this.x;
             right = this.obj.x > this.x;
             up = this.obj.y < this.y;
             down = this.obj.y > this.y;
-        }
 
-        if (left && up) {
-            let speed = Math.sqrt((this.speed ** 2) / 2)
-            this.obj.setVelocityX(-1 * speed);
-            this.obj.setVelocityY(-1 * speed);
-            this.obj.anims.play('upleft');
-        }
-        else if (right && up) {
-            let speed = Math.sqrt((this.speed ** 2) / 2)
-            this.obj.setVelocityX(speed);
-            this.obj.setVelocityY(-1 * speed);
-            this.obj.anims.play('upright');
-        }
-        else if (left && down) {
-            let speed = Math.sqrt((this.speed ** 2) / 2)
-            this.obj.setVelocityX(-1 * speed);
-            this.obj.setVelocityY(speed);
-            this.obj.anims.play('downleft');
-        }
-        else if (right && down) {
-            let speed = Math.sqrt((this.speed ** 2) / 2)
-            this.obj.setVelocityX(speed);
-            this.obj.setVelocityY(speed);
-            this.obj.anims.play('downright');
-        }
-        else if (left) {
-            this.obj.setVelocityX(-1 * this.speed);
-            this.obj.setVelocityY(0);
-            this.obj.anims.play('left');
-        }
-        else if (right) {
-            this.obj.setVelocityX(this.speed);
-            this.obj.setVelocityY(0);
-            this.obj.anims.play('right');
-        }
-        else if (up) {
-            this.obj.setVelocityX(0);
-            this.obj.setVelocityY(-1 * this.speed);
-            this.obj.anims.play('up');
-        }
-        else if (down) {
-            this.obj.setVelocityX(0);
-            this.obj.setVelocityY(this.speed);
-            this.obj.anims.play('down');
-        }
-        else {
-            this.obj.anims.play('turn');
-            if (this.x != this.obj.x || this.y != this.obj.y) {
-                this.obj.setVelocityX(0);
-                this.obj.setVelocityY(0);
+            if (left && up) {
+                this.obj.setPosition(this.x, this.y)
+                this.obj.anims.play('upleft');
             }
-        }
-
-        if ((this.x != this.obj.x || this.y != this.obj.y) && this.thisplayer) {
-            this.x = this.obj.x;
-            this.y = this.obj.y;
-            let message = {
-                'Command': 'moving',
-                'id': client_id,
-                'x': this.x,
-                'y': this.y
+            else if (right && up) {
+                this.obj.setPosition(this.x, this.y)
+                this.obj.anims.play('upright');
             }
-            ws.send(JSON.stringify(message))
-        }
+            else if (left && down) {
+                this.obj.setPosition(this.x, this.y)
+                this.obj.anims.play('downleft');
+            }
+            else if (right && down) {
+                this.obj.setPosition(this.x, this.y)
+                this.obj.anims.play('downright');
+            }
+            else if (left) {
+                this.obj.setPosition(this.x,this.obj.y)
+                this.obj.anims.play('left');
+            }
+            else if (right) {
+                this.obj.setPosition(this.x,this.obj.y)
+                this.obj.anims.play('right');
+            }
+            else if (up) {
+                this.obj.setPosition(this.obj.x,this.y)
+                this.obj.anims.play('up');
+            }
+            else if (down) {
+                this.obj.setPosition(this.obj.x,this.y)
+                this.obj.anims.play('down');
+            }
 
+        }
 
     }
 
@@ -533,7 +567,9 @@ ws.onmessage = function (event) {
         if (data.Command == 'NewPlayer') {
             addPlayer(data);
         }
-        else if (data.Command == 'moving')
+        else if (data.Command == 'Moving'){
+            setСoordinates(data);
+        }
     }
 
 };
@@ -572,6 +608,18 @@ function addPlayer(data) {
 
 }
 
+function setСoordinates(data){
+
+    let player;
+        for (let i in players) {
+            player = players[i];
+            if (player.id == data.id){
+                player.x = data.x;
+                player.y = data.y;   
+            }
+        }
+    
+}
 
 var config = {
     type: Phaser.AUTO,
