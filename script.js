@@ -415,6 +415,7 @@ class MainScene extends Phaser.Scene {
             repeat: -1
         });
 
+
         cursors = this.input.keyboard.createCursorKeys();
 
         bombs = this.physics.add.group();
@@ -454,6 +455,7 @@ class MainScene extends Phaser.Scene {
             }
 
         });
+
     }
 
     update(p1, p2) {
