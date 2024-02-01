@@ -520,7 +520,7 @@ class MainScene extends Phaser.Scene {
 
 }
 
-var ws = new WebSocket(`ws://localhost:8000/ws/${client_id}`);
+var ws = new WebSocket(`ws://192.168.0.12:8000/ws/${client_id}`);
 
 ws.onmessage = function (event) {
 
