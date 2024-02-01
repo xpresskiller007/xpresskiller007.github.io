@@ -5,6 +5,7 @@ var client_id = Date.now()
 
 
 const mobStatus = { expectation: 'expectation', chase: 'chase' }
+var player;
 var players = [];
 var bombs;
 var mobs = [];
@@ -31,8 +32,9 @@ var drgY;
 
 class Player {
 
-    constructor(obj) {
-        this.obj = obj;
+    constructor(sprite) {
+        this.id = 0;
+        this.sprite = sprite;
         this.thisplayer = true;
         this.name = String(client_id);
         this.hp = 100;
@@ -65,58 +67,59 @@ class Player {
 
             if (left && up) {
                 let speed = Math.sqrt((this.speed ** 2) / 2)
-                this.obj.setVelocityX(-1 * speed);
-                this.obj.setVelocityY(-1 * speed);
-                this.obj.anims.play('upleft');
+                this.sprite.setVelocityX(-1 * speed);
+                this.sprite.setVelocityY(-1 * speed);
+                this.sprite.anims.play('upleft');
             }
             else if (right && up) {
                 let speed = Math.sqrt((this.speed ** 2) / 2)
-                this.obj.setVelocityX(speed);
-                this.obj.setVelocityY(-1 * speed);
-                this.obj.anims.play('upright');
+                this.sprite.setVelocityX(speed);
+                this.sprite.setVelocityY(-1 * speed);
+                this.sprite.anims.play('upright');
             }
             else if (left && down) {
                 let speed = Math.sqrt((this.speed ** 2) / 2)
-                this.obj.setVelocityX(-1 * speed);
-                this.obj.setVelocityY(speed);
-                this.obj.anims.play('downleft');
+                this.sprite.setVelocityX(-1 * speed);
+                this.sprite.setVelocityY(speed);
+                this.sprite.anims.play('downleft');
             }
             else if (right && down) {
                 let speed = Math.sqrt((this.speed ** 2) / 2)
-                this.obj.setVelocityX(speed);
-                this.obj.setVelocityY(speed);
-                this.obj.anims.play('downright');
+                this.sprite.setVelocityX(speed);
+                this.sprite.setVelocityY(speed);
+                this.sprite.anims.play('downright');
             }
             else if (left) {
-                this.obj.setVelocityX(-1 * this.speed);
-                this.obj.setVelocityY(0);
-                this.obj.anims.play('left');
+                this.sprite.setVelocityX(-1 * this.speed);
+                this.sprite.setVelocityY(0);
+                this.sprite.anims.play('left');
             }
             else if (right) {
-                this.obj.setVelocityX(this.speed);
-                this.obj.setVelocityY(0);
-                this.obj.anims.play('right');
+                this.sprite.setVelocityX(this.speed);
+                this.sprite.setVelocityY(0);
+                this.sprite.anims.play('right');
             }
             else if (up) {
-                this.obj.setVelocityX(0);
-                this.obj.setVelocityY(-1 * this.speed);
-                this.obj.anims.play('up');
+                this.sprite.setVelocityX(0);
+                this.sprite.setVelocityY(-1 * this.speed);
+                this.sprite.anims.play('up');
             }
             else if (down) {
-                this.obj.setVelocityX(0);
-                this.obj.setVelocityY(this.speed);
-                this.obj.anims.play('down');
+                this.sprite.setVelocityX(0);
+                this.sprite.setVelocityY(this.speed);
+                this.sprite.anims.play('down');
             }
             else {
-                if (this.x != this.obj.x || this.y != this.obj.y) {
-                    this.obj.setVelocityX(0);
-                    this.obj.setVelocityY(0);
+                if (this.x != this.sprite.x || this.y != this.sprite.y) {
+                    this.sprite.setVelocityX(0);
+                    this.sprite.setVelocityY(0);
+                    this.sprite.anims.play('turn');
                 }
             }
-    
-            if (this.x != this.obj.x || this.y != this.obj.y) {
-                this.x = this.obj.x;
-                this.y = this.obj.y;
+
+            if (this.x != this.sprite.x || this.y != this.sprite.y) {
+                this.x = this.sprite.x;
+                this.y = this.sprite.y;
                 let message = {
                     'Command': 'Moving',
                     'id': client_id,
@@ -127,56 +130,57 @@ class Player {
             }
 
         }
-        else if (this.x != this.obj.x || this.y != this.obj.y) {
-            left = this.obj.x < this.x;
-            right = this.obj.x > this.x;
-            up = this.obj.y < this.y;
-            down = this.obj.y > this.y;
+        else if (this.x != this.sprite.x || this.y != this.sprite.y) {
+            left = this.sprite.x < this.x;
+            right = this.sprite.x > this.x;
+            up = this.sprite.y < this.y;
+            down = this.sprite.y > this.y;
 
             if (left && up) {
-                this.obj.setPosition(this.x, this.y)
-                this.obj.anims.play('upleft');
+                this.sprite.setPosition(this.x, this.y)
+                this.sprite.anims.play('downright');
             }
             else if (right && up) {
-                this.obj.setPosition(this.x, this.y)
-                this.obj.anims.play('upright');
+                this.sprite.setPosition(this.x, this.y)
+                this.sprite.anims.play('downleft');
             }
             else if (left && down) {
-                this.obj.setPosition(this.x, this.y)
-                this.obj.anims.play('downleft');
+                this.sprite.setPosition(this.x, this.y)
+                this.sprite.anims.play('upright');
             }
             else if (right && down) {
-                this.obj.setPosition(this.x, this.y)
-                this.obj.anims.play('downright');
+                this.sprite.setPosition(this.x, this.y)
+                this.sprite.anims.play('upleft');
             }
             else if (left) {
-                this.obj.setPosition(this.x,this.obj.y)
-                this.obj.anims.play('left');
+                this.sprite.setPosition(this.x, this.y)
+                this.sprite.anims.play('right');
             }
             else if (right) {
-                this.obj.setPosition(this.x,this.obj.y)
-                this.obj.anims.play('right');
+                this.sprite.setPosition(this.x, this.y)
+                this.sprite.anims.play('left');
             }
             else if (up) {
-                this.obj.setPosition(this.obj.x,this.y)
-                this.obj.anims.play('up');
+                this.sprite.setPosition(this.x, this.y)
+                this.sprite.anims.play('down');
             }
             else if (down) {
-                this.obj.setPosition(this.obj.x,this.y)
-                this.obj.anims.play('down');
+                this.sprite.setPosition(this.x, this.y)
+                this.sprite.anims.play('up');
             }
-
+            else {
+                this.sprite.anims.play('turn');
+            }
         }
 
     }
 
 }
 
-
 class Mob {
 
-    constructor(obj, name) {
-        this.obj = obj;
+    constructor(sprite, name) {
+        this.sprite = sprite;
         this.status = null
         this.name = name;
         this.hp = 100;
@@ -197,16 +201,16 @@ class Mob {
     chaseTarget() {
 
         if (this.target == null) {
-            this.obj.setVelocityX(0);
-            this.obj.setVelocityY(0);
+            this.sprite.setVelocityX(0);
+            this.sprite.setVelocityY(0);
             return
         }
 
         let velocityx = 0
         let velocityy = 0
 
-        let newx = this.target.obj.x - this.obj.x
-        let newy = this.target.obj.y - this.obj.y
+        let newx = this.target.sprite.x - this.sprite.x
+        let newy = this.target.sprite.y - this.sprite.y
 
         if (newx < 0) {
             newx = newx * -1
@@ -220,22 +224,22 @@ class Mob {
         velocityx = sp * newx
         velocityy = sp * newy
 
-        if (this.target.obj.x < this.obj.x) {
+        if (this.target.sprite.x < this.sprite.x) {
             velocityx = velocityx * -1
         }
 
-        if (this.target.obj.y < this.obj.y) {
+        if (this.target.sprite.y < this.sprite.y) {
             velocityy = velocityy * -1
         }
 
-        this.obj.setVelocityX(velocityx)
-        this.obj.setVelocityY(velocityy);
+        this.sprite.setVelocityX(velocityx)
+        this.sprite.setVelocityY(velocityy);
 
     }
 
     getTarget() {
 
-        // let distance = Math.sqrt((player.obj.x - this.obj.x) ** 2 + (player.obj.y - this.obj.y) ** 2);
+        // let distance = Math.sqrt((player.sprite.x - this.sprite.x) ** 2 + (player.sprite.y - this.sprite.y) ** 2);
 
         // if (distance > 30 && distance < 250) {
         //     this.target = player;
@@ -258,9 +262,9 @@ class Controls extends Phaser.Scene {
 
     create() {
 
-        // this.add.text(0, 0, player.name, { fontSize: '32px', fill: '#000' });
-        // hpText = this.add.text(0, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
-        // mpText = this.add.text(0, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
+        this.add.text(0, 0, player.name, { fontSize: '32px', fill: '#000' });
+        hpText = this.add.text(0, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
+        mpText = this.add.text(0, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
 
         nameTexttarget = this.add.text(windowInnerWidth / 2, 0, '...', { fontSize: '32px', fill: '#000' });
         hpTexttarget = this.add.text(windowInnerWidth / 2, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
@@ -308,32 +312,34 @@ class Controls extends Phaser.Scene {
 
     update(p1, p2) {
 
-        // hpText.setText('HP: ' + player.hp);
-        // mpText.setText('MP: ' + player.mp);
+        hpText.setText('HP: ' + player.hp);
+        mpText.setText('MP: ' + player.mp);
 
-        // if (player.target != null) {
-        //     nameTexttarget.setText(player.target.name);
-        //     hpTexttarget.setText('HP: ' + player.target.hp);
-        //     mpTexttarget.setText('MP: ' + player.target.mp);
-        //     nameTexttarget.visible = true;
-        //     hpTexttarget.visible = true;
-        //     mpTexttarget.visible = true;
-        // }
-        // else {
-        //     nameTexttarget.visible = false;
-        //     hpTexttarget.visible = false;
-        //     mpTexttarget.visible = false;
-        // }
+        if (player.target != null) {
+            nameTexttarget.setText(player.target.name);
+            hpTexttarget.setText('HP: ' + player.target.hp);
+            mpTexttarget.setText('MP: ' + player.target.mp);
+            nameTexttarget.visible = true;
+            hpTexttarget.visible = true;
+            mpTexttarget.visible = true;
+        }
+        else {
+            nameTexttarget.visible = false;
+            hpTexttarget.visible = false;
+            mpTexttarget.visible = false;
+        }
 
     }
 
 
 }
 
-
 class MainScene extends Phaser.Scene {
 
     preload() {
+        // game.scale.scaleMode = Phaser.Scale.ScaleManager.RESIZE;
+        // game.scale.pageAlignHorizontally = true;
+        // game.scale.pageAlignVertically = true;
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'assets/chars.png', { frameWidth: 16, frameHeight: 24 });
         this.load.image('btn', 'assets/star.png');
@@ -349,9 +355,6 @@ class MainScene extends Phaser.Scene {
         let ph = 32 * map.layers[0].height / 2 * -1;
         const layer = map.createLayer('layer1', tiles, pw, ph);
 
-        //     // The player and its settings
-        // this.physics.add.collider(player, layer2);
-
 
         this.anims.create({
             key: 'left',
@@ -359,55 +362,55 @@ class MainScene extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'right',
             frames: this.anims.generateFrameNumbers('dude', { start: 11, end: 11 }),
             frameRate: 10,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'turn',
             frames: [{ key: 'dude', frame: 20 }],
             frameRate: 20
         });
-
+    
         this.anims.create({
             key: 'up',
             frames: this.anims.generateFrameNumbers('dude', { start: 8, end: 8 }),
             frameRate: 10,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'down',
             frames: this.anims.generateFrameNumbers('dude', { start: 12, end: 12 }),
             frameRate: 10,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'upleft',
             frames: this.anims.generateFrameNumbers('dude', { start: 15, end: 15 }),
             frameRate: 10,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'upright',
             frames: this.anims.generateFrameNumbers('dude', { start: 9, end: 9 }),
             frameRate: 10,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'downleft',
             frames: this.anims.generateFrameNumbers('dude', { start: 23, end: 23 }),
             frameRate: 10,
             repeat: -1
         });
-
+    
         this.anims.create({
             key: 'downright',
             frames: this.anims.generateFrameNumbers('dude', { start: 13, end: 13 }),
@@ -452,9 +455,17 @@ class MainScene extends Phaser.Scene {
 
                 for (let i in mobs) {
                     let mobelement = mobs[i];
-                    if (mobelement.obj == gameObject[0]) {
+                    if (mobelement.sprite == gameObject[0]) {
                         player.target = mobelement;
-                        break
+                        return
+                    }
+                }
+
+                for (let i in players) {
+                    let playelement = players[i];
+                    if (playelement.sprite == gameObject[0]) {
+                        player.target = playelement;
+                        return
                     }
                 }
 
@@ -465,7 +476,6 @@ class MainScene extends Phaser.Scene {
 
         });
 
-        this.scene.add('Controls', Controls, true, { x: 400, y: 300 });
 
         // var image = this.add.sprite(100, 100, 'btn').setInteractive();
         // image.on('pointerdown', function (pointer) {
@@ -567,8 +577,11 @@ ws.onmessage = function (event) {
         if (data.Command == 'NewPlayer') {
             addPlayer(data);
         }
-        else if (data.Command == 'Moving'){
+        else if (data.Command == 'Moving') {
             setСoordinates(data);
+        }
+        else if (data.Command == 'Disconnect') {
+            disconnectPlayer(data);
         }
     }
 
@@ -576,9 +589,12 @@ ws.onmessage = function (event) {
 
 function createplayer() {
     let scene = game.scene.scenes[0]
-    let player = new Player(scene.physics.add.sprite(400, 300, 'dude').setScale(3))
+    player = new Player(scene.physics.add.sprite(400, 300, 'dude').setScale(3));
+    player.id = client_id;
     player.x = 400;
     player.y = 300;
+
+    player.sprite.anims.play('turn');
 
     players.push(player)
 
@@ -592,33 +608,52 @@ function createplayer() {
 
     scene.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
     scene.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
-    scene.cameras.main.startFollow(player.obj);
+    scene.cameras.main.startFollow(player.sprite);
+    scene.scene.add('Controls', Controls, true, { x: 400, y: 300 });
 }
 
 function addPlayer(data) {
 
     let scene = game.scene.scenes[0]
-    let player = new Player(scene.physics.add.sprite(data.x, data.y, 'dude').setScale(3)) 
-    player.id = data.id;
-    player.thisplayer = false;
-    player.x = data.x;
-    player.y = data.y;
+    let newplayer = new Player(scene.physics.add.sprite(data.x, data.y, 'dude').setScale(3));
+    newplayer.sprite.setInteractive();
+    newplayer.id = data.id;
+    newplayer.thisplayer = false;
+    newplayer.x = data.x;
+    newplayer.y = data.y;
 
-    players.push(player)
+    newplayer.sprite.anims.play('turn');
+
+    players.push(newplayer)
 
 }
 
-function setСoordinates(data){
+function setСoordinates(data) {
 
-    let player;
-        for (let i in players) {
-            player = players[i];
-            if (player.id == data.id){
-                player.x = data.x;
-                player.y = data.y;   
-            }
+    let pl;
+    for (let i in players) {
+        pl = players[i];
+        if (pl.id == data.id) {
+            pl.x = data.x;
+            pl.y = data.y;
+            break
         }
-    
+    }
+
+}
+
+function disconnectPlayer(data) {
+
+    let pl;
+    for (let i in players) {
+        pl = players[i];
+        if (pl.id == data.id) {
+            pl.sprite.destroy()
+            players.delete[i]
+            break
+        }
+    }
+
 }
 
 var config = {
