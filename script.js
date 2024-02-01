@@ -337,9 +337,6 @@ class Controls extends Phaser.Scene {
 class MainScene extends Phaser.Scene {
 
     preload() {
-        // game.scale.scaleMode = Phaser.Scale.ScaleManager.RESIZE;
-        // game.scale.pageAlignHorizontally = true;
-        // game.scale.pageAlignVertically = true;
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'assets/chars.png', { frameWidth: 16, frameHeight: 24 });
         this.load.image('btn', 'assets/star.png');
@@ -418,22 +415,7 @@ class MainScene extends Phaser.Scene {
             repeat: -1
         });
 
-
         cursors = this.input.keyboard.createCursorKeys();
-
-        //     //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
-        //     stars = this.physics.add.group({
-        //         key: 'star',
-        //         repeat: 11,
-        //         setXY: { x: 12, y: 0, stepX: 70 }
-        //     });
-
-        //     stars.children.iterate(function (child) {
-
-        //         //  Give each star a slightly different bounce
-        //         child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-
-        //     });
 
         bombs = this.physics.add.group();
         bx = 400 + 250
@@ -470,33 +452,8 @@ class MainScene extends Phaser.Scene {
                 }
 
             }
-            else {
-                // player.target = null;
-            }
 
         });
-
-
-        // var image = this.add.sprite(100, 100, 'btn').setInteractive();
-        // image.on('pointerdown', function (pointer) {
-
-        //     this.setTint(0xff0000);
-        //     hpText.visible = !hpText.visible;
-
-        // });
-
-        // image.on('pointerout', function (pointer) {
-
-        //     this.clearTint();
-
-        // });
-
-        // image.on('pointerup', function (pointer) {
-
-        //     this.clearTint();
-
-        // });
-
     }
 
     update(p1, p2) {
