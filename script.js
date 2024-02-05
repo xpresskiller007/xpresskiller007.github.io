@@ -198,7 +198,6 @@ class Mob {
 
     update() {
 
-        this.getTarget()
         this.chaseTarget()
 
     }
@@ -239,20 +238,6 @@ class Mob {
 
         this.sprite.setVelocityX(velocityx)
         this.sprite.setVelocityY(velocityy);
-
-    }
-
-    getTarget() {
-
-        // let distance = Math.sqrt((player.sprite.x - this.sprite.x) ** 2 + (player.sprite.y - this.sprite.y) ** 2);
-
-        // if (distance > 30 && distance < 250) {
-        //     this.target = player;
-        // }
-        // else {
-        //     this.target = null;
-        // }
-
 
     }
 
@@ -471,6 +456,9 @@ class MainScene extends Phaser.Scene {
                 else if (data.Command == 'CreateMob') {
                     createMob(data);
                 }
+                else if (data.Command == 'setTarget'){
+                    setTarget(data);
+                }
             }
         
         };
@@ -575,7 +563,32 @@ function setСoordinates(data) {
 }
 
 function createMob(data){
-    mobs.pop(new Mob(data))
+    let mob = new Mob(data)
+    mobs.push(mob)
+}
+
+function setTarget(data){
+
+    for (let i in mobs) {
+        let mobelement = mobs[i];
+        if (mobelement.id == data.mob_id) {
+            if (data.player_id == null){
+                mobelement.target = null;
+                return
+            } 
+            else{
+                for (let i in players) {
+                    let playelement = players[i];
+                    if (playelement.id == data.player_id) {
+                        mobelement.target = playelement;
+                        return
+                    }
+                }
+            }
+
+        }
+    }
+
 }
 
 var config = {
