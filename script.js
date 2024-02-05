@@ -30,6 +30,8 @@ var dragpy = windowInnerHeight - 100
 var drgX;
 var drgY;
 
+var ws;
+
 class Player {
 
     constructor(sprite) {
@@ -121,7 +123,7 @@ class Player {
                 this.x = this.sprite.x;
                 this.y = this.sprite.y;
                 let message = {
-                    'Command': 'Moving',
+                    'Command': 'PlayerMoving',
                     'id': client_id,
                     'x': this.x,
                     'y': this.y
@@ -179,16 +181,19 @@ class Player {
 
 class Mob {
 
-    constructor(sprite, name) {
-        this.sprite = sprite;
-        this.status = null
-        this.name = name;
+    constructor(data) {
+        this.sprite = bombs.create(data.x, data.y, 'bomb').setScale(2);
+        this.sprite.setInteractive();
+        this.id = data.id;
+        this.name = data.name;
         this.hp = 100;
         this.maxhp = 100;
         this.mp = 100;
         this.maxhp = 100;
         this.speed = 120;
         this.target = null;
+        this.x = data.x;
+        this.y = data.y;
     }
 
     update() {
@@ -419,18 +424,6 @@ class MainScene extends Phaser.Scene {
         cursors = this.input.keyboard.createCursorKeys();
 
         bombs = this.physics.add.group();
-        bx = 400 + 250
-        by = 300
-        let mob = bombs.create(bx, by, 'bomb').setScale(3);
-        mob.setInteractive();
-        mobs.push(new Mob(mob, 'шляпа1'))
-
-
-        bx = 400
-        by = 300 + 250
-        mob = bombs.create(bx, by, 'bomb').setScale(2);
-        mob.setInteractive();
-        mobs.push(new Mob(mob, 'шляпа2'))
 
         this.input.on('pointerdown', function (pointer, gameObject) {
 
@@ -455,6 +448,33 @@ class MainScene extends Phaser.Scene {
             }
 
         });
+
+        ws = new WebSocket(`ws://192.168.0.11:8000/ws/${client_id}`);
+        ws.onmessage = function (event) {
+
+            console.log(event.data);
+        
+            if (event.data == 'CreatePlayer') {
+                createplayer();
+            }
+            else {
+                let data = JSON.parse(event.data);
+                if (data.Command == 'NewPlayer') {
+                    addPlayer(data);
+                }
+                else if (data.Command == 'PlayerMoving') {
+                    setСoordinates(data);
+                }
+                else if (data.Command == 'Disconnect') {
+                    disconnectPlayer(data);
+                }
+                else if (data.Command == 'CreateMob') {
+                    createMob(data);
+                }
+            }
+        
+        };
+
 
     }
 
@@ -483,68 +503,8 @@ class MainScene extends Phaser.Scene {
         }
     }
 
-    collectStar(player, star) {
-        // star.disableBody(true, true);
-
-        // //  Add and update the score
-        // score += 10;
-        // scoreText.setText('Score: ' + score);
-
-        // if (stars.countActive(true) === 0)
-        // {
-        //     //  A new batch of stars to collect
-        //     stars.children.iterate(function (child) {
-
-        //         child.enableBody(true, child.x, 0, true, true);
-
-        //     });
-
-        //     var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
-
-        //     var bomb = bombs.create(x, 16, 'bomb');
-        //     bomb.setBounce(1);
-        //     bomb.setCollideWorldBounds(true);
-        //     bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-        //     bomb.allowGravity = false;
-
-        // }
-    }
-
-    hitBomb(player, bomb) {
-        // this.physics.pause();
-
-        // player.setTint(0xff0000);
-
-        // player.anims.play('turn');
-
-        // gameOver = true;
-    }
 
 }
-
-var ws = new WebSocket(`ws://192.168.0.12:8000/ws/${client_id}`);
-
-ws.onmessage = function (event) {
-
-    console.log(event.data);
-
-    if (event.data == 'CreatePlayer') {
-        createplayer();
-    }
-    else {
-        let data = JSON.parse(event.data);
-        if (data.Command == 'NewPlayer') {
-            addPlayer(data);
-        }
-        else if (data.Command == 'Moving') {
-            setСoordinates(data);
-        }
-        else if (data.Command == 'Disconnect') {
-            disconnectPlayer(data);
-        }
-    }
-
-};
 
 function createplayer() {
     let scene = game.scene.scenes[0]
@@ -573,8 +533,7 @@ function createplayer() {
 
 function addPlayer(data) {
 
-    let scene = game.scene.scenes[0]
-    let newplayer = new Player(scene.physics.add.sprite(data.x, data.y, 'dude').setScale(3));
+    let newplayer = new Player(game.scene.scenes[0].physics.add.sprite(data.x, data.y, 'dude').setScale(3));
     newplayer.sprite.setInteractive();
     newplayer.id = data.id;
     newplayer.thisplayer = false;
@@ -584,6 +543,20 @@ function addPlayer(data) {
     newplayer.sprite.anims.play('turn');
 
     players.push(newplayer)
+
+}
+
+function disconnectPlayer(data) {
+
+    let pl;
+    for (let i in players) {
+        pl = players[i];
+        if (pl.id == data.id) {
+            pl.sprite.destroy()
+            players.delete[i]
+            break
+        }
+    }
 
 }
 
@@ -601,18 +574,8 @@ function setСoordinates(data) {
 
 }
 
-function disconnectPlayer(data) {
-
-    let pl;
-    for (let i in players) {
-        pl = players[i];
-        if (pl.id == data.id) {
-            pl.sprite.destroy()
-            players.delete[i]
-            break
-        }
-    }
-
+function createMob(data){
+    mobs.pop(new Mob(data))
 }
 
 var config = {
