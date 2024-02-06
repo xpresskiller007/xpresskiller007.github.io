@@ -45,8 +45,8 @@ class Player {
         this.maxhp = 100;
         this.speed = 150;
         this.target = null;
-        this.x = 0;
-        this.y = 0;
+        this.x = this.sprite.x;
+        this.y = this.sprite.y;
     }
 
     update() {
@@ -123,7 +123,7 @@ class Player {
                 this.x = this.sprite.x;
                 this.y = this.sprite.y;
                 let message = {
-                    'Command': 'PlayerMoving',
+                    cmd: 'PlayerMoving',
                     'id': client_id,
                     'x': this.x,
                     'y': this.y
@@ -194,6 +194,8 @@ class Mob {
         this.target = null;
         this.x = data.x;
         this.y = data.y;
+        this.respx = data.respx;
+        this.respy = data.respy;
     }
 
     update() {
@@ -264,7 +266,7 @@ class Controls extends Phaser.Scene {
         sword.on('pointerdown', function (pointer, gameObject) {
 
             console.log('Чет произошло');
-            let text = { 'Command': 'пиструн' }
+            let text = { 'cmd': 'пиструн' }
             // ws.send(JSON.stringify(text))
 
         });
@@ -444,20 +446,20 @@ class MainScene extends Phaser.Scene {
             }
             else {
                 let data = JSON.parse(event.data);
-                if (data.Command == 'NewPlayer') {
+                if (data.cmd == 'NewPlayer') {
                     addPlayer(data);
                 }
-                else if (data.Command == 'PlayerMoving') {
+                else if (data.cmd == 'PlayerMoving') {
                     setСoordinates(data);
                 }
-                else if (data.Command == 'Disconnect') {
+                else if (data.cmd == 'Disconnect') {
                     disconnectPlayer(data);
                 }
-                else if (data.Command == 'CreateMob') {
+                else if (data.cmd == 'CreateMob') {
                     createMob(data);
                 }
-                else if (data.Command == 'setTarget'){
-                    setTarget(data);
+                else if (data.cmd == 'setMobParameters'){
+                    setMobParameters(data);
                 }
             }
         
@@ -506,7 +508,7 @@ function createplayer() {
     players.push(player)
 
     let inf = {
-        'Command': 'NewPlayer',
+        'cmd': 'NewPlayer',
         'id': client_id,
         'x': player.x,
         'y': player.y
@@ -567,19 +569,19 @@ function createMob(data){
     mobs.push(mob)
 }
 
-function setTarget(data){
+function setMobParameters(data){
 
     for (let i in mobs) {
         let mobelement = mobs[i];
-        if (mobelement.id == data.mob_id) {
-            if (data.player_id == null){
+        if (mobelement.id == data.id) {
+            if (data.target == null){
                 mobelement.target = null;
                 return
             } 
             else{
                 for (let i in players) {
                     let playelement = players[i];
-                    if (playelement.id == data.player_id) {
+                    if (playelement.id == data.target) {
                         mobelement.target = playelement;
                         return
                     }
