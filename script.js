@@ -1,10 +1,13 @@
-const windowInnerWidth = document.documentElement.clientWidth - 20
-const windowInnerHeight = document.documentElement.clientHeight - 20
+// const windowInnerWidth = document.documentElement.clientWidth - 20
+// const windowInnerHeight = document.documentElement.clientHeight - 20
+const windowInnerWidth = window.innerWidth-20
+const windowInnerHeight = window.innerHeight-20
+
 
 var client_id = Date.now()
 
 
-const mobStatus = { expectation: 'expectation', chase: 'chase' }
+const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation' }
 var player;
 var players = [];
 var bombs;
@@ -131,7 +134,6 @@ class Player {
                     'y': this.y
                 }
                 ws.send(JSON.stringify(message))
-                console.log('x:' + this.x + ' y:' + this.y);
             }
 
         }
@@ -201,12 +203,62 @@ class Mob {
         this.respx = data.respx;
         this.respy = data.respy;
         this.lastattack = 0
+        this.status = mobStatus.Expectation
     }
 
     update() {
 
         this.chaseTarget()
         this.attack()
+        this.revert()
+
+    }
+
+    revert(){
+        
+        if (this.status != mobStatus.Revert){
+            return
+        }
+
+        let velocityx = 0
+        let velocityy = 0
+
+        let newx = this.respx - this.sprite.x
+        let newy = this.respy - this.sprite.y
+
+        if (newx < 0) {
+            newx = newx * -1
+        }
+        if (newy < 0) {
+            newy = newy * -1
+        }
+
+        let sp = Math.sqrt(this.speed ** 2 / (newx ** 2 + newy ** 2))
+
+        velocityx = sp * newx
+        velocityy = sp * newy
+
+        if (this.respx < this.sprite.x) {
+            velocityx = velocityx * -1
+        }
+
+        if (this.respy < this.sprite.y) {
+            velocityy = velocityy * -1
+        }
+
+        this.sprite.setVelocityX(velocityx)
+        this.sprite.setVelocityY(velocityy);
+
+        this.x = this.sprite.x;
+        this.y = this.sprite.y;
+
+        let message = {
+            cmd: 'MobMoving',
+            'id': this.id,
+            'x': this.x,
+            'y': this.y
+        }
+        ws.send(JSON.stringify(message))
 
     }
 
@@ -215,12 +267,20 @@ class Mob {
         if (this.target == null) {
             return
         }
+
+        let distancetotarget = Math.sqrt((this.target.x - this.x) ** 2 + (this.target.y - this.y) ** 2)
         let nowtime = Date.now() / 1000;
         let timeattack = nowtime - this.lastattack;
 
-        if (timeattack > 2) {
-            console.log(timeattack);
-            this.lastattack = timeattack;
+        if (timeattack > 3 && distancetotarget<=31) {
+            this.lastattack = nowtime;
+            let message = {
+                cmd: 'MobAttack',
+                'mob': this.id,
+                'target': this.target.id,
+                'timeattack': this.lastattack
+            }
+            ws.send(JSON.stringify(message))
         }
 
 
@@ -229,6 +289,10 @@ class Mob {
     chaseTarget() {
 
         if (this.target == null) {
+            return
+        }
+
+        if (this.status != mobStatus.Chase){
             this.sprite.setVelocityX(0);
             this.sprite.setVelocityY(0);
             return
@@ -494,6 +558,9 @@ class MainScene extends Phaser.Scene {
                 else if (data.cmd == 'setMobParameters') {
                     setMobParameters(data);
                 }
+                else if (data.cmd == 'PlayerDamageReceived'){
+                    playerDamageReceived(data)
+                }
             }
 
         };
@@ -527,6 +594,18 @@ class MainScene extends Phaser.Scene {
     }
 
 
+}
+
+function playerDamageReceived(data){
+    let player;
+        for (let i in players) {
+            player = players[i]
+            if (player.id == data.id){
+                player.hp = player.hp - data.damage;
+                break
+            }
+            
+        }
 }
 
 function createplayer() {
@@ -612,6 +691,7 @@ function setMobParameters(data) {
         if (mobelement.id == data.id) {
             if (data.target == null) {
                 mobelement.target = null;
+                mobelement.status = mobStatus[data.status]
                 return
             }
             else {
@@ -619,6 +699,7 @@ function setMobParameters(data) {
                     let playelement = players[i];
                     if (playelement.id == data.target) {
                         mobelement.target = playelement;
+                        mobelement.status = mobStatus[data.status]
                         return
                     }
                 }
