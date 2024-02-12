@@ -32,6 +32,8 @@ var drgY;
 
 var ws;
 
+var map
+
 class Player {
 
     constructor(sprite) {
@@ -129,6 +131,7 @@ class Player {
                     'y': this.y
                 }
                 ws.send(JSON.stringify(message))
+                console.log('x:' + this.x + ' y:' + this.y);
             }
 
         }
@@ -175,6 +178,7 @@ class Player {
             }
         }
 
+
     }
 
 }
@@ -192,15 +196,33 @@ class Mob {
         this.maxhp = 100;
         this.speed = 120;
         this.target = null;
-        this.x = data.x;
-        this.y = data.y;
+        this.x = this.sprite.x;
+        this.y = this.sprite.y;
         this.respx = data.respx;
         this.respy = data.respy;
+        this.lastattack = 0
     }
 
     update() {
 
         this.chaseTarget()
+        this.attack()
+
+    }
+
+    attack() {
+
+        if (this.target == null) {
+            return
+        }
+        let nowtime = Date.now() / 1000;
+        let timeattack = nowtime - this.lastattack;
+
+        if (timeattack > 2) {
+            console.log(timeattack);
+            this.lastattack = timeattack;
+        }
+
 
     }
 
@@ -240,6 +262,17 @@ class Mob {
 
         this.sprite.setVelocityX(velocityx)
         this.sprite.setVelocityY(velocityy);
+
+        this.x = this.sprite.x;
+        this.y = this.sprite.y;
+
+        let message = {
+            cmd: 'MobMoving',
+            'id': this.id,
+            'x': this.x,
+            'y': this.y
+        }
+        ws.send(JSON.stringify(message))
 
     }
 
@@ -332,18 +365,18 @@ class MainScene extends Phaser.Scene {
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'assets/chars.png', { frameWidth: 16, frameHeight: 24 });
         this.load.image('btn', 'assets/star.png');
-        this.load.image('grass', 'assets/map/Texture/TX Tileset Grass.png')
+        this.load.image('SummerTiles', 'assets/map/SummerTiles.png')
         this.load.tilemapTiledJSON('map', 'assets/map/map.json')
     }
 
     create() {
 
-        const map = this.make.tilemap({ key: 'map' })
-        const tiles = map.addTilesetImage('grass', 'grass')
-        let pw = 32 * map.layers[0].width / 2 * -1;
-        let ph = 32 * map.layers[0].height / 2 * -1;
-        const layer = map.createLayer('layer1', tiles, pw, ph);
+        map = this.make.tilemap({ key: 'map' })
+        const tiles = map.addTilesetImage('SummerTiles', 'SummerTiles')
+        const layer = map.createLayer('layer1', tiles, 0, 0);
 
+
+        this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
 
         this.anims.create({
             key: 'left',
@@ -351,55 +384,55 @@ class MainScene extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         });
-    
+
         this.anims.create({
             key: 'right',
             frames: this.anims.generateFrameNumbers('dude', { start: 11, end: 11 }),
             frameRate: 10,
             repeat: -1
         });
-    
+
         this.anims.create({
             key: 'turn',
             frames: [{ key: 'dude', frame: 20 }],
             frameRate: 20
         });
-    
+
         this.anims.create({
             key: 'up',
             frames: this.anims.generateFrameNumbers('dude', { start: 8, end: 8 }),
             frameRate: 10,
             repeat: -1
         });
-    
+
         this.anims.create({
             key: 'down',
             frames: this.anims.generateFrameNumbers('dude', { start: 12, end: 12 }),
             frameRate: 10,
             repeat: -1
         });
-    
+
         this.anims.create({
             key: 'upleft',
             frames: this.anims.generateFrameNumbers('dude', { start: 15, end: 15 }),
             frameRate: 10,
             repeat: -1
         });
-    
+
         this.anims.create({
             key: 'upright',
             frames: this.anims.generateFrameNumbers('dude', { start: 9, end: 9 }),
             frameRate: 10,
             repeat: -1
         });
-    
+
         this.anims.create({
             key: 'downleft',
             frames: this.anims.generateFrameNumbers('dude', { start: 23, end: 23 }),
             frameRate: 10,
             repeat: -1
         });
-    
+
         this.anims.create({
             key: 'downright',
             frames: this.anims.generateFrameNumbers('dude', { start: 13, end: 13 }),
@@ -436,11 +469,11 @@ class MainScene extends Phaser.Scene {
 
         });
 
-        ws = new WebSocket(`ws://192.168.0.11:8000/ws/${client_id}`);
+        ws = new WebSocket(`ws://192.168.0.13:8000/ws/${client_id}`);
         ws.onmessage = function (event) {
 
             console.log(event.data);
-        
+
             if (event.data == 'CreatePlayer') {
                 createplayer();
             }
@@ -458,11 +491,11 @@ class MainScene extends Phaser.Scene {
                 else if (data.cmd == 'CreateMob') {
                     createMob(data);
                 }
-                else if (data.cmd == 'setMobParameters'){
+                else if (data.cmd == 'setMobParameters') {
                     setMobParameters(data);
                 }
             }
-        
+
         };
 
 
@@ -503,6 +536,8 @@ function createplayer() {
     player.x = 400;
     player.y = 300;
 
+    // player.sprite.setCollideWorldBounds(true)
+
     player.sprite.anims.play('turn');
 
     players.push(player)
@@ -518,6 +553,7 @@ function createplayer() {
     scene.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
     scene.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
     scene.cameras.main.startFollow(player.sprite);
+    // scene.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     scene.scene.add('Controls', Controls, true, { x: 400, y: 300 });
 }
 
@@ -564,21 +600,21 @@ function setСoordinates(data) {
 
 }
 
-function createMob(data){
+function createMob(data) {
     let mob = new Mob(data)
     mobs.push(mob)
 }
 
-function setMobParameters(data){
+function setMobParameters(data) {
 
     for (let i in mobs) {
         let mobelement = mobs[i];
         if (mobelement.id == data.id) {
-            if (data.target == null){
+            if (data.target == null) {
                 mobelement.target = null;
                 return
-            } 
-            else{
+            }
+            else {
                 for (let i in players) {
                     let playelement = players[i];
                     if (playelement.id == data.target) {
@@ -600,9 +636,10 @@ var config = {
     physics: {
         default: 'arcade',
         arcade: {
-            debug: false
+            debug: true
         }
     },
+    fps: 30,
     scene: MainScene
 };
 
