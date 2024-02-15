@@ -1,5 +1,3 @@
-// const windowInnerWidth = document.documentElement.clientWidth - 20
-// const windowInnerHeight = document.documentElement.clientHeight - 20
 const windowInnerWidth = window.innerWidth-20
 const windowInnerHeight = window.innerHeight-20
 
@@ -200,8 +198,8 @@ class Mob {
         this.target = null;
         this.x = this.sprite.x;
         this.y = this.sprite.y;
-        this.respx = data.respx;
-        this.respy = data.respy;
+        this.respx = this.x;
+        this.respy = this.y;
         this.lastattack = 0
         this.status = mobStatus.Expectation
     }
@@ -258,6 +256,7 @@ class Mob {
             'x': this.x,
             'y': this.y
         }
+        console.log(JSON.stringify(message));
         ws.send(JSON.stringify(message))
 
     }
