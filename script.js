@@ -6,6 +6,7 @@ var client_id = Date.now()
 
 
 const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation' }
+const targetType = { Player: 'Player', Mob: 'Mob' }
 var player;
 var players = [];
 var bombs;
@@ -41,6 +42,7 @@ class Player {
         this.id = 0;
         this.sprite = sprite;
         this.thisplayer = true;
+        this.type = targetType.Player
         this.name = String(client_id);
         this.hp = 100;
         this.maxhp = 100;
@@ -187,6 +189,7 @@ class Mob {
 
     constructor(data) {
         this.sprite = bombs.create(data.x, data.y, 'bomb').setScale(2);
+        this.type = targetType.Mob
         this.sprite.setInteractive();
         this.id = data.id;
         this.name = data.name;
@@ -359,6 +362,8 @@ class Controls extends Phaser.Scene {
     preload() {
         this.load.image('btn', 'assets/star.png');
         this.load.image('SilverSword', 'assets/SilverSword.png')
+        this.load.image('WoodenSword', 'assets/WoodenSword.png')
+        this.load.image('GoldenSword', 'assets/GoldenSword.png')
     }
 
     create() {
@@ -371,13 +376,44 @@ class Controls extends Phaser.Scene {
         hpTexttarget = this.add.text(windowInnerWidth / 2, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
         mpTexttarget = this.add.text(windowInnerWidth / 2, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
 
-        let sword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 100, 'SilverSword').setInteractive();
-        sword.on('pointerdown', function (pointer, gameObject) {
 
-            console.log('Чет произошло');
-            let text = { 'cmd': 'пиструн' }
-            // ws.send(JSON.stringify(text))
+        let WoodenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'WoodenSword').setInteractive();
+        WoodenSword.on('pointerdown', function (pointer, gameObject) {
+            if (player.target != null){
+                let inf = {
+                    cmd: 'Attack',
+                    name: 'WoodenSword',
+                    targettype: player.target.type,
+                    target: player.target.id
+                }
+                ws.send(JSON.stringify(inf))
+            }
+        });
 
+        let SilverSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 150, 'SilverSword').setInteractive();
+        SilverSword.on('pointerdown', function (pointer, gameObject) {
+            if (player.target != null){
+                let inf = {
+                    cmd: 'Attack',
+                    name: 'SilverSword',
+                    targettype: player.target.type,
+                    target: player.target.id
+                }
+                ws.send(JSON.stringify(inf))
+            }
+        });
+
+        let GoldenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 100, 'GoldenSword').setInteractive();
+        GoldenSword.on('pointerdown', function (pointer, gameObject) {
+            if (player.target != null){
+                let inf = {
+                    cmd: 'Attack',
+                    name: 'GoldenSword',
+                    targettype: player.target.type,
+                    target: player.target.id
+                }
+                ws.send(JSON.stringify(inf))
+            }
         });
 
         let drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
@@ -576,6 +612,9 @@ class MainScene extends Phaser.Scene {
                 else if (data.cmd == 'MobAttack'){
                     mobAttack(data)
                 }
+                else if (data.cmd == 'TargetAttack'){
+                    targetAttack(data)
+                }
             }
 
         };
@@ -608,6 +647,23 @@ class MainScene extends Phaser.Scene {
         }
     }
 
+
+}
+
+function targetAttack(data){
+    if (data.targettype == targetType.Mob){
+        let mob;
+        for (let i in mobs) {
+            mob = mobs[i]
+            if (mob.id == data.target){
+                mob.hp = mob.hp - data.damage;
+                break
+            }
+        }    
+    }
+    else{
+        console.log('Еще не готово');
+    }
 
 }
 
