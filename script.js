@@ -5,7 +5,7 @@ const windowInnerHeight = window.innerHeight - 20
 var client_id = Date.now()
 
 
-const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation' }
+const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation', Dead: 'Dead' }
 const targetType = { Player: 'Player', Mob: 'Mob' }
 var player;
 var players = [];
@@ -208,6 +208,10 @@ class Mob {
     }
 
     update() {
+
+        if (this.status == mobStatus.Dead){
+            return
+        }
 
         this.chaseTarget()
         this.revert()
@@ -615,6 +619,12 @@ class MainScene extends Phaser.Scene {
                 else if (data.cmd == 'TargetAttack'){
                     targetAttack(data)
                 }
+                else if (data.cmd == 'respPlayer'){
+                    respPlayer(data)    
+                }
+                else if (data.cmd == 'mobDead'){
+                    mobDead(data)
+                }
             }
 
         };
@@ -649,6 +659,45 @@ class MainScene extends Phaser.Scene {
 
 
 }
+
+function mobDead(data){
+    for (let i in mobs){
+        let mob = mobs[i]
+        if (mob.id == data.id){
+            if (mob.status == mobStatus.Expectation){
+                return
+            }
+            mob.status = mobStatus.Dead;
+            mob.sprite.setPosition(mob.respx, mob.respy);
+            mob.x = mob.respx;
+            mob.y = mob.respy;
+            mob.hp = 100;
+            mob.status = mobStatus.Expectation
+            return      
+        }
+    }
+}
+
+function respPlayer(data){
+    let playerelement = null
+    if (player.id == data.id){
+        playerelement = player;      
+    }
+    else{
+        for (let i in players){
+            if (players[i].id == data.id){
+                playerelement = players[i];
+                break
+            } 
+        }
+    }
+    if (playerelement != null){
+        playerelement.sprite.setPosition(data.x, data.y);
+        playerelement.x = data.x;
+        playerelement.y = data.y;
+        playerelement.hp = 100
+    }
+}   
 
 function targetAttack(data){
     if (data.targettype == targetType.Mob){
@@ -691,10 +740,10 @@ function playerDamageReceived(data) {
 
 function createplayer() {
     let scene = game.scene.scenes[0]
-    player = new Player(scene.physics.add.sprite(400, 300, 'dude').setScale(3));
+    player = new Player(scene.physics.add.sprite(700, 700, 'dude').setScale(3));
     player.id = client_id;
-    player.x = 400;
-    player.y = 300;
+    player.x = 700;
+    player.y = 700;
 
     // player.sprite.setCollideWorldBounds(true)
 
