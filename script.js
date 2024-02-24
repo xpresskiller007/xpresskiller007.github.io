@@ -221,13 +221,16 @@ class Mob {
     }
 
     stopMiving() {
-        if (this.status == mobStatus.Expectation
-            || this.status == mobStatus.Attack) {
+        if ((this.status == mobStatus.Expectation
+            || this.status == mobStatus.Attack)) {
             this.sprite.setVelocityX(0)
             this.sprite.setVelocityY(0);
             if (this.sprite.x != this.x || this.sprite.y != this.y) {
                 this.x = this.sprite.x
                 this.y = this.sprite.y
+            }
+            if (this.status == mobStatus.Expectation && this.hp != 100){
+                this.hp = 100
             }
         }
     }
