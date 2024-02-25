@@ -23,6 +23,8 @@ var nameTexttarget;
 var hpTexttarget;
 var mpTexttarget;
 
+var xpbar;
+
 var timer;
 var btn;
 
@@ -34,7 +36,7 @@ var drgY;
 
 var ws;
 
-var map
+var map;
 
 class Player {
 
@@ -47,11 +49,13 @@ class Player {
         this.hp = 100;
         this.maxhp = 100;
         this.mp = 100;
-        this.maxhp = 100;
+        this.maxmp = 100;
         this.speed = 150;
         this.target = null;
         this.x = this.sprite.x;
         this.y = this.sprite.y;
+        this.lvl = 1;
+        this.xp = 0;
     }
 
     update() {
@@ -188,28 +192,27 @@ class Player {
 class Mob {
 
     constructor(data) {
-        this.sprite = bombs.create(data.x, data.y, 'bomb').setScale(2);
+        this.sprite = bombs.create(data.x, data.y, 'bomb').setScale(2).setInteractive();
         this.type = targetType.Mob
-        this.sprite.setInteractive();
         this.id = data.id;
         this.name = data.name;
-        this.hp = 100;
-        this.maxhp = 100;
-        this.mp = 100;
-        this.maxhp = 100;
+        this.lvl = data.lvl
+        this.hp = data.hp;
+        this.maxhp = data.maxhp;
+        this.mp = data.mp;
+        this.maxhp = data.maxmp;
         this.speed = 120;
         this.target = null;
         this.x = this.sprite.x;
         this.y = this.sprite.y;
-        this.respx = this.x;
-        this.respy = this.y;
-        this.lastattack = 0
-        this.status = mobStatus.Expectation
+        this.respx = data.respx;
+        this.respy = data.respy;
+        this.status = mobStatus[data.status]
     }
 
     update() {
 
-        if (this.status == mobStatus.Dead){
+        if (this.status == mobStatus.Dead) {
             return
         }
 
@@ -229,8 +232,8 @@ class Mob {
                 this.x = this.sprite.x
                 this.y = this.sprite.y
             }
-            if (this.status == mobStatus.Expectation && this.hp != 100){
-                this.hp = 100
+            if (this.status == mobStatus.Expectation && this.hp != this.maxhp) {
+                this.hp = this.maxhp
             }
         }
     }
@@ -351,7 +354,7 @@ class Mob {
                 }
                 ws.send(JSON.stringify(message))
             }
-            
+
 
         } catch (err) {
 
@@ -368,12 +371,20 @@ class Controls extends Phaser.Scene {
 
     preload() {
         this.load.image('btn', 'assets/star.png');
-        this.load.image('SilverSword', 'assets/SilverSword.png')
-        this.load.image('WoodenSword', 'assets/WoodenSword.png')
-        this.load.image('GoldenSword', 'assets/GoldenSword.png')
+        this.load.image('SilverSword', 'assets/SilverSword.png');
+        this.load.image('WoodenSword', 'assets/WoodenSword.png');
+        this.load.image('GoldenSword', 'assets/GoldenSword.png');
     }
 
     create() {
+
+        let xpback = this.add.graphics();
+        xpback.fillStyle(0x000000, 0.5);
+        let xpbackwidth = windowInnerWidth - 100;
+        xpback.fillRect(windowInnerWidth / 2 - xpbackwidth / 2, windowInnerHeight - 30, xpbackwidth, 20);
+
+        xpbar = this.add.graphics();
+
 
         this.add.text(0, 0, player.name, { fontSize: '32px', fill: '#000' });
         hpText = this.add.text(0, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
@@ -386,7 +397,7 @@ class Controls extends Phaser.Scene {
 
         let WoodenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'WoodenSword').setInteractive();
         WoodenSword.on('pointerdown', function (pointer, gameObject) {
-            if (player.target != null){
+            if (player.target != null) {
                 let inf = {
                     cmd: 'Attack',
                     name: 'WoodenSword',
@@ -399,7 +410,7 @@ class Controls extends Phaser.Scene {
 
         let SilverSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 150, 'SilverSword').setInteractive();
         SilverSword.on('pointerdown', function (pointer, gameObject) {
-            if (player.target != null){
+            if (player.target != null) {
                 let inf = {
                     cmd: 'Attack',
                     name: 'SilverSword',
@@ -412,7 +423,7 @@ class Controls extends Phaser.Scene {
 
         let GoldenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 100, 'GoldenSword').setInteractive();
         GoldenSword.on('pointerdown', function (pointer, gameObject) {
-            if (player.target != null){
+            if (player.target != null) {
                 let inf = {
                     cmd: 'Attack',
                     name: 'GoldenSword',
@@ -459,8 +470,13 @@ class Controls extends Phaser.Scene {
         hpText.setText('HP: ' + player.hp);
         mpText.setText('MP: ' + player.mp);
 
+        xpbar.clear()
+        xpbar.fillStyle(0x0000ff, 1);
+        let xpwidth = (windowInnerWidth - 102) * (player.xp / 100);
+        xpbar.fillRect(51, windowInnerHeight - 30, xpwidth, 18);
+
         if (player.target != null) {
-            nameTexttarget.setText(player.target.name);
+            nameTexttarget.setText(player.target.name + ',lvl ' + String(player.target.lvl));
             hpTexttarget.setText('HP: ' + player.target.hp);
             mpTexttarget.setText('MP: ' + player.target.mp);
             nameTexttarget.visible = true;
@@ -616,16 +632,16 @@ class MainScene extends Phaser.Scene {
                 else if (data.cmd == 'PlayerDamageReceived') {
                     playerDamageReceived(data)
                 }
-                else if (data.cmd == 'MobAttack'){
+                else if (data.cmd == 'MobAttack') {
                     mobAttack(data)
                 }
-                else if (data.cmd == 'TargetAttack'){
+                else if (data.cmd == 'TargetAttack') {
                     targetAttack(data)
                 }
-                else if (data.cmd == 'respPlayer'){
-                    respPlayer(data)    
+                else if (data.cmd == 'respPlayer') {
+                    respPlayer(data)
                 }
-                else if (data.cmd == 'mobDead'){
+                else if (data.cmd == 'mobDead') {
                     mobDead(data)
                 }
             }
@@ -663,67 +679,88 @@ class MainScene extends Phaser.Scene {
 
 }
 
-function mobDead(data){
-    for (let i in mobs){
+function mobDead(data) {
+    for (let i in mobs) {
         let mob = mobs[i]
-        if (mob.id == data.id){
-            if (mob.status == mobStatus.Expectation){
+        if (mob.id == data.id) {
+            if (mob.status == mobStatus.Expectation) {
                 return
             }
             mob.status = mobStatus.Dead;
             mob.sprite.setPosition(mob.respx, mob.respy);
             mob.x = mob.respx;
             mob.y = mob.respy;
-            mob.hp = 100;
+            mob.hp = mob.maxhp;
             mob.status = mobStatus.Expectation
-            return      
+            playerelement = null
+            if (player.id == data.player) {
+                playerelement = player
+            }
+            else {
+                for (let i in players) {
+                    if (players[i].id == data.player) {
+                        playerelement = players[i]
+                        break
+                    }
+                }
+            }
+            playerelement.xp = playerelement.xp + data.xp
+            if (playerelement.xp >= 100) {
+                playerelement.xp = playerelement.xp - 100
+                playerelement.lvl = playerelement.lvl + 1
+                playerelement.maxhp = playerelement.maxhp + 50
+                playerelement.hp = playerelement.maxhp
+                playerelement.maxmp = playerelement.maxmp + 50
+                playerelement.mp = playerelement.maxmp
+            }
+            return
         }
     }
 }
 
-function respPlayer(data){
+function respPlayer(data) {
     let playerelement = null
-    if (player.id == data.id){
-        playerelement = player;      
+    if (player.id == data.id) {
+        playerelement = player;
     }
-    else{
-        for (let i in players){
-            if (players[i].id == data.id){
+    else {
+        for (let i in players) {
+            if (players[i].id == data.id) {
                 playerelement = players[i];
                 break
-            } 
+            }
         }
     }
-    if (playerelement != null){
+    if (playerelement != null) {
         playerelement.sprite.setPosition(data.x, data.y);
         playerelement.x = data.x;
         playerelement.y = data.y;
-        playerelement.hp = 100
+        playerelement.hp = player.maxhp
     }
-}   
+}
 
-function targetAttack(data){
-    if (data.targettype == targetType.Mob){
+function targetAttack(data) {
+    if (data.targettype == targetType.Mob) {
         let mob;
         for (let i in mobs) {
             mob = mobs[i]
-            if (mob.id == data.target){
+            if (mob.id == data.target) {
                 mob.hp = mob.hp - data.damage;
                 break
             }
-        }    
+        }
     }
-    else{
+    else {
         console.log('Еще не готово');
     }
 
 }
 
-function mobAttack(data){
+function mobAttack(data) {
     let mob;
-    for (let i in mobs){
+    for (let i in mobs) {
         mob = mobs[i];
-        if (mob.id == data.id){
+        if (mob.id == data.id) {
             mob.target.hp = mob.target.hp - data.damage;
         }
     }
