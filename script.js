@@ -71,53 +71,142 @@ class Player {
 
         if (this.thisplayer) {
 
-            left = (drgX < dragpx - 25) || cursors.left.isDown;
-            right = (drgX > dragpx + 25) || cursors.right.isDown;
-            up = (drgY < dragpy - 25) || cursors.up.isDown;
-            down = (drgY > dragpy + 25) || cursors.down.isDown;
+            left = (drgX < dragpx - 1) || cursors.left.isDown;
+            right = (drgX > dragpx + 1) || cursors.right.isDown;
+            up = (drgY < dragpy - 1) || cursors.up.isDown;
+            down = (drgY > dragpy + 1) || cursors.down.isDown;
+
+            let joystick = false;
+            if (drgX != dragpx && drgY != dragpy) {
+
+                let chacepointx = player.sprite.x;
+                let chacepointy = player.sprite.y;
+
+                if (left && up) {
+
+                    chacepointx = chacepointx - (dragpx - drgX);
+                    chacepointy = chacepointy - (dragpy - drgY);
+                }
+                else if (right && up) {
+                    chacepointx = chacepointx + (drgX - dragpx);
+                    chacepointy = chacepointy - (dragpy - drgY);    
+                }
+                else if (left && down) {
+                    chacepointx = chacepointx - (dragpx - drgX);
+                    chacepointy = chacepointy + (drgY - dragpy);
+                }
+                else if (right && down) {
+                    chacepointx = chacepointx + (drgX - dragpx);
+                    chacepointy = chacepointy + (drgY - dragpy);
+                }
+                else if (left) {
+                    chacepointx = chacepointx - (dragpx - drgX);
+                }
+                else if (right) {
+                    chacepointx = chacepointx + (drgX - dragpx);
+                }
+                else if (up) {
+                    chacepointy = chacepointy - (dragpy - drgY);
+                }
+                else if (down) {
+                    chacepointy = chacepointy + (drgY - dragpy);
+                }
+
+                if (chacepointx != player.sprite.x || chacepointy != player.sprite.y){
+                    let velocityx = 0
+                    let velocityy = 0
+
+                    let newx = chacepointx - this.sprite.x
+                    let newy = chacepointy - this.sprite.y
+
+                    if (newx < 0) {
+                        newx = newx * -1;
+                    }
+                    if (newy < 0) {
+                        newy = newy * -1;
+                    }
+
+                    let sp = Math.sqrt(this.speed ** 2 / (newx ** 2 + newy ** 2));
+
+                    velocityx = sp * newx;
+                    velocityy = sp * newy;
+
+                    if (chacepointx < this.sprite.x) {
+                        velocityx = velocityx * -1;
+                    }
+
+                    if (chacepointy < this.sprite.y) {
+                        velocityy = velocityy * -1;
+                    }
+
+                    this.sprite.setVelocityX(velocityx);
+                    this.sprite.setVelocityY(velocityy);
+
+
+                }
+
+                joystick = true;
+
+            }
 
             if (left && up) {
-                let speed = Math.sqrt((this.speed ** 2) / 2)
-                this.sprite.setVelocityX(-1 * speed);
-                this.sprite.setVelocityY(-1 * speed);
+                if (!joystick) {
+                    let speed = Math.sqrt((this.speed ** 2) / 2)
+                    this.sprite.setVelocityX(-1 * speed);
+                    this.sprite.setVelocityY(-1 * speed);
+                }
                 this.sprite.anims.play('upleft');
             }
             else if (right && up) {
-                let speed = Math.sqrt((this.speed ** 2) / 2)
-                this.sprite.setVelocityX(speed);
-                this.sprite.setVelocityY(-1 * speed);
+                if (!joystick) {
+                    let speed = Math.sqrt((this.speed ** 2) / 2)
+                    this.sprite.setVelocityX(speed);
+                    this.sprite.setVelocityY(-1 * speed);
+                }
                 this.sprite.anims.play('upright');
             }
             else if (left && down) {
-                let speed = Math.sqrt((this.speed ** 2) / 2)
-                this.sprite.setVelocityX(-1 * speed);
-                this.sprite.setVelocityY(speed);
+                if (!joystick) {
+                    let speed = Math.sqrt((this.speed ** 2) / 2)
+                    this.sprite.setVelocityX(-1 * speed);
+                    this.sprite.setVelocityY(speed);
+                }
                 this.sprite.anims.play('downleft');
             }
             else if (right && down) {
-                let speed = Math.sqrt((this.speed ** 2) / 2)
-                this.sprite.setVelocityX(speed);
-                this.sprite.setVelocityY(speed);
+                if (!joystick) {
+                    let speed = Math.sqrt((this.speed ** 2) / 2)
+                    this.sprite.setVelocityX(speed);
+                    this.sprite.setVelocityY(speed);
+                }
                 this.sprite.anims.play('downright');
             }
             else if (left) {
-                this.sprite.setVelocityX(-1 * this.speed);
-                this.sprite.setVelocityY(0);
+                if (!joystick) {
+                    this.sprite.setVelocityX(-1 * this.speed);
+                    this.sprite.setVelocityY(0);
+                }
                 this.sprite.anims.play('left');
             }
             else if (right) {
-                this.sprite.setVelocityX(this.speed);
-                this.sprite.setVelocityY(0);
+                if (!joystick) {
+                    this.sprite.setVelocityX(this.speed);
+                    this.sprite.setVelocityY(0);
+                }
                 this.sprite.anims.play('right');
             }
             else if (up) {
-                this.sprite.setVelocityX(0);
-                this.sprite.setVelocityY(-1 * this.speed);
+                if (!joystick) {
+                    this.sprite.setVelocityX(0);
+                    this.sprite.setVelocityY(-1 * this.speed);
+                }
                 this.sprite.anims.play('up');
             }
             else if (down) {
-                this.sprite.setVelocityX(0);
-                this.sprite.setVelocityY(this.speed);
+                if (!joystick) {
+                    this.sprite.setVelocityX(0);
+                    this.sprite.setVelocityY(this.speed);
+                }
                 this.sprite.anims.play('down');
             }
             else {
@@ -817,7 +906,7 @@ function addPlayer(data) {
 
     newplayer.sprite.anims.play('turn');
 
-    players.push(newplayer)
+    players.push(newplayer);
 
 }
 
@@ -827,8 +916,8 @@ function disconnectPlayer(data) {
     for (let i in players) {
         pl = players[i];
         if (pl.id == data.id) {
-            pl.sprite.destroy()
-            players.delete[i]
+            pl.sprite.destroy();
+            players.splice(i, 1);
             break
         }
     }
