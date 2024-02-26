@@ -38,6 +38,9 @@ var ws;
 
 var map;
 
+var scene_main;
+var scene_UI;
+
 class Player {
 
     constructor(sprite) {
@@ -463,7 +466,7 @@ class Mob {
 
 }
 
-class Controls extends Phaser.Scene {
+class UI extends Phaser.Scene {
 
     preload() {
         this.load.image('btn', 'assets/star.png');
@@ -473,6 +476,8 @@ class Controls extends Phaser.Scene {
     }
 
     create() {
+
+        scene_UI = this;
 
         this.input.addPointer(2);
 
@@ -607,6 +612,8 @@ class MainScene extends Phaser.Scene {
     }
 
     create() {
+
+        scene_main = this;
 
         map = this.make.tilemap({ key: 'map' })
         const tiles = map.addTilesetImage('SummerTiles', 'SummerTiles')
@@ -883,8 +890,7 @@ function playerDamageReceived(data) {
 }
 
 function createplayer() {
-    let scene = game.scene.scenes[0]
-    player = new Player(scene.physics.add.sprite(700, 700, 'dude').setScale(3));
+    player = new Player(scene_main.physics.add.sprite(700, 700, 'dude').setScale(3));
     player.id = client_id;
     player.x = 700;
     player.y = 700;
@@ -903,16 +909,16 @@ function createplayer() {
     }
     ws.send(JSON.stringify(inf))
 
-    scene.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
-    scene.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
-    scene.cameras.main.startFollow(player.sprite);
-    // scene.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-    scene.scene.add('Controls', Controls, true, { x: 400, y: 300 });
+    scene_main.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
+    scene_main.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
+    scene_main.cameras.main.startFollow(player.sprite);
+    // scene_main.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+    scene_main.scene.add('UI', UI, true, { x: 400, y: 300 });
 }
 
 function addPlayer(data) {
 
-    let newplayer = new Player(game.scene.scenes[0].physics.add.sprite(data.x, data.y, 'dude').setScale(3));
+    let newplayer = new Player(scene_main.physics.add.sprite(data.x, data.y, 'dude').setScale(3));
     newplayer.sprite.setInteractive();
     newplayer.id = data.id;
     newplayer.thisplayer = false;
