@@ -71,13 +71,13 @@ class Player {
 
         if (this.thisplayer) {
 
-            left = (drgX < dragpx - 1) || cursors.left.isDown;
-            right = (drgX > dragpx + 1) || cursors.right.isDown;
-            up = (drgY < dragpy - 1) || cursors.up.isDown;
-            down = (drgY > dragpy + 1) || cursors.down.isDown;
-
             let joystick = false;
             if (drgX != dragpx && drgY != dragpy) {
+
+                left = (drgX < dragpx - 1);
+                right = (drgX > dragpx + 1);
+                up = (drgY < dragpy - 1);
+                down = (drgY > dragpy + 1);
 
                 let chacepointx = player.sprite.x;
                 let chacepointy = player.sprite.y;
@@ -89,7 +89,7 @@ class Player {
                 }
                 else if (right && up) {
                     chacepointx = chacepointx + (drgX - dragpx);
-                    chacepointy = chacepointy - (dragpy - drgY);    
+                    chacepointy = chacepointy - (dragpy - drgY);
                 }
                 else if (left && down) {
                     chacepointx = chacepointx - (dragpx - drgX);
@@ -112,7 +112,7 @@ class Player {
                     chacepointy = chacepointy + (drgY - dragpy);
                 }
 
-                if (chacepointx != player.sprite.x || chacepointy != player.sprite.y){
+                if (chacepointx != player.sprite.x || chacepointy != player.sprite.y) {
                     let velocityx = 0
                     let velocityy = 0
 
@@ -147,6 +147,13 @@ class Player {
 
                 joystick = true;
 
+            }
+
+            if (!joystick) {
+                left = cursors.left.isDown;
+                right = cursors.right.isDown;
+                up = cursors.up.isDown;
+                down = cursors.down.isDown;
             }
 
             if (left && up) {
@@ -467,6 +474,8 @@ class Controls extends Phaser.Scene {
 
     create() {
 
+        this.input.addPointer(2);
+
         let xpback = this.add.graphics();
         xpback.fillStyle(0x000000, 0.5);
         let xpbackwidth = windowInnerWidth - 100;
@@ -524,11 +533,13 @@ class Controls extends Phaser.Scene {
         });
 
         let drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
+        drgX = dragpx;
+        drgY = dragpy;
         drag.setScale(3)
         drag.on('drag', function (pointer, dragX, dragY) {
 
-
-            drag.setPosition(dragX, dragY)
+            this.x = dragX;
+            this.y = dragY;
 
             drgX = dragX;
             drgY = dragY;
@@ -537,7 +548,8 @@ class Controls extends Phaser.Scene {
 
         drag.on('pointerup', function (pointer) {
 
-            drag.setPosition(dragpx, dragpy)
+            this.x = dragpx;
+            this.y = dragpy;
             drgX = dragpx;
             drgY = dragpy;
 
@@ -546,7 +558,8 @@ class Controls extends Phaser.Scene {
 
         drag.on('pointerout', function (pointer) {
 
-            drag.setPosition(dragpx, dragpy)
+            this.x = dragpx;
+            this.y = dragpy;
             drgX = dragpx;
             drgY = dragpy;
 
@@ -677,6 +690,8 @@ class MainScene extends Phaser.Scene {
                     let mobelement = mobs[i];
                     if (mobelement.sprite == gameObject[0]) {
                         player.target = mobelement;
+                        console.log(mobelement.status)
+                        console.log(mobelement.target)
                         return
                     }
                 }
