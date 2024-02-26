@@ -16,8 +16,6 @@ var bx;
 var by;
 var chase = false
 var cursors;
-var hpText;
-var mpText;
 
 var nameTexttarget;
 var hpTexttarget;
@@ -466,6 +464,45 @@ class Mob {
 
 }
 
+class PlayerFrame extends Phaser.Scene {
+
+    preload() {
+    }
+
+    create() {
+
+        this.hpmpbar = this.add.graphics();
+
+        let xpback = this.add.graphics();
+        xpback.fillStyle(0x000000, 0.2);
+        xpback.fillRect(10, 10, 200, 50);
+        this.add.text(10, 10, player.name, { fontSize: '20px', fill: '#000' });
+        this.hpmpbar.fillStyle(0xff0000, 1);
+        this.hpmpbar.fillRect(12, 30, 198, 15);
+        this.hpText = this.add.text(12, 28, player.hp, { fontSize: '20px', fill: '#000' });
+        this.hpmpbar.fillStyle(0x0000ff, 1);
+        this.hpmpbar.fillRect(12, 45, 198, 15);
+        this.mpText = this.add.text(12, 45, player.mp, { fontSize: '20px', fill: '#000' });
+
+    }
+
+    update(p1, p2) {
+
+        this.hpText.setText(player.hp);
+        this.mpText.setText(player.mp);
+
+        this.hpmpbar.clear();
+
+        this.hpmpbar.fillStyle(0xff0000, 1);
+        this.hpmpbar.fillRect(12, 30, 198*(player.hp/player.maxhp), 15);
+        this.hpmpbar.fillStyle(0x0000ff, 1);
+        this.hpmpbar.fillRect(12, 45, 198*(player.mp/player.maxmp), 15);
+
+    }
+
+
+}
+
 class UI extends Phaser.Scene {
 
     preload() {
@@ -489,9 +526,9 @@ class UI extends Phaser.Scene {
         xpbar = this.add.graphics();
 
 
-        this.add.text(0, 0, player.name, { fontSize: '32px', fill: '#000' });
-        hpText = this.add.text(0, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
-        mpText = this.add.text(0, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
+        // this.add.text(0, 0, player.name, { fontSize: '32px', fill: '#000' });
+        // hpText = this.add.text(0, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
+        // mpText = this.add.text(0, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
 
         nameTexttarget = this.add.text(windowInnerWidth / 2, 0, '...', { fontSize: '32px', fill: '#000' });
         hpTexttarget = this.add.text(windowInnerWidth / 2, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
@@ -527,6 +564,7 @@ class UI extends Phaser.Scene {
         let GoldenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 100, 'GoldenSword').setInteractive();
         GoldenSword.on('pointerdown', function (pointer, gameObject) {
             if (player.target != null) {
+                player.mp = player.mp - 10;
                 let inf = {
                     cmd: 'Attack',
                     name: 'GoldenSword',
@@ -574,8 +612,8 @@ class UI extends Phaser.Scene {
 
     update(p1, p2) {
 
-        hpText.setText('HP: ' + player.hp);
-        mpText.setText('MP: ' + player.mp);
+        // hpText.setText('HP: ' + player.hp);
+        // mpText.setText('MP: ' + player.mp);
 
         xpbar.clear()
         xpbar.fillStyle(0x0000ff, 1);
@@ -914,6 +952,7 @@ function createplayer() {
     scene_main.cameras.main.startFollow(player.sprite);
     // scene_main.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     scene_main.scene.add('UI', UI, true, { x: 400, y: 300 });
+    scene_main.scene.add('PlayerFrame', PlayerFrame, true,{x: 400, y: 300})
 }
 
 function addPlayer(data) {
