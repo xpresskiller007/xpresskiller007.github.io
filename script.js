@@ -17,7 +17,6 @@ var by;
 var chase = false
 var cursors;
 
-var nameTexttarget;
 var hpTexttarget;
 var mpTexttarget;
 
@@ -37,7 +36,35 @@ var ws;
 var map;
 
 var scene_main;
-var scene_UI;
+
+class Spell {
+
+    constructor(data) {
+        this.id = data.id
+        this.name = data.name
+        this.damage = data.damage
+        this.distance = data.distance
+        this.mp = data.mp
+        this.colldownn = data.colldownn
+        this.lastuse = 0
+    }
+
+    checkattack(){
+        if (player.target == null){
+            return false;
+        }
+        if (Date.now() / 1000 < this.colldownn){
+            return false;    
+        }
+        if(Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > this.distance){
+            return false;
+        }
+        if (this.mp > player.mp){
+            return false;
+        }
+        return true;
+    }
+}
 
 class Player {
 
@@ -57,6 +84,9 @@ class Player {
         this.y = this.sprite.y;
         this.lvl = 1;
         this.xp = 0;
+        this.spell1 = null;
+        this.spell2 = null;
+        this.spell3 = null;
     }
 
     update() {
@@ -297,7 +327,7 @@ class Mob {
         this.hp = data.hp;
         this.maxhp = data.maxhp;
         this.mp = data.mp;
-        this.maxhp = data.maxmp;
+        this.maxmp = data.maxmp;
         this.speed = 120;
         this.target = null;
         this.x = this.sprite.x;
@@ -464,44 +494,64 @@ class Mob {
 
 }
 
-class PlayerFrame extends Phaser.Scene {
+class TargetFrame extends Phaser.Scene {
 
     preload() {
     }
 
     create() {
 
+        this.frback = this.add.graphics();
+        this.frback.fillStyle(0x000000, 0.2);
+        this.frback.fillRect(250, 10, 200, 50);
+        this.nameTexttarget = this.add.text(250, 10, '...', { fontSize: '20px', fill: '#000' });
         this.hpmpbar = this.add.graphics();
-
-        let xpback = this.add.graphics();
-        xpback.fillStyle(0x000000, 0.2);
-        xpback.fillRect(10, 10, 200, 50);
-        this.add.text(10, 10, player.name, { fontSize: '20px', fill: '#000' });
         this.hpmpbar.fillStyle(0xff0000, 1);
-        this.hpmpbar.fillRect(12, 30, 198, 15);
-        this.hpText = this.add.text(12, 28, player.hp, { fontSize: '20px', fill: '#000' });
+        this.hpmpbar.fillRect(252, 30, 198, 15);
+        this.hpTexttarget = this.add.text(252, 28, 0, { fontSize: '20px', fill: '#000' });
         this.hpmpbar.fillStyle(0x0000ff, 1);
-        this.hpmpbar.fillRect(12, 45, 198, 15);
-        this.mpText = this.add.text(12, 45, player.mp, { fontSize: '20px', fill: '#000' });
+        this.hpmpbar.fillRect(252, 45, 198, 15);
+        this.mpTexttarget = this.add.text(252, 45, 0, { fontSize: '20px', fill: '#000' });
+
 
     }
 
     update(p1, p2) {
+        if (player.target != null) {
+            if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 700) {
+                player.target = null;
+            }
+        }
 
-        this.hpText.setText(player.hp);
-        this.mpText.setText(player.mp);
+        if (player.target != null) {
+            this.frback.visible = true;
+            this.hpmpbar.visible = true;
+            this.nameTexttarget.visible = true;
+            this.hpTexttarget.visible = true;
+            this.mpTexttarget.visible = true;
+            this.nameTexttarget.setText(player.target.name + ',lvl ' + String(player.target.lvl));
+            this.hpTexttarget.setText(player.target.hp);
+            this.mpTexttarget.setText(player.target.mp);
+            this.hpmpbar.clear();
+            this.hpmpbar.fillStyle(0xff0000, 1);
+            this.hpmpbar.fillRect(252, 30, 198 * (player.target.hp / player.target.maxhp), 15);
+            this.hpmpbar.fillStyle(0x0000ff, 1);
+            this.hpmpbar.fillRect(252, 45, 198 * (player.target.mp / player.target.maxmp), 15);
+        }
+        else {
+            this.frback.visible = false;
+            this.hpmpbar.visible = false;
+            this.nameTexttarget.visible = false;
+            this.hpTexttarget.visible = false;
+            this.mpTexttarget.visible = false;
+        }
 
-        this.hpmpbar.clear();
-
-        this.hpmpbar.fillStyle(0xff0000, 1);
-        this.hpmpbar.fillRect(12, 30, 198*(player.hp/player.maxhp), 15);
-        this.hpmpbar.fillStyle(0x0000ff, 1);
-        this.hpmpbar.fillRect(12, 45, 198*(player.mp/player.maxmp), 15);
 
     }
 
 
 }
+
 
 class UI extends Phaser.Scene {
 
@@ -514,66 +564,70 @@ class UI extends Phaser.Scene {
 
     create() {
 
-        scene_UI = this;
+        this.frback = this.add.graphics();
+        this.frback.fillStyle(0x000000, 0.2);
+        this.frback.fillRect(10, 10, 200, 50);
+        this.add.text(10, 10, player.name, { fontSize: '20px', fill: '#000' });
+        this.hpmpbar = this.add.graphics();
+        this.hpmpbar.fillStyle(0xff0000, 1);
+        this.hpmpbar.fillRect(12, 30, 198, 15);
+        this.hpText = this.add.text(12, 28, player.hp, { fontSize: '20px', fill: '#000' });
+        this.hpmpbar.fillStyle(0x0000ff, 1);
+        this.hpmpbar.fillRect(12, 45, 198, 15);
+        this.mpText = this.add.text(12, 45, player.mp, { fontSize: '20px', fill: '#000' });
 
         this.input.addPointer(2);
 
-        let xpback = this.add.graphics();
-        xpback.fillStyle(0x000000, 0.5);
+        this.frback.fillStyle(0x000000, 0.5);
         let xpbackwidth = windowInnerWidth - 100;
-        xpback.fillRect(windowInnerWidth / 2 - xpbackwidth / 2, windowInnerHeight - 30, xpbackwidth, 20);
+        this.frback.fillRect(windowInnerWidth / 2 - xpbackwidth / 2, windowInnerHeight - 30, xpbackwidth, 20);
 
-        xpbar = this.add.graphics();
+        this.xpbar = this.add.graphics();
 
-
-        // this.add.text(0, 0, player.name, { fontSize: '32px', fill: '#000' });
-        // hpText = this.add.text(0, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
-        // mpText = this.add.text(0, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
-
-        nameTexttarget = this.add.text(windowInnerWidth / 2, 0, '...', { fontSize: '32px', fill: '#000' });
-        hpTexttarget = this.add.text(windowInnerWidth / 2, 35, 'HP: ' + 0, { fontSize: '32px', fill: '#000' });
-        mpTexttarget = this.add.text(windowInnerWidth / 2, 70, 'MP: ' + 0, { fontSize: '32px', fill: '#000' });
-
-
-        let WoodenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'WoodenSword').setInteractive();
-        WoodenSword.on('pointerdown', function (pointer, gameObject) {
-            if (player.target != null) {
-                let inf = {
-                    cmd: 'Attack',
-                    name: 'WoodenSword',
-                    targettype: player.target.type,
-                    target: player.target.id
+        if (player.spell1 != null) {
+            let WoodenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'WoodenSword').setInteractive();
+            WoodenSword.on('pointerdown', function (pointer, gameObject) {
+                if (player.spell1.checkattack()) {
+                    let inf = {
+                        cmd: 'Attack',
+                        spell: 1,
+                        targettype: player.target.type,
+                        target: player.target.id
+                    }
+                    ws.send(JSON.stringify(inf))
                 }
-                ws.send(JSON.stringify(inf))
-            }
-        });
+            });
+        }
 
-        let SilverSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 150, 'SilverSword').setInteractive();
-        SilverSword.on('pointerdown', function (pointer, gameObject) {
-            if (player.target != null) {
-                let inf = {
-                    cmd: 'Attack',
-                    name: 'SilverSword',
-                    targettype: player.target.type,
-                    target: player.target.id
+        if (player.spell2 != null) {
+            let SilverSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 150, 'SilverSword').setInteractive();
+            SilverSword.on('pointerdown', function (pointer, gameObject) {
+                if (player.spell2.checkattack()) {
+                    let inf = {
+                        cmd: 'Attack',
+                        spell: 2,
+                        targettype: player.target.type,
+                        target: player.target.id
+                    }
+                    ws.send(JSON.stringify(inf))
                 }
-                ws.send(JSON.stringify(inf))
-            }
-        });
+            });
+        }
 
-        let GoldenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 100, 'GoldenSword').setInteractive();
-        GoldenSword.on('pointerdown', function (pointer, gameObject) {
-            if (player.target != null) {
-                player.mp = player.mp - 10;
-                let inf = {
-                    cmd: 'Attack',
-                    name: 'GoldenSword',
-                    targettype: player.target.type,
-                    target: player.target.id
+        if (player.spell3 != null) {
+            let GoldenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 100, 'GoldenSword').setInteractive();
+            GoldenSword.on('pointerdown', function (pointer, gameObject) {
+                if (player.spell3.checkattack()) {
+                    let inf = {
+                        cmd: 'Attack',
+                        spell: 3,
+                        targettype: player.target.type,
+                        target: player.target.id
+                    }
+                    ws.send(JSON.stringify(inf))
                 }
-                ws.send(JSON.stringify(inf))
-            }
-        });
+            });
+        }
 
         let drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
         drgX = dragpx;
@@ -612,27 +666,19 @@ class UI extends Phaser.Scene {
 
     update(p1, p2) {
 
-        // hpText.setText('HP: ' + player.hp);
-        // mpText.setText('MP: ' + player.mp);
+        this.hpText.setText(player.hp);
+        this.mpText.setText(player.mp);
 
-        xpbar.clear()
-        xpbar.fillStyle(0x0000ff, 1);
-        let xpwidth = (windowInnerWidth - 102) * (player.xp / 100);
-        xpbar.fillRect(51, windowInnerHeight - 30, xpwidth, 18);
+        this.hpmpbar.clear();
 
-        if (player.target != null) {
-            nameTexttarget.setText(player.target.name + ',lvl ' + String(player.target.lvl));
-            hpTexttarget.setText('HP: ' + player.target.hp);
-            mpTexttarget.setText('MP: ' + player.target.mp);
-            nameTexttarget.visible = true;
-            hpTexttarget.visible = true;
-            mpTexttarget.visible = true;
-        }
-        else {
-            nameTexttarget.visible = false;
-            hpTexttarget.visible = false;
-            mpTexttarget.visible = false;
-        }
+        this.hpmpbar.fillStyle(0xff0000, 1);
+        this.hpmpbar.fillRect(12, 30, 198 * (player.hp / player.maxhp), 15);
+        this.hpmpbar.fillStyle(0x0000ff, 1);
+        this.hpmpbar.fillRect(12, 45, 198 * (player.mp / player.maxmp), 15);
+
+        this.xpbar.clear()
+        this.xpbar.fillStyle(0x0000ff, 1);
+        this.xpbar.fillRect(51, windowInnerHeight - 30, (windowInnerWidth - 102) * (player.xp / 100), 18);
 
     }
 
@@ -758,41 +804,40 @@ class MainScene extends Phaser.Scene {
 
             console.log(event.data);
 
-            if (event.data == 'CreatePlayer') {
-                createplayer();
+            let data = JSON.parse(event.data);
+
+            if (data.cmd == 'CreatePlayer') {
+                createplayer(data);
             }
-            else {
-                let data = JSON.parse(event.data);
-                if (data.cmd == 'NewPlayer') {
-                    addPlayer(data);
-                }
-                else if (data.cmd == 'PlayerMoving') {
-                    setСoordinates(data);
-                }
-                else if (data.cmd == 'Disconnect') {
-                    disconnectPlayer(data);
-                }
-                else if (data.cmd == 'CreateMob') {
-                    createMob(data);
-                }
-                else if (data.cmd == 'setMobParameters') {
-                    setMobParameters(data);
-                }
-                else if (data.cmd == 'PlayerDamageReceived') {
-                    playerDamageReceived(data)
-                }
-                else if (data.cmd == 'MobAttack') {
-                    mobAttack(data)
-                }
-                else if (data.cmd == 'TargetAttack') {
-                    targetAttack(data)
-                }
-                else if (data.cmd == 'respPlayer') {
-                    respPlayer(data)
-                }
-                else if (data.cmd == 'mobDead') {
-                    mobDead(data)
-                }
+            else if (data.cmd == 'NewPlayer') {
+                addPlayer(data);
+            }
+            else if (data.cmd == 'PlayerMoving') {
+                setСoordinates(data);
+            }
+            else if (data.cmd == 'Disconnect') {
+                disconnectPlayer(data);
+            }
+            else if (data.cmd == 'CreateMob') {
+                createMob(data);
+            }
+            else if (data.cmd == 'setMobParameters') {
+                setMobParameters(data);
+            }
+            else if (data.cmd == 'PlayerDamageReceived') {
+                playerDamageReceived(data)
+            }
+            else if (data.cmd == 'MobAttack') {
+                mobAttack(data)
+            }
+            else if (data.cmd == 'TargetAttack') {
+                targetAttack(data)
+            }
+            else if (data.cmd == 'respPlayer') {
+                respPlayer(data)
+            }
+            else if (data.cmd == 'mobDead') {
+                mobDead(data)
             }
 
         };
@@ -889,13 +934,31 @@ function respPlayer(data) {
 }
 
 function targetAttack(data) {
+    playerelement = null;
+    if (player.id == data.player){
+        playerelement = player;    
+    }
+    else{
+        let pl;
+        for (let i in players){
+            pl = players[i].id;
+            if (pl == data.player){
+                playerelement = pl;
+                break   
+            }
+        }
+    }
+    if (playerelement == null){
+        return
+    }
+    playerelement.mp = playerelement.mp - data.mp;
     if (data.targettype == targetType.Mob) {
         let mob;
         for (let i in mobs) {
             mob = mobs[i]
             if (mob.id == data.target) {
                 mob.hp = mob.hp - data.damage;
-                break
+                return
             }
         }
     }
@@ -927,11 +990,24 @@ function playerDamageReceived(data) {
     }
 }
 
-function createplayer() {
+function createplayer(data) {
     player = new Player(scene_main.physics.add.sprite(700, 700, 'dude').setScale(3));
     player.id = client_id;
     player.x = 700;
     player.y = 700;
+
+    for (let i in data.spells) {
+        let spelldata = data.spells[i];
+        if (spelldata.spell == 'spell1') {
+            player.spell1 = new Spell(spelldata);
+        }
+        else if (spelldata.spell == 'spell2') {
+            player.spell2 = new Spell(spelldata);
+        }
+        else if (spelldata.spell == 'spell3') {
+            player.spell3 = new Spell(spelldata);
+        }
+    }
 
     // player.sprite.setCollideWorldBounds(true)
 
@@ -952,7 +1028,7 @@ function createplayer() {
     scene_main.cameras.main.startFollow(player.sprite);
     // scene_main.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     scene_main.scene.add('UI', UI, true, { x: 400, y: 300 });
-    scene_main.scene.add('PlayerFrame', PlayerFrame, true,{x: 400, y: 300})
+    scene_main.scene.add('TargetFrame', TargetFrame, true, { x: 400, y: 300 })
 }
 
 function addPlayer(data) {
