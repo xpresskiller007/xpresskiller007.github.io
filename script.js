@@ -11,6 +11,7 @@ var player;
 var players = [];
 var bombs;
 var mobs = [];
+var drops = [];
 
 var bx;
 var by;
@@ -87,6 +88,7 @@ class Player {
         this.spell1 = null;
         this.spell2 = null;
         this.spell3 = null;
+        this.loot = [];
     }
 
     update() {
@@ -335,6 +337,10 @@ class Mob {
         this.respx = data.respx;
         this.respy = data.respy;
         this.status = mobStatus[data.status]
+
+        // this.sprite.on('pointerdown', function (pointer, gameObject) {
+        //     console.log('Выбран: ' + this.name);
+        // });
     }
 
     update() {
@@ -494,6 +500,15 @@ class Mob {
 
 }
 
+class Drop {
+
+    constructor(data) {
+        this.sprite = bombs.create(data.x, data.y, 'bomb').setScale(2).setInteractive();
+        this.type = targetType.Mob
+    }
+
+}
+
 class TargetFrame extends Phaser.Scene {
 
     preload() {
@@ -551,7 +566,6 @@ class TargetFrame extends Phaser.Scene {
 
 
 }
-
 
 class UI extends Phaser.Scene {
 
@@ -896,6 +910,12 @@ function mobDead(data) {
                         playerelement = players[i]
                         break
                     }
+                }
+            }
+            if (data.loot != null){
+                for(let i in data.loot){
+                    let itemdata = data.loot[i];
+
                 }
             }
             playerelement.xp = playerelement.xp + data.xp
