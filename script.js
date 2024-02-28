@@ -46,14 +46,14 @@ class Spell {
         this.distance = data.distance
         this.mp = data.mp
         this.colldownn = data.colldownn
-        this.lastuse = 0
+        this.timeattack = Date.now()/1000
     }
 
     checkattack(){
         if (player.target == null){
             return false;
         }
-        if (Date.now() / 1000 < this.colldownn){
+        if ((Date.now()/1000-this.timeattack) < this.colldownn){
             return false;    
         }
         if(Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > this.distance){
@@ -590,7 +590,7 @@ class UI extends Phaser.Scene {
                 if (player.spell1.checkattack()) {
                     let inf = {
                         cmd: 'Attack',
-                        spell: 1,
+                        cell: 1,
                         targettype: player.target.type,
                         target: player.target.id
                     }
@@ -605,7 +605,7 @@ class UI extends Phaser.Scene {
                 if (player.spell2.checkattack()) {
                     let inf = {
                         cmd: 'Attack',
-                        spell: 2,
+                        cell: 2,
                         targettype: player.target.type,
                         target: player.target.id
                     }
@@ -620,7 +620,7 @@ class UI extends Phaser.Scene {
                 if (player.spell3.checkattack()) {
                     let inf = {
                         cmd: 'Attack',
-                        spell: 3,
+                        cell: 3,
                         targettype: player.target.type,
                         target: player.target.id
                     }
@@ -952,6 +952,15 @@ function targetAttack(data) {
         return
     }
     playerelement.mp = playerelement.mp - data.mp;
+    if (data.cell == 1){
+        playerelement.spell1.timeattack = data.timeattack; 
+    }
+    if (data.cell == 2){
+        playerelement.spell2.timeattack = data.timeattack; 
+    }
+    if (data.cell == 3){
+        playerelement.spell3.timeattack = data.timeattack;
+    }
     if (data.targettype == targetType.Mob) {
         let mob;
         for (let i in mobs) {
@@ -998,18 +1007,16 @@ function createplayer(data) {
 
     for (let i in data.spells) {
         let spelldata = data.spells[i];
-        if (spelldata.spell == 'spell1') {
+        if (spelldata.cell == 1) {
             player.spell1 = new Spell(spelldata);
         }
-        else if (spelldata.spell == 'spell2') {
+        else if (spelldata.cell == 2) {
             player.spell2 = new Spell(spelldata);
         }
-        else if (spelldata.spell == 'spell3') {
+        else if (spelldata.cell == 3) {
             player.spell3 = new Spell(spelldata);
         }
     }
-
-    // player.sprite.setCollideWorldBounds(true)
 
     player.sprite.anims.play('turn');
 
