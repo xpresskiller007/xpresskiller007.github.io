@@ -11,6 +11,10 @@ var player;
 var players = [];
 var bombs;
 var mobs = [];
+var bag = [null, null, null, null, null, null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null, null, null, null, null];
 var drops = [];
 
 var bx;
@@ -47,20 +51,20 @@ class Spell {
         this.distance = data.distance
         this.mp = data.mp
         this.colldownn = data.colldownn
-        this.timeattack = Date.now()/1000
+        this.timeattack = Date.now() / 1000
     }
 
-    checkattack(){
-        if (player.target == null){
+    checkattack() {
+        if (player.target == null) {
             return false;
         }
-        if ((Date.now()/1000-this.timeattack) < this.colldownn){
-            return false;    
-        }
-        if(Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > this.distance){
+        if ((Date.now() / 1000 - this.timeattack) < this.colldownn) {
             return false;
         }
-        if (this.mp > player.mp){
+        if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > this.distance) {
+            return false;
+        }
+        if (this.mp > player.mp) {
             return false;
         }
         return true;
@@ -699,6 +703,141 @@ class UI extends Phaser.Scene {
 
 }
 
+class BagFrame extends Phaser.Scene {
+
+    preload() {
+    }
+
+    create() {
+
+        this.graphics = this.add.graphics();
+
+        let xsize = windowInnerWidth / 2 + 50;
+        let ysize = windowInnerHeight / 2 - 200;
+
+        let lengthstring = Math.floor(Math.sqrt(bag.length));
+
+        if (lengthstring % 2 == 0) {
+            lengthstring = lengthstring + 1;
+        }
+        else {
+            lengthstring = lengthstring - 1;
+        }
+
+        this.graphics.fillStyle(0x0000ff, 0.5);
+        this.graphics.fillRect(xsize, ysize, lengthstring * 50, lengthstring * 50 + 25);
+
+        let cellxsize = xsize;
+        let cellysize = ysize + 20;
+
+        this.graphics.fillStyle(0x0000ff);
+        this.graphics.fillRect(xsize, ysize, lengthstring * 50, lengthstring + 15);
+
+        this.graphics.fillStyle(0x000000);
+        this.graphics.fillRect(xsize + lengthstring * 50 - 20, ysize, 20, lengthstring + 15);
+
+        this.graphics.fillStyle(0xff0000);
+        this.graphics.fillRect(xsize + lengthstring * 50 - 18, ysize + 2, 16, lengthstring + 11);
+
+        this.graphics.lineStyle(3, 0x000000);
+        this.graphics.beginPath();
+        this.graphics.moveTo(xsize + lengthstring * 50 - 18, ysize + 2);
+        this.graphics.lineTo(xsize + lengthstring * 50 - 18 + 16, ysize + 2 + lengthstring + 11);
+        this.graphics.closePath();
+        this.graphics.strokePath();
+
+        this.graphics.lineStyle(3, 0x000000);
+        this.graphics.beginPath();
+        this.graphics.moveTo(xsize + lengthstring * 50 - 18 + 16, ysize + 2);
+        this.graphics.lineTo(xsize + lengthstring * 50 - 18, ysize + 2 + 18);
+        this.graphics.closePath();
+        this.graphics.strokePath();
+
+        cellysize = ysize + 25;
+
+        let counterstring = 0;
+
+        for (let i in bag) {
+            if (i == 0) {
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+                this.graphics.fillStyle(0x000000, 0.5);
+                this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+                this.graphics.fillStyle(0x000000, 1);
+                this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+            }
+            else if (i % lengthstring == 0) {
+                counterstring = counterstring + 1;
+                cellxsize = xsize;
+                cellysize = ysize + 25 + 50 * counterstring;
+
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+                this.graphics.fillStyle(0x000000, 0.5);
+                this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+                this.graphics.fillStyle(0x000000, 1);
+                this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+            }
+            else {
+                cellxsize = cellxsize + 45;
+                cellysize = cellysize - 5;
+                this.graphics.fillStyle(0x000000, 0.5);
+                this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+                this.graphics.fillStyle(0x000000, 1);
+                this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+            }
+
+
+        }
+
+
+    }
+
+    // update(p1, p2) {
+    //     if (player.target != null) {
+    //         if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 700) {
+    //             player.target = null;
+    //         }
+    //     }
+
+    //     if (player.target != null) {
+    //         this.frback.visible = true;
+    //         this.hpmpbar.visible = true;
+    //         this.nameTexttarget.visible = true;
+    //         this.hpTexttarget.visible = true;
+    //         this.mpTexttarget.visible = true;
+    //         this.nameTexttarget.setText(player.target.name + ',lvl ' + String(player.target.lvl));
+    //         this.hpTexttarget.setText(player.target.hp);
+    //         this.mpTexttarget.setText(player.target.mp);
+    //         this.hpmpbar.clear();
+    //         this.hpmpbar.fillStyle(0xff0000, 1);
+    //         this.hpmpbar.fillRect(252, 30, 198 * (player.target.hp / player.target.maxhp), 15);
+    //         this.hpmpbar.fillStyle(0x0000ff, 1);
+    //         this.hpmpbar.fillRect(252, 45, 198 * (player.target.mp / player.target.maxmp), 15);
+    //     }
+    //     else {
+    //         this.frback.visible = false;
+    //         this.hpmpbar.visible = false;
+    //         this.nameTexttarget.visible = false;
+    //         this.hpTexttarget.visible = false;
+    //         this.mpTexttarget.visible = false;
+    //     }
+
+
+    // }
+
+
+}
+
 class MainScene extends Phaser.Scene {
 
     preload() {
@@ -813,7 +952,7 @@ class MainScene extends Phaser.Scene {
 
         });
 
-        ws = new WebSocket(`ws://192.168.0.13:8000/ws/${client_id}`);
+        ws = new WebSocket(`ws://192.168.0.12:8000/ws/${client_id}`);
         ws.onmessage = function (event) {
 
             console.log(event.data);
@@ -912,8 +1051,8 @@ function mobDead(data) {
                     }
                 }
             }
-            if (data.loot != null){
-                for(let i in data.loot){
+            if (data.loot != null) {
+                for (let i in data.loot) {
                     let itemdata = data.loot[i];
 
                 }
@@ -955,30 +1094,30 @@ function respPlayer(data) {
 
 function targetAttack(data) {
     playerelement = null;
-    if (player.id == data.player){
-        playerelement = player;    
+    if (player.id == data.player) {
+        playerelement = player;
     }
-    else{
+    else {
         let pl;
-        for (let i in players){
+        for (let i in players) {
             pl = players[i].id;
-            if (pl == data.player){
+            if (pl == data.player) {
                 playerelement = pl;
-                break   
+                break
             }
         }
     }
-    if (playerelement == null){
+    if (playerelement == null) {
         return
     }
     playerelement.mp = playerelement.mp - data.mp;
-    if (data.cell == 1){
-        playerelement.spell1.timeattack = data.timeattack; 
+    if (data.cell == 1) {
+        playerelement.spell1.timeattack = data.timeattack;
     }
-    if (data.cell == 2){
-        playerelement.spell2.timeattack = data.timeattack; 
+    if (data.cell == 2) {
+        playerelement.spell2.timeattack = data.timeattack;
     }
-    if (data.cell == 3){
+    if (data.cell == 3) {
         playerelement.spell3.timeattack = data.timeattack;
     }
     if (data.targettype == targetType.Mob) {
@@ -1056,6 +1195,7 @@ function createplayer(data) {
     // scene_main.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
     scene_main.scene.add('UI', UI, true, { x: 400, y: 300 });
     scene_main.scene.add('TargetFrame', TargetFrame, true, { x: 400, y: 300 })
+    scene_main.scene.add('BagFrame', BagFrame, true, { x: 400, y: 300 })
 }
 
 function addPlayer(data) {
