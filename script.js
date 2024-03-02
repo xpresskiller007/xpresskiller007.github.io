@@ -90,10 +90,9 @@ class Player {
         this.spell1 = null;
         this.spell2 = null;
         this.spell3 = null;
-        this.bag = [null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, null, null, null,
-            null, null, null, null, null, null, null, null, null, null, null, null];
+        this.bag = [null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null];
     }
 
     update() {
@@ -505,14 +504,16 @@ class Mob {
 
 }
 
-class Drop {
-
-    constructor(data) {
-        this.sprite = bombs.create(data.x, data.y, 'bomb').setScale(2).setInteractive();
-        this.type = targetType.Mob
+class Item {
+    constructor(name) {
+        this.name = name;
+        this.sprite = null;
+        this.x = 0;
+        this.y = 0;
+        this.index = 0;
     }
-
 }
+
 
 class TargetFrame extends Phaser.Scene {
 
@@ -653,9 +654,9 @@ class UI extends Phaser.Scene {
         let bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
         bag.on('pointerdown', function (pointer, gameObject) {
 
-                bagFrame.bagisopen = !bagFrame.bagisopen;
-                
-            });
+            bagFrame.bagisopen = !bagFrame.bagisopen;
+
+        });
 
 
         let drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
@@ -717,20 +718,104 @@ class UI extends Phaser.Scene {
 class BagFrame extends Phaser.Scene {
 
     preload() {
-        this.load.image('ClsdBtn','assets/closedbuttonpng.png');
+        this.load.image('ClsdBtn', 'assets/closedbuttonpng.png');
+        this.load.image('Apple', 'assets/equipment/Apple.png');
+        this.load.image('Beer', 'assets/equipment/Beer.png');
+        this.load.image('Bread', 'assets/equipment/Bread.png');
+        this.load.image('Cheese', 'assets/equipment/Cheese.png');
+        this.load.image('Ham', 'assets/equipment/Ham.png');
+        this.load.image('Mushroom', 'assets/equipment/Mushroom.png');
+        this.load.image('Wine', 'assets/equipment/Wine.png');
     }
 
     create() {
 
         bagFrame = this;
+        this.dragobg = null;
         this.bagisopen = false;
         this.bagisrendered = false;
         this.graphics = this.add.graphics();
         this.ClsdBtn = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
         this.ClsdBtn.visible = false;
-        this.ClsdBtn.on('pointerdown', function (pointer, gameObject){
+        this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
             bagFrame.bagisopen = false;
         });
+
+        this.input.on('drag', (pointer, obj, dragX, dragY) => {
+            obj.setPosition(dragX, dragY);
+            this.dragobg = obj;
+        });
+
+        this.input.on('pointerup', function (pointer, obj) {
+            let dragobg = bagFrame.dragobg;
+            let dragitem = null;
+            for (let i in player.bag) {
+                if (player.bag[i].sprite == dragobg) {
+                    dragitem = player.bag[i];
+                    break
+                }
+            }
+
+            if (dragitem.sprite != null) {
+
+                let distance = Math.sqrt((dragitem.sprite.x - dragitem.x) ** 2 + (dragitem.sprite.y - dragitem.y) ** 2);
+
+                if (distance <= 25) {
+                    dragitem.sprite.setPosition(dragitem.x, dragitem.y);
+                    return
+                }
+
+                let replaceitem = null;
+
+                for (let i in player.bag) {
+                    if (dragitem.index == i) {
+                        continue;
+                    }
+                    let replaceelement = player.bag[i];
+                    let replacedistance = Math.sqrt((dragitem.sprite.x - replaceelement.x) ** 2 + (dragitem.sprite.y - replaceelement.y) ** 2);
+                    if (replacedistance <= 25) {
+                        replaceitem = replaceelement;
+                        break;
+                    }
+                }
+
+                if (replaceitem == null) {
+                    dragitem.sprite.setPosition(dragitem.x, dragitem.y);
+                }
+                else {
+
+                    let dragitemx = replaceitem.x;
+                    let dragitemy = replaceitem.y;
+                    let dragitemindex = replaceitem.index;
+
+                    let replaceitemx = dragitem.x;
+                    let replaceitemy = dragitem.y;
+                    let replaceitemindex = dragitem.index;
+
+                    dragitem.x = dragitemx;
+                    dragitem.y = dragitemy;
+                    dragitem.index = dragitemindex
+                    player.bag[dragitemindex] = dragitem;
+
+                    if (dragitem.sprite != null) {
+                        dragitem.sprite.setPosition(dragitem.x, dragitem.y);
+                    }
+
+                    replaceitem.x = replaceitemx;
+                    replaceitem.y = replaceitemy;
+                    replaceitem.index = replaceitemindex
+                    player.bag[replaceitemindex] = replaceitem;
+
+                    if (replaceitem.sprite != null) {
+                        replaceitem.sprite.setPosition(replaceitem.x, replaceitem.y);
+                    }
+
+                }
+
+            }
+
+        });
+
 
     }
 
@@ -765,7 +850,7 @@ class BagFrame extends Phaser.Scene {
             this.graphics.fillRect(xsize + columns * 50 - 20, ysize, 20, rows + 15);
 
             this.ClsdBtn.visible = true;
-            this.ClsdBtn.setPosition(xsize + columns * 50 -10, ysize + 11)
+            this.ClsdBtn.setPosition(xsize + columns * 50 - 10, ysize + 11)
 
 
             cellysize = ysize + 25;
@@ -773,6 +858,20 @@ class BagFrame extends Phaser.Scene {
             let counterstring = 0;
 
             for (let i in player.bag) {
+
+                let item = player.bag[i];
+                item.x = cellxsize;
+                item.y = cellysize;
+                if (item.name != null) {
+                    if (item.sprite == null) {
+                        item.sprite = this.add.sprite(cellxsize, cellysize, item.name).setInteractive();
+                        bagFrame.input.setDraggable(item.sprite);
+                    }
+                    item.sprite.visible = true;
+                }
+                if (item != null) {
+                }
+
                 if (i == 0) {
                     cellxsize = cellxsize + 5;
                     cellysize = cellysize + 5;
@@ -783,6 +882,14 @@ class BagFrame extends Phaser.Scene {
                     cellysize = cellysize + 5;
                     this.graphics.fillStyle(0x000000, 1);
                     this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+
+                    item.x = cellxsize + 16;
+                    item.y = cellysize + 16;
+
+                    if (item.sprite != null) {
+                        item.sprite.setPosition(item.x, item.y);
+                    }
+
                 }
                 else if (i % columns == 0) {
                     counterstring = counterstring + 1;
@@ -798,6 +905,13 @@ class BagFrame extends Phaser.Scene {
                     cellysize = cellysize + 5;
                     this.graphics.fillStyle(0x000000, 1);
                     this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+
+                    item.x = cellxsize + 16;
+                    item.y = cellysize + 16;
+
+                    if (item.sprite != null) {
+                        item.sprite.setPosition(item.x, item.y);
+                    }
                 }
                 else {
                     cellxsize = cellxsize + 45;
@@ -809,14 +923,27 @@ class BagFrame extends Phaser.Scene {
                     cellysize = cellysize + 5;
                     this.graphics.fillStyle(0x000000, 1);
                     this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+
+                    item.x = cellxsize + 16;
+                    item.y = cellysize + 16;
+
+                    if (item.sprite != null) {
+                        item.sprite.setPosition(item.x, item.y);
+                    }
                 }
 
 
             }
         }
-        else if (!this.bagisopen && this.bagisrendered){
+        else if (!this.bagisopen && this.bagisrendered) {
             this.graphics.clear();
             this.ClsdBtn.visible = false;
+            for (let i in player.bag) {
+                let item = player.bag[i];
+                if (item.sprite != null) {
+                    item.sprite.visible = false;
+                }
+            }
             this.bagisrendered = false;
         }
 
@@ -1174,6 +1301,19 @@ function createplayer(data) {
         'y': player.y
     }
     ws.send(JSON.stringify(inf))
+
+    for (let i in player.bag) {
+        player.bag[i] = new Item(null)
+        player.bag[i].index = i;
+    }
+
+    player.bag[0].name = 'Apple';
+    player.bag[2].name = 'Beer';
+    player.bag[3].name = 'Bread';
+    player.bag[6].name = 'Cheese';
+    player.bag[7].name = 'Ham';
+    player.bag[10].name = 'Mushroom';
+    player.bag[15].name = 'Wine';
 
     scene_main.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
     scene_main.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
