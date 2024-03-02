@@ -11,10 +11,6 @@ var player;
 var players = [];
 var bombs;
 var mobs = [];
-var bag = [null, null, null, null, null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null, null, null, null];
 var drops = [];
 
 var bx;
@@ -39,6 +35,8 @@ var drgY;
 var ws;
 
 var map;
+
+var bagFrame;
 
 var scene_main;
 
@@ -92,7 +90,10 @@ class Player {
         this.spell1 = null;
         this.spell2 = null;
         this.spell3 = null;
-        this.loot = [];
+        this.bag = [null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, null, null, null,
+            null, null, null, null, null, null, null, null, null, null, null, null];
     }
 
     update() {
@@ -578,6 +579,7 @@ class UI extends Phaser.Scene {
         this.load.image('SilverSword', 'assets/SilverSword.png');
         this.load.image('WoodenSword', 'assets/WoodenSword.png');
         this.load.image('GoldenSword', 'assets/GoldenSword.png');
+        this.load.image('Bag', 'assets/Bag.png')
     }
 
     create() {
@@ -647,6 +649,15 @@ class UI extends Phaser.Scene {
             });
         }
 
+
+        let bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
+        bag.on('pointerdown', function (pointer, gameObject) {
+
+                bagFrame.bagisopen = !bagFrame.bagisopen;
+                
+            });
+
+
         let drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
         drgX = dragpx;
         drgY = dragpy;
@@ -706,135 +717,110 @@ class UI extends Phaser.Scene {
 class BagFrame extends Phaser.Scene {
 
     preload() {
+        this.load.image('ClsdBtn','assets/closedbuttonpng.png');
     }
 
     create() {
 
+        bagFrame = this;
+        this.bagisopen = false;
+        this.bagisrendered = false;
         this.graphics = this.add.graphics();
-
-        let xsize = windowInnerWidth / 2 + 50;
-        let ysize = windowInnerHeight / 2 - 200;
-
-        let lengthstring = Math.floor(Math.sqrt(bag.length));
-
-        if (lengthstring % 2 == 0) {
-            lengthstring = lengthstring + 1;
-        }
-        else {
-            lengthstring = lengthstring - 1;
-        }
-
-        this.graphics.fillStyle(0x0000ff, 0.5);
-        this.graphics.fillRect(xsize, ysize, lengthstring * 50, lengthstring * 50 + 25);
-
-        let cellxsize = xsize;
-        let cellysize = ysize + 20;
-
-        this.graphics.fillStyle(0x0000ff);
-        this.graphics.fillRect(xsize, ysize, lengthstring * 50, lengthstring + 15);
-
-        this.graphics.fillStyle(0x000000);
-        this.graphics.fillRect(xsize + lengthstring * 50 - 20, ysize, 20, lengthstring + 15);
-
-        this.graphics.fillStyle(0xff0000);
-        this.graphics.fillRect(xsize + lengthstring * 50 - 18, ysize + 2, 16, lengthstring + 11);
-
-        this.graphics.lineStyle(3, 0x000000);
-        this.graphics.beginPath();
-        this.graphics.moveTo(xsize + lengthstring * 50 - 18, ysize + 2);
-        this.graphics.lineTo(xsize + lengthstring * 50 - 18 + 16, ysize + 2 + lengthstring + 11);
-        this.graphics.closePath();
-        this.graphics.strokePath();
-
-        this.graphics.lineStyle(3, 0x000000);
-        this.graphics.beginPath();
-        this.graphics.moveTo(xsize + lengthstring * 50 - 18 + 16, ysize + 2);
-        this.graphics.lineTo(xsize + lengthstring * 50 - 18, ysize + 2 + 18);
-        this.graphics.closePath();
-        this.graphics.strokePath();
-
-        cellysize = ysize + 25;
-
-        let counterstring = 0;
-
-        for (let i in bag) {
-            if (i == 0) {
-                cellxsize = cellxsize + 5;
-                cellysize = cellysize + 5;
-                this.graphics.fillStyle(0x000000, 0.5);
-                this.graphics.fillRect(cellxsize, cellysize, 40, 40);
-
-                cellxsize = cellxsize + 5;
-                cellysize = cellysize + 5;
-                this.graphics.fillStyle(0x000000, 1);
-                this.graphics.fillRect(cellxsize, cellysize, 30, 30);
-            }
-            else if (i % lengthstring == 0) {
-                counterstring = counterstring + 1;
-                cellxsize = xsize;
-                cellysize = ysize + 25 + 50 * counterstring;
-
-                cellxsize = cellxsize + 5;
-                cellysize = cellysize + 5;
-                this.graphics.fillStyle(0x000000, 0.5);
-                this.graphics.fillRect(cellxsize, cellysize, 40, 40);
-
-                cellxsize = cellxsize + 5;
-                cellysize = cellysize + 5;
-                this.graphics.fillStyle(0x000000, 1);
-                this.graphics.fillRect(cellxsize, cellysize, 30, 30);
-            }
-            else {
-                cellxsize = cellxsize + 45;
-                cellysize = cellysize - 5;
-                this.graphics.fillStyle(0x000000, 0.5);
-                this.graphics.fillRect(cellxsize, cellysize, 40, 40);
-
-                cellxsize = cellxsize + 5;
-                cellysize = cellysize + 5;
-                this.graphics.fillStyle(0x000000, 1);
-                this.graphics.fillRect(cellxsize, cellysize, 30, 30);
-            }
-
-
-        }
-
+        this.ClsdBtn = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
+        this.ClsdBtn.visible = false;
+        this.ClsdBtn.on('pointerdown', function (pointer, gameObject){
+            bagFrame.bagisopen = false;
+        });
 
     }
 
-    // update(p1, p2) {
-    //     if (player.target != null) {
-    //         if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 700) {
-    //             player.target = null;
-    //         }
-    //     }
 
-    //     if (player.target != null) {
-    //         this.frback.visible = true;
-    //         this.hpmpbar.visible = true;
-    //         this.nameTexttarget.visible = true;
-    //         this.hpTexttarget.visible = true;
-    //         this.mpTexttarget.visible = true;
-    //         this.nameTexttarget.setText(player.target.name + ',lvl ' + String(player.target.lvl));
-    //         this.hpTexttarget.setText(player.target.hp);
-    //         this.mpTexttarget.setText(player.target.mp);
-    //         this.hpmpbar.clear();
-    //         this.hpmpbar.fillStyle(0xff0000, 1);
-    //         this.hpmpbar.fillRect(252, 30, 198 * (player.target.hp / player.target.maxhp), 15);
-    //         this.hpmpbar.fillStyle(0x0000ff, 1);
-    //         this.hpmpbar.fillRect(252, 45, 198 * (player.target.mp / player.target.maxmp), 15);
-    //     }
-    //     else {
-    //         this.frback.visible = false;
-    //         this.hpmpbar.visible = false;
-    //         this.nameTexttarget.visible = false;
-    //         this.hpTexttarget.visible = false;
-    //         this.mpTexttarget.visible = false;
-    //     }
+    update() {
+
+        if (this.bagisopen && !this.bagisrendered) {
+
+            this.bagisrendered = true;
+
+            let xsize = windowInnerWidth / 2 + 50;
+            let ysize = windowInnerHeight / 2 - 200;
+
+            let columns = Math.floor(Math.sqrt(player.bag.length)) + 1;
+
+            let rows = Math.floor(player.bag.length / columns);
+
+            if (rows < player.bag.length / columns) {
+                rows += 1;
+            }
+
+            this.graphics.fillStyle(0x0000ff, 0.5);
+            this.graphics.fillRect(xsize, ysize, columns * 50, rows * 50 + 25);
+
+            let cellxsize = xsize;
+            let cellysize = ysize + 20;
+
+            this.graphics.fillStyle(0x0000ff);
+            this.graphics.fillRect(xsize, ysize, columns * 50, rows + 15);
+
+            this.graphics.fillStyle(0x000000);
+            this.graphics.fillRect(xsize + columns * 50 - 20, ysize, 20, rows + 15);
+
+            this.ClsdBtn.visible = true;
+            this.ClsdBtn.setPosition(xsize + columns * 50 -10, ysize + 11)
 
 
-    // }
+            cellysize = ysize + 25;
 
+            let counterstring = 0;
+
+            for (let i in player.bag) {
+                if (i == 0) {
+                    cellxsize = cellxsize + 5;
+                    cellysize = cellysize + 5;
+                    this.graphics.fillStyle(0x000000, 0.5);
+                    this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+                    cellxsize = cellxsize + 5;
+                    cellysize = cellysize + 5;
+                    this.graphics.fillStyle(0x000000, 1);
+                    this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+                }
+                else if (i % columns == 0) {
+                    counterstring = counterstring + 1;
+                    cellxsize = xsize;
+                    cellysize = ysize + 25 + 50 * counterstring;
+
+                    cellxsize = cellxsize + 5;
+                    cellysize = cellysize + 5;
+                    this.graphics.fillStyle(0x000000, 0.5);
+                    this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+                    cellxsize = cellxsize + 5;
+                    cellysize = cellysize + 5;
+                    this.graphics.fillStyle(0x000000, 1);
+                    this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+                }
+                else {
+                    cellxsize = cellxsize + 45;
+                    cellysize = cellysize - 5;
+                    this.graphics.fillStyle(0x000000, 0.5);
+                    this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+                    cellxsize = cellxsize + 5;
+                    cellysize = cellysize + 5;
+                    this.graphics.fillStyle(0x000000, 1);
+                    this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+                }
+
+
+            }
+        }
+        else if (!this.bagisopen && this.bagisrendered){
+            this.graphics.clear();
+            this.ClsdBtn.visible = false;
+            this.bagisrendered = false;
+        }
+
+    }
 
 }
 
