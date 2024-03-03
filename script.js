@@ -508,12 +508,17 @@ class Item {
     constructor(name) {
         this.name = name;
         this.sprite = null;
-        this.x = 0;
-        this.y = 0;
-        this.index = 0;
     }
 }
 
+class BagCell {
+    constructor() {
+        this.index = 0;
+        this.x = 0;
+        this.y = 0;
+        this.item = null;
+    }
+}
 
 class TargetFrame extends Phaser.Scene {
 
@@ -747,71 +752,59 @@ class BagFrame extends Phaser.Scene {
         });
 
         this.input.on('pointerup', function (pointer, obj) {
+            if (obj.length == 0){
+                return;
+            }
             let dragobg = bagFrame.dragobg;
+            let dragcell = null;
             let dragitem = null;
             for (let i in player.bag) {
-                if (player.bag[i].sprite == dragobg) {
-                    dragitem = player.bag[i];
-                    break
+                if (player.bag[i].item != null) {
+                    if (player.bag[i].item.sprite == dragobg) {
+                        dragcell = player.bag[i];
+                        dragitem = dragcell.item;
+                        break
+                    }
                 }
             }
 
-            if (dragitem.sprite != null) {
-
-                let distance = Math.sqrt((dragitem.sprite.x - dragitem.x) ** 2 + (dragitem.sprite.y - dragitem.y) ** 2);
+            if (dragitem != null) {
+                let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
 
                 if (distance <= 25) {
-                    dragitem.sprite.setPosition(dragitem.x, dragitem.y);
+                    dragitem.sprite.setPosition(dragcell.x, dragcell.y);
                     return
                 }
 
-                let replaceitem = null;
+                let replacecell = null;
 
                 for (let i in player.bag) {
-                    if (dragitem.index == i) {
+                    if (dragcell.index == i) {
                         continue;
                     }
                     let replaceelement = player.bag[i];
                     let replacedistance = Math.sqrt((dragitem.sprite.x - replaceelement.x) ** 2 + (dragitem.sprite.y - replaceelement.y) ** 2);
                     if (replacedistance <= 25) {
-                        replaceitem = replaceelement;
+                        replacecell = replaceelement;
                         break;
                     }
                 }
 
-                if (replaceitem == null) {
+                if (replacecell == null) {
                     dragitem.sprite.setPosition(dragitem.x, dragitem.y);
                 }
                 else {
 
-                    let dragitemx = replaceitem.x;
-                    let dragitemy = replaceitem.y;
-                    let dragitemindex = replaceitem.index;
-
-                    let replaceitemx = dragitem.x;
-                    let replaceitemy = dragitem.y;
-                    let replaceitemindex = dragitem.index;
-
-                    dragitem.x = dragitemx;
-                    dragitem.y = dragitemy;
-                    dragitem.index = dragitemindex
-                    player.bag[dragitemindex] = dragitem;
-
-                    if (dragitem.sprite != null) {
-                        dragitem.sprite.setPosition(dragitem.x, dragitem.y);
-                    }
-
-                    replaceitem.x = replaceitemx;
-                    replaceitem.y = replaceitemy;
-                    replaceitem.index = replaceitemindex
-                    player.bag[replaceitemindex] = replaceitem;
-
-                    if (replaceitem.sprite != null) {
-                        replaceitem.sprite.setPosition(replaceitem.x, replaceitem.y);
+                    let replaceitem = replacecell.item;
+                    replaceitem = replacecell.item;
+                    replacecell.item = dragitem;
+                    dragitem.sprite.setPosition(replacecell.x, replacecell.y);
+                    dragcell.item = replaceitem;
+                    if (replaceitem != null) {
+                        replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
                     }
 
                 }
-
             }
 
         });
@@ -859,37 +852,9 @@ class BagFrame extends Phaser.Scene {
 
             for (let i in player.bag) {
 
-                let item = player.bag[i];
-                item.x = cellxsize;
-                item.y = cellysize;
-                if (item.name != null) {
-                    if (item.sprite == null) {
-                        item.sprite = this.add.sprite(cellxsize, cellysize, item.name).setInteractive();
-                        bagFrame.input.setDraggable(item.sprite);
-                    }
-                    item.sprite.visible = true;
-                }
-                if (item != null) {
-                }
-
                 if (i == 0) {
                     cellxsize = cellxsize + 5;
                     cellysize = cellysize + 5;
-                    this.graphics.fillStyle(0x000000, 0.5);
-                    this.graphics.fillRect(cellxsize, cellysize, 40, 40);
-
-                    cellxsize = cellxsize + 5;
-                    cellysize = cellysize + 5;
-                    this.graphics.fillStyle(0x000000, 1);
-                    this.graphics.fillRect(cellxsize, cellysize, 30, 30);
-
-                    item.x = cellxsize + 16;
-                    item.y = cellysize + 16;
-
-                    if (item.sprite != null) {
-                        item.sprite.setPosition(item.x, item.y);
-                    }
-
                 }
                 else if (i % columns == 0) {
                     counterstring = counterstring + 1;
@@ -898,40 +863,39 @@ class BagFrame extends Phaser.Scene {
 
                     cellxsize = cellxsize + 5;
                     cellysize = cellysize + 5;
-                    this.graphics.fillStyle(0x000000, 0.5);
-                    this.graphics.fillRect(cellxsize, cellysize, 40, 40);
-
-                    cellxsize = cellxsize + 5;
-                    cellysize = cellysize + 5;
-                    this.graphics.fillStyle(0x000000, 1);
-                    this.graphics.fillRect(cellxsize, cellysize, 30, 30);
-
-                    item.x = cellxsize + 16;
-                    item.y = cellysize + 16;
-
-                    if (item.sprite != null) {
-                        item.sprite.setPosition(item.x, item.y);
-                    }
                 }
                 else {
                     cellxsize = cellxsize + 45;
                     cellysize = cellysize - 5;
-                    this.graphics.fillStyle(0x000000, 0.5);
-                    this.graphics.fillRect(cellxsize, cellysize, 40, 40);
-
-                    cellxsize = cellxsize + 5;
-                    cellysize = cellysize + 5;
-                    this.graphics.fillStyle(0x000000, 1);
-                    this.graphics.fillRect(cellxsize, cellysize, 30, 30);
-
-                    item.x = cellxsize + 16;
-                    item.y = cellysize + 16;
-
-                    if (item.sprite != null) {
-                        item.sprite.setPosition(item.x, item.y);
-                    }
                 }
 
+                this.graphics.fillStyle(0x000000, 0.5);
+                this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+                this.graphics.fillStyle(0x000000, 1);
+                this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+
+                let bagcell = player.bag[i];
+                bagcell.x = cellxsize + 16;
+                bagcell.y = cellysize + 16;
+                let item = bagcell.item;
+                if (item != null) {
+
+                    if (item.name != null) {
+                        if (item.sprite == null) {
+                            item.sprite = this.add.sprite(cellxsize, cellysize, item.name).setInteractive();
+                            bagFrame.input.setDraggable(item.sprite);
+                        }
+                        item.sprite.visible = true;
+                    }
+
+                    if (item.sprite != null) {
+                        item.sprite.setPosition(bagcell.x, bagcell.y);
+                    }
+
+                }
 
             }
         }
@@ -939,9 +903,11 @@ class BagFrame extends Phaser.Scene {
             this.graphics.clear();
             this.ClsdBtn.visible = false;
             for (let i in player.bag) {
-                let item = player.bag[i];
-                if (item.sprite != null) {
-                    item.sprite.visible = false;
+                let item = player.bag[i].item;
+                if (item != null) {
+                    if (item.sprite != null) {
+                        item.sprite.visible = false;
+                    }
                 }
             }
             this.bagisrendered = false;
@@ -1303,17 +1269,17 @@ function createplayer(data) {
     ws.send(JSON.stringify(inf))
 
     for (let i in player.bag) {
-        player.bag[i] = new Item(null)
+        player.bag[i] = new BagCell()
         player.bag[i].index = i;
     }
 
-    player.bag[0].name = 'Apple';
-    player.bag[2].name = 'Beer';
-    player.bag[3].name = 'Bread';
-    player.bag[6].name = 'Cheese';
-    player.bag[7].name = 'Ham';
-    player.bag[10].name = 'Mushroom';
-    player.bag[15].name = 'Wine';
+    // player.bag[0].item = new Item('Apple');
+    // player.bag[2].item = new Item('Beer');
+    // player.bag[3].item = new Item('Bread');
+    // player.bag[6].item = new Item('Cheese');
+    // player.bag[7].item = new Item('Ham');
+    // player.bag[10].item = new Item('Mushroom');
+    // player.bag[15].item = new Item('Wine');
 
     scene_main.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
     scene_main.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
