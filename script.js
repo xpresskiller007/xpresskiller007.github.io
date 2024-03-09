@@ -21,8 +21,6 @@ var cursors;
 var hpTexttarget;
 var mpTexttarget;
 
-var xpbar;
-
 var timer;
 var btn;
 
@@ -38,7 +36,7 @@ var map;
 
 var scene_main;
 
-var scene_UI;
+var scene_ItemsFrames;
 
 class Spell {
 
@@ -397,7 +395,7 @@ class Mob {
             if (this.target == player) {
                 let message = {
                     cmd: 'MobExpectation',
-                    'id': this.id,
+                    'uid': this.uid,
                     'x': this.x,
                     'y': this.y
                 }
@@ -486,7 +484,7 @@ class Mob {
             if (this.target == player) {
                 let message = {
                     cmd: 'MobMoving',
-                    'id': this.id,
+                    'uid': this.uid,
                     'x': this.x,
                     'y': this.y
                 }
@@ -535,10 +533,102 @@ class BagCell {
     }
 }
 
-class TargetFrame extends Phaser.Scene {
+class XPBar extends Phaser.Scene {
 
-    preload() {
+    create(){
+        this.xpbar = this.add.graphics();
     }
+
+    update(){
+        this.xpbar.clear()
+        this.xpbar.fillStyle(0x0000ff, 1);
+        this.xpbar.fillRect(51, windowInnerHeight - 30, (windowInnerWidth - 102) * (player.xp / 100), 18);
+    }
+
+}
+
+class PlayerFrame extends Phaser.Scene {
+
+    create(){
+
+        this.frback = this.add.graphics();
+        this.frback.fillStyle(0x000000, 0.2);
+        this.frback.fillRect(10, 10, 200, 50);
+        this.add.text(10, 10, player.name, { fontSize: '20px', fill: '#000' });
+        this.hpmpbar = this.add.graphics();
+        this.hpmpbar.fillStyle(0xff0000, 1);
+        this.hpmpbar.fillRect(12, 30, 198, 15);
+        this.hpText = this.add.text(12, 28, player.hp, { fontSize: '20px', fill: '#000' });
+        this.hpmpbar.fillStyle(0x0000ff, 1);
+        this.hpmpbar.fillRect(12, 45, 198, 15);
+        this.mpText = this.add.text(12, 45, player.mp, { fontSize: '20px', fill: '#000' });
+
+        this.frback.fillStyle(0x000000, 0.5);
+        let xpbackwidth = windowInnerWidth - 100;
+        this.frback.fillRect(windowInnerWidth / 2 - xpbackwidth / 2, windowInnerHeight - 30, xpbackwidth, 20);
+
+    }
+
+    update(){
+
+        this.hpText.setText(player.hp);
+        this.mpText.setText(player.mp);
+
+        this.hpmpbar.clear();
+
+        this.hpmpbar.fillStyle(0xff0000, 1);
+        this.hpmpbar.fillRect(12, 30, 198 * (player.hp / player.maxhp), 15);
+        this.hpmpbar.fillStyle(0x0000ff, 1);
+        this.hpmpbar.fillRect(12, 45, 198 * (player.mp / player.maxmp), 15);
+
+    }
+
+
+}
+
+class Joystick extends Phaser.Scene {
+
+    preload(){
+        this.load.image('Joystick', 'assets/star.png');
+    }
+
+    create(){
+        let drag = this.add.sprite(dragpx, dragpy, 'Joystick').setInteractive({ draggable: true });
+        drgX = dragpx;
+        drgY = dragpy;
+        drag.setScale(3)
+        drag.on('drag', function (pointer, dragX, dragY) {
+
+            this.x = dragX;
+            this.y = dragY;
+
+            drgX = dragX;
+            drgY = dragY;
+
+        });
+
+        drag.on('pointerup', function (pointer) {
+
+            this.x = dragpx;
+            this.y = dragpy;
+            drgX = dragpx;
+            drgY = dragpy;
+
+
+        });
+
+        drag.on('pointerout', function (pointer) {
+
+            this.x = dragpx;
+            this.y = dragpy;
+            drgX = dragpx;
+            drgY = dragpy;
+
+        });
+    }
+}
+
+class TargetFrame extends Phaser.Scene {
 
     create() {
 
@@ -553,7 +643,6 @@ class TargetFrame extends Phaser.Scene {
         this.hpmpbar.fillStyle(0x0000ff, 1);
         this.hpmpbar.fillRect(252, 45, 198, 15);
         this.mpTexttarget = this.add.text(252, 45, 0, { fontSize: '20px', fill: '#000' });
-
 
     }
 
@@ -593,52 +682,17 @@ class TargetFrame extends Phaser.Scene {
 
 }
 
-class UI extends Phaser.Scene {
+class SpellsFrames extends Phaser.Scene {
 
-    preload() {
-        this.load.image('btn', 'assets/star.png');
+    preload(){
+
         this.load.image('SilverSword', 'assets/SilverSword.png');
         this.load.image('WoodenSword', 'assets/WoodenSword.png');
         this.load.image('GoldenSword', 'assets/GoldenSword.png');
-        this.load.image('Bag', 'assets/Bag.png')
-
-        this.load.image('ClsdBtn', 'assets/closedbuttonpng.png');
-        this.load.image('Apple', 'assets/equipment/Apple.png');
-        this.load.image('Beer', 'assets/equipment/Beer.png');
-        this.load.image('Bread', 'assets/equipment/Bread.png');
-        this.load.image('Cheese', 'assets/equipment/Cheese.png');
-        this.load.image('Ham', 'assets/equipment/Ham.png');
-        this.load.image('Mushroom', 'assets/equipment/Mushroom.png');
-        this.load.image('Wine', 'assets/equipment/Wine.png');
-        this.load.image('CopperCoin', 'assets/CopperCoin.png');
-        this.load.image('GoldenCoin', 'assets/GoldenCoin.png');
-        this.load.image('SilverCoin', 'assets/SilverCoin.png');
 
     }
 
-    create() {
-
-        scene_UI = this;
-
-        this.frback = this.add.graphics();
-        this.frback.fillStyle(0x000000, 0.2);
-        this.frback.fillRect(10, 10, 200, 50);
-        this.add.text(10, 10, player.name, { fontSize: '20px', fill: '#000' });
-        this.hpmpbar = this.add.graphics();
-        this.hpmpbar.fillStyle(0xff0000, 1);
-        this.hpmpbar.fillRect(12, 30, 198, 15);
-        this.hpText = this.add.text(12, 28, player.hp, { fontSize: '20px', fill: '#000' });
-        this.hpmpbar.fillStyle(0x0000ff, 1);
-        this.hpmpbar.fillRect(12, 45, 198, 15);
-        this.mpText = this.add.text(12, 45, player.mp, { fontSize: '20px', fill: '#000' });
-
-        this.input.addPointer(2);
-
-        this.frback.fillStyle(0x000000, 0.5);
-        let xpbackwidth = windowInnerWidth - 100;
-        this.frback.fillRect(windowInnerWidth / 2 - xpbackwidth / 2, windowInnerHeight - 30, xpbackwidth, 20);
-
-        this.xpbar = this.add.graphics();
+    create(){
 
         if (player.spell1 != null) {
             let WoodenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'WoodenSword').setInteractive();
@@ -685,52 +739,28 @@ class UI extends Phaser.Scene {
             });
         }
 
-        let bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
-        bag.on('pointerdown', function (pointer, gameObject) {
+    }
+}
 
-            if (scene_UI.bagisopen){
-                scene_UI.closebag()
-            }
-            else{
-                scene_UI.openbag()
-            }
+class ItemsFrames extends Phaser.Scene {
 
-        });
+    preload(){
+        this.load.image('ClsdBtn', 'assets/closedbuttonpng.png');
+        this.load.image('Apple', 'assets/equipment/Apple.png');
+        this.load.image('Beer', 'assets/equipment/Beer.png');
+        this.load.image('Bread', 'assets/equipment/Bread.png');
+        this.load.image('Cheese', 'assets/equipment/Cheese.png');
+        this.load.image('Ham', 'assets/equipment/Ham.png');
+        this.load.image('Mushroom', 'assets/equipment/Mushroom.png');
+        this.load.image('Wine', 'assets/equipment/Wine.png');
+        this.load.image('CopperCoin', 'assets/CopperCoin.png');
+        this.load.image('GoldenCoin', 'assets/GoldenCoin.png');
+        this.load.image('SilverCoin', 'assets/SilverCoin.png');
+    }
 
-        let drag = this.add.sprite(dragpx, dragpy, 'btn').setInteractive({ draggable: true });
-        drgX = dragpx;
-        drgY = dragpy;
-        drag.setScale(3)
-        drag.on('drag', function (pointer, dragX, dragY) {
+    create(){
 
-            this.x = dragX;
-            this.y = dragY;
-
-            drgX = dragX;
-            drgY = dragY;
-
-        });
-
-        drag.on('pointerup', function (pointer) {
-
-            this.x = dragpx;
-            this.y = dragpy;
-            drgX = dragpx;
-            drgY = dragpy;
-
-
-        });
-
-        drag.on('pointerout', function (pointer) {
-
-            this.x = dragpx;
-            this.y = dragpy;
-            drgX = dragpx;
-            drgY = dragpy;
-
-        });
-
-
+        scene_ItemsFrames = this;
 
         this.dragobg = null;
         this.bagisopen = false;
@@ -738,7 +768,7 @@ class UI extends Phaser.Scene {
         this.ClsdBtn = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
         this.ClsdBtn.visible = false;
         this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
-            scene_UI.closebag()
+            scene_ItemsFrames.closebag()
         });
 
         this.drop = null;
@@ -748,31 +778,31 @@ class UI extends Phaser.Scene {
         this.ClsdBtndrop = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
         this.ClsdBtndrop.visible = false;
         this.ClsdBtndrop.on('pointerdown', function (pointer, gameObject) {
-            scene_UI.closedrop();
+            scene_ItemsFrames.closedrop();
         });
 
         this.input.on('pointerdown', function (pointer, gameObject) {
-            if (!gameObject.length || scene_UI.drop == null) {
+            if (!gameObject.length || scene_ItemsFrames.drop == null) {
                 return;
             }
 
-            for (let i in scene_UI.drop.loot) {
-                let loot = scene_UI.drop.loot[i];
+            for (let i in scene_ItemsFrames.drop.loot) {
+                let loot = scene_ItemsFrames.drop.loot[i];
                 if (loot.item.sprite == gameObject[0]) {
                     for (let bi in player.bag) {
                         if (player.bag[bi].item == null) {
                             player.bag[bi].item = loot.item;
                             player.bag[bi].quantity = loot.quantity;
                             loot.item.sprite.visible = false;
-                            scene_UI.input.setDraggable(loot.item.sprite);
-                            scene_UI.drop.loot.splice(i, 1);
-                            if (!scene_UI.drop.loot.length) {
-                                let drop = scene_UI.drop;
+                            scene_ItemsFrames.input.setDraggable(loot.item.sprite);
+                            scene_ItemsFrames.drop.loot.splice(i, 1);
+                            if (!scene_ItemsFrames.drop.loot.length) {
+                                let drop = scene_ItemsFrames.drop;
                                 for (let di in drops) {
                                     if (drop.sprite == drops[di].sprite) {
                                         drops.splice(di, 1);
                                         drop.sprite.destroy();
-                                        scene_UI.closedrop();
+                                        scene_ItemsFrames.closedrop();
                                     }
                                 }
                             }
@@ -792,7 +822,7 @@ class UI extends Phaser.Scene {
             if (obj.length == 0) {
                 return;
             }
-            let dragobg = scene_UI.dragobg;
+            let dragobg = scene_ItemsFrames.dragobg;
             let dragcell = null;
             let dragitem = null;
             for (let i in player.bag) {
@@ -845,24 +875,6 @@ class UI extends Phaser.Scene {
             }
 
         });
-
-    }
-
-    update(p1, p2) {
-
-        this.hpText.setText(player.hp);
-        this.mpText.setText(player.mp);
-
-        this.hpmpbar.clear();
-
-        this.hpmpbar.fillStyle(0xff0000, 1);
-        this.hpmpbar.fillRect(12, 30, 198 * (player.hp / player.maxhp), 15);
-        this.hpmpbar.fillStyle(0x0000ff, 1);
-        this.hpmpbar.fillRect(12, 45, 198 * (player.mp / player.maxmp), 15);
-
-        this.xpbar.clear()
-        this.xpbar.fillStyle(0x0000ff, 1);
-        this.xpbar.fillRect(51, windowInnerHeight - 30, (windowInnerWidth - 102) * (player.xp / 100), 18);
 
     }
 
@@ -934,7 +946,7 @@ class UI extends Phaser.Scene {
                 if (item.name != null) {
                     if (item.sprite == null) {
                         item.sprite = this.add.sprite(bagcell.x, bagcell.y, item.image).setInteractive();
-                        scene_UI.input.setDraggable(item.sprite);
+                        scene_ItemsFrames.input.setDraggable(item.sprite);
                     }
                     item.sprite.visible = true;
                 }
@@ -1062,9 +1074,35 @@ class UI extends Phaser.Scene {
 
     }
 
-
 }
 
+class UI extends Phaser.Scene {
+
+    preload() {
+        this.load.image('Bag', 'assets/Bag.png')
+    }
+
+    create() {
+
+
+        let bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
+        bag.on('pointerdown', function (pointer, gameObject) {
+
+            if (scene_ItemsFrames.bagisopen){
+                scene_ItemsFrames.closebag()
+            }
+            else{
+                scene_ItemsFrames.openbag()
+            }
+
+        });
+
+    }
+
+    update(p1, p2) {
+
+    }
+}
 
 class MainScene extends Phaser.Scene {
 
@@ -1159,12 +1197,17 @@ class MainScene extends Phaser.Scene {
 
             if (gameObject.length) {
 
+                let distance = Math.sqrt((player.sprite.x - gameObject[0].x) ** 2 + (player.sprite.y - gameObject[0].y) ** 2)
+                console.log(distance);
+
+                console.log(gameObject[0].x);
+                console.log(gameObject[0].y);
                 for (let i in drops) {
                     let element = drops[i];
                     if (element.sprite == gameObject[0]) {
-                        scene_UI.drop = element;
-                        if (!scene_UI.dropisopen){
-                            scene_UI.opendrop();
+                        scene_ItemsFrames.drop = element;
+                        if (!scene_ItemsFrames.dropisopen){
+                            scene_ItemsFrames.opendrop();
                         }
                         return
                     }
@@ -1421,10 +1464,10 @@ function playerDamageReceived(data) {
 }
 
 function createplayer(data) {
-    player = new Player(scene_main.physics.add.sprite(700, 700, 'dude').setScale(3));
+    player = new Player(scene_main.physics.add.sprite(data.x, data.y, 'dude').setScale(3));
     player.id = client_id;
-    player.x = 700;
-    player.y = 700;
+    player.x = data.x;
+    player.y = data.y;
 
     for (let i in data.spells) {
         let spelldata = data.spells[i];
@@ -1459,8 +1502,16 @@ function createplayer(data) {
     scene_main.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
     scene_main.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
     scene_main.cameras.main.startFollow(player.sprite);
+    scene_main.scene.add('PlayerFrame', PlayerFrame, true, { x: 400, y: 300 });
+    scene_main.scene.add('XPBar', XPBar, true, { x: 400, y: 300 });
     scene_main.scene.add('UI', UI, true, { x: 400, y: 300 });
+    scene_main.scene.add('Joystick', Joystick, true, { x: 400, y: 300 });
+    scene_main.scene.add('ItemsFrames', ItemsFrames, true, { x: 400, y: 300 });
+    scene_main.scene.add('SpellsFrames', SpellsFrames, true, { x: 400, y: 300 });
     scene_main.scene.add('TargetFrame', TargetFrame, true, { x: 400, y: 300 })
+
+    game.input.addPointer(1);
+
 }
 
 function addPlayer(data) {
@@ -1516,21 +1567,20 @@ function setMobParameters(data) {
     for (let i in mobs) {
         let mobelement = mobs[i];
         if (mobelement.uid == data.uid) {
+            mobelement.status = mobStatus[data.status]
             if (data.target == null) {
-                mobelement.target = null;
-                mobelement.status = mobStatus[data.status]
-                return
+                mobelement.target = null;        
             }
             else {
                 for (let i in players) {
                     let playelement = players[i];
                     if (playelement.id == data.target) {
                         mobelement.target = playelement;
-                        mobelement.status = mobStatus[data.status]
-                        return
+                        break
                     }
                 }
             }
+            return
 
         }
     }
