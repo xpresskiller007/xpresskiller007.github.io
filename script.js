@@ -6,11 +6,12 @@ var client_id = Date.now()
 
 
 const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation', Dead: 'Dead' }
-const targetType = { Player: 'Player', Mob: 'Mob' }
+const targetType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC' }
 var player;
 var players = [];
 var bombs;
 var mobs = [];
+var npcs = [];
 var drops = [];
 
 var bx;
@@ -499,6 +500,33 @@ class Mob {
             return
         }
 
+    }
+
+}
+
+class NPC {
+
+    constructor(data) {
+        this.sprite = scene_main.physics.add.sprite(data.respx, data.respy, data.skin).setInteractive();
+        this.type = targetType.NPC
+        this.id = data.id;
+        this.uid = data.uid;
+        this.name = data.name;
+        if (data.skin == 'Female1'){
+            this.sprite.anims.play('f1turn');
+        }
+        if (data.skin == 'Female2'){
+            this.sprite.anims.play('f2turn');
+        }
+        if (data.skin == 'Male1'){
+            this.sprite.anims.play('m1turn');
+        }
+        if (data.skin == 'Male2'){
+            this.sprite.anims.play('m2turn');
+        }
+        if (data.skin == 'Male3'){
+            this.sprite.anims.play('m3turn');
+        }
     }
 
 }
@@ -1113,6 +1141,11 @@ class MainScene extends Phaser.Scene {
         this.load.image('SummerTiles', 'assets/map/SummerTiles.png')
         this.load.tilemapTiledJSON('map', 'assets/map/map.json')
         this.load.image('Chest', 'assets/Chest.png');
+        this.load.spritesheet('Female1', 'assets/NPC/Female1.png', { frameWidth: 32, frameHeight: 48 });
+        this.load.spritesheet('Female2', 'assets/NPC/Female2.png', { frameWidth: 32, frameHeight: 48 });
+        this.load.spritesheet('Male1', 'assets/NPC/Male1.png', { frameWidth: 32, frameHeight: 48 });
+        this.load.spritesheet('Male2', 'assets/NPC/Male2.png', { frameWidth: 32, frameHeight: 48 });
+        this.load.spritesheet('Male3', 'assets/NPC/Male3.png', { frameWidth: 32, frameHeight: 48 });
     }
 
     create() {
@@ -1186,6 +1219,36 @@ class MainScene extends Phaser.Scene {
             frames: this.anims.generateFrameNumbers('dude', { start: 13, end: 13 }),
             frameRate: 10,
             repeat: -1
+        });
+
+        this.anims.create({
+            key: 'f1turn',
+            frames: [{ key: 'Female1', frame: 15 }],
+            frameRate: 1
+        });
+
+        this.anims.create({
+            key: 'f2turn',
+            frames: [{ key: 'Female2', frame: 15 }],
+            frameRate: 1
+        });
+
+        this.anims.create({
+            key: 'm1turn',
+            frames: [{ key: 'Male1', frame: 15 }],
+            frameRate: 1
+        });
+
+        this.anims.create({
+            key: 'm2turn',
+            frames: [{ key: 'Male2', frame: 15 }],
+            frameRate: 1
+        });
+
+        this.anims.create({
+            key: 'm3turn',
+            frames: [{ key: 'Male3', frame: 15 }],
+            frameRate: 1
         });
 
 
@@ -1269,6 +1332,9 @@ class MainScene extends Phaser.Scene {
             }
             else if (data.cmd == 'CreateMob') {
                 createMob(data);
+            }
+            else if (data.cmd == 'CreateNPC') {
+                CreateNPC(data);
             }
             else if (data.cmd == 'setMobParameters') {
                 setMobParameters(data);
@@ -1560,6 +1626,11 @@ function setСoordinates(data) {
 function createMob(data) {
     let mob = new Mob(data)
     mobs.push(mob)
+}
+
+function CreateNPC(data) {
+    let npc = new NPC(data)
+    npcs.push(npc)
 }
 
 function setMobParameters(data) {
