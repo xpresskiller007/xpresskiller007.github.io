@@ -38,6 +38,7 @@ var map;
 var scene_main;
 var scene_BagFrame;
 var scene_DropFrame;
+var scene_NpcDialoge
 
 class Spell {
 
@@ -342,9 +343,7 @@ class Mob {
         this.respy = data.respy;
         this.status = mobStatus[data.status]
 
-        // this.sprite.on('pointerdown', function (pointer, gameObject) {
-        //     console.log('Выбран: ' + this.name);
-        // });
+
     }
 
     update() {
@@ -678,9 +677,15 @@ class TargetFrame extends Phaser.Scene {
             if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 700) {
                 player.target = null;
             }
+            if (player.target.type == targetType.NPC){
+                if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 200) {
+                    player.target = null;
+                    scene_NpcDialoge.closedialoge();
+                }
+            }
         }
 
-        if (player.target != null) {
+        if (player.target != null && player.target.type != targetType.NPC) {
             this.frback.visible = true;
             this.hpmpbar.visible = true;
             this.nameTexttarget.visible = true;
@@ -949,7 +954,6 @@ class BagFrame extends Phaser.Scene {
 
 }
 
-
 class DropFrame extends Phaser.Scene {
 
     create(){
@@ -1128,11 +1132,15 @@ class UI extends Phaser.Scene {
     }
 }
 
-class TextFrame extends Phaser.Scene {
+class NpcDialoge extends Phaser.Scene {
 
     create(){
 
-        const content = [
+        scene_NpcDialoge = this;
+
+        this.frameopen = true;
+
+        this.content = [
             'The sky above the port was the color of television, tuned to a dead channel.',
             '`It\'s not like I\'m using,\' Case heard someone say, as he shouldered his way ',
             'through the crowd around the door of the Chat. `It\'s like my body\'s developed',
@@ -1157,34 +1165,64 @@ class TextFrame extends Phaser.Scene {
             'From Neuromancer by William Gibson'
         ];
 
-        const gf = this.add.graphics();
+        this.gf = this.add.graphics();
 
-        gf.fillStyle(0x000000)
-        gf.fillRect(152, 133, 320, 250);
+        this.gf.fillStyle(0x000000)
+        this.gf.fillRect(152, 133, 320, 250);
 
-        const graphics = this.make.graphics();
-        graphics.fillRect(152, 133, 320, 250);
+        this.ClsdBtndrop = this.add.sprite(465, 125, 'ClsdBtn').setInteractive();
+        this.ClsdBtndrop.on('pointerdown', function (pointer, gameObject) {
+            scene_NpcDialoge.closedialoge();
+            player.target = null;
+        });
 
-        const mask = new Phaser.Display.Masks.GeometryMask(this, graphics);
+        this.graphics = this.make.graphics();
+        this.graphics.fillRect(152, 133, 320, 250);
 
-        const text = this.add.text(160, 140, content, { fontFamily: 'Arial', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
 
-        text.setMask(mask);
+        this.text = this.add.text(160, 140, this.content, { fontFamily: 'Arial', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+
+        this.text.setMask(this.mask);
 
         //  The rectangle they can 'drag' within
-        const zone = this.add.zone(152, 130, 320, 256).setOrigin(0).setInteractive();
+        this.zone = this.add.zone(152, 130, 320, 256).setOrigin(0).setInteractive();
 
-        zone.on('pointermove', pointer =>
+        this.zone.on('pointermove', pointer =>
         {
 
             if (pointer.isDown)
             {
-                text.y += (pointer.velocity.y / 2);
+                scene_NpcDialoge.text.y += (pointer.velocity.y / 2);
 
-                text.y = Phaser.Math.Clamp(text.y, -400, 300);
+                scene_NpcDialoge.text.y = Phaser.Math.Clamp(this.text.y, -400, 300);
             }
 
         });
+
+        this.closedialoge()
+    }
+
+    opendialoge(){
+
+        this.gf.fillStyle(0x000000)
+        this.gf.fillRect(152, 133, 320, 250);
+        this.ClsdBtndrop.visible = true;
+        this.mask.visible = true;
+        this.text.visible = true;
+        this.zone.visible = true;
+        this.frameopen = true;
+
+    }
+
+    closedialoge(){
+
+        this.gf.clear();
+        this.ClsdBtndrop.visible = false;
+        this.mask.visible = false;
+        this.text.visible = false;
+        this.zone.visible = false;
+        this.frameopen = false;
 
     }
 
@@ -1332,11 +1370,6 @@ class MainScene extends Phaser.Scene {
 
             if (gameObject.length) {
 
-                let distance = Math.sqrt((player.sprite.x - gameObject[0].x) ** 2 + (player.sprite.y - gameObject[0].y) ** 2)
-                console.log(distance);
-
-                console.log(gameObject[0].x);
-                console.log(gameObject[0].y);
                 for (let i in drops) {
                     let element = drops[i];
                     if (element.sprite == gameObject[0]) {
@@ -1352,18 +1385,22 @@ class MainScene extends Phaser.Scene {
                     let mobelement = mobs[i];
                     if (mobelement.sprite == gameObject[0]) {
                         player.target = mobelement;
-                        console.log(mobelement.status)
-                        console.log(mobelement.target)
                         return
                     }
                 }
 
-                for (let i in mobs) {
-                    let mobelement = mobs[i];
-                    if (mobelement.sprite == gameObject[0]) {
-                        player.target = mobelement;
-                        console.log(mobelement.status)
-                        console.log(mobelement.target)
+                for (let i in npcs) {
+                    let npcelement = npcs[i];
+                    if (npcelement.sprite == gameObject[0]) {
+                        if (player.target == npcelement){
+                            if (!scene_NpcDialoge.frameopen){
+                                scene_NpcDialoge.opendialoge()
+                            }
+                            console.log('он показывал пиструн');
+                        }
+                        else{
+                            player.target = npcelement;
+                        }
                         return
                     }
                 }
@@ -1383,7 +1420,7 @@ class MainScene extends Phaser.Scene {
 
         });
 
-        ws = new WebSocket(`ws://192.168.0.12:8000/ws/${client_id}`);
+        ws = new WebSocket(`ws://192.168.0.10:8000/ws/${client_id}`);
         ws.onmessage = function (event) {
 
             console.log(event.data);
@@ -1648,7 +1685,7 @@ function createplayer(data) {
     scene_main.scene.add('DropFrame', DropFrame, true, { x: 400, y: 300 });
     scene_main.scene.add('SpellsFrames', SpellsFrames, true, { x: 400, y: 300 });
     scene_main.scene.add('TargetFrame', TargetFrame, true, { x: 400, y: 300 })
-    scene_main.scene.add('TextFrame', TextFrame, true, { x: 400, y: 300 })
+    scene_main.scene.add('NpcDialoge', NpcDialoge, true, { x: 400, y: 300 })
 
     game.input.addPointer(1);
 
