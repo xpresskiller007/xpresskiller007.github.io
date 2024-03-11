@@ -36,8 +36,8 @@ var ws;
 var map;
 
 var scene_main;
-
-var scene_ItemsFrames;
+var scene_BagFrame;
+var scene_DropFrame;
 
 class Spell {
 
@@ -507,7 +507,7 @@ class Mob {
 class NPC {
 
     constructor(data) {
-        this.sprite = scene_main.physics.add.sprite(data.respx, data.respy, data.skin).setInteractive();
+        this.sprite = scene_main.physics.add.sprite(data.respx, data.respy, data.skin).setScale(2).setInteractive();
         this.type = targetType.NPC
         this.id = data.id;
         this.uid = data.uid;
@@ -569,6 +569,9 @@ class XPBar extends Phaser.Scene {
 
     update(){
         this.xpbar.clear()
+        this.xpbar.fillStyle(0x000000, 0.5);
+        let xpbackwidth = windowInnerWidth - 100;
+        this.xpbar.fillRect(windowInnerWidth / 2 - xpbackwidth / 2, windowInnerHeight - 30, xpbackwidth, 20);
         this.xpbar.fillStyle(0x0000ff, 1);
         this.xpbar.fillRect(51, windowInnerHeight - 30, (windowInnerWidth - 102) * (player.xp / 100), 18);
     }
@@ -590,10 +593,6 @@ class PlayerFrame extends Phaser.Scene {
         this.hpmpbar.fillStyle(0x0000ff, 1);
         this.hpmpbar.fillRect(12, 45, 198, 15);
         this.mpText = this.add.text(12, 45, player.mp, { fontSize: '20px', fill: '#000' });
-
-        this.frback.fillStyle(0x000000, 0.5);
-        let xpbackwidth = windowInnerWidth - 100;
-        this.frback.fillRect(windowInnerWidth / 2 - xpbackwidth / 2, windowInnerHeight - 30, xpbackwidth, 20);
 
     }
 
@@ -770,25 +769,10 @@ class SpellsFrames extends Phaser.Scene {
     }
 }
 
-class ItemsFrames extends Phaser.Scene {
-
-    preload(){
-        this.load.image('ClsdBtn', 'assets/closedbuttonpng.png');
-        this.load.image('Apple', 'assets/equipment/Apple.png');
-        this.load.image('Beer', 'assets/equipment/Beer.png');
-        this.load.image('Bread', 'assets/equipment/Bread.png');
-        this.load.image('Cheese', 'assets/equipment/Cheese.png');
-        this.load.image('Ham', 'assets/equipment/Ham.png');
-        this.load.image('Mushroom', 'assets/equipment/Mushroom.png');
-        this.load.image('Wine', 'assets/equipment/Wine.png');
-        this.load.image('CopperCoin', 'assets/CopperCoin.png');
-        this.load.image('GoldenCoin', 'assets/GoldenCoin.png');
-        this.load.image('SilverCoin', 'assets/SilverCoin.png');
-    }
-
+class BagFrame extends Phaser.Scene {
+    
     create(){
-
-        scene_ItemsFrames = this;
+        scene_BagFrame = this;
 
         this.dragobg = null;
         this.bagisopen = false;
@@ -796,61 +780,19 @@ class ItemsFrames extends Phaser.Scene {
         this.ClsdBtn = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
         this.ClsdBtn.visible = false;
         this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
-            scene_ItemsFrames.closebag()
-        });
-
-        this.drop = null;
-        this.dropisopen = false;
-        this.graphicsdrop = this.add.graphics();
-        this.dropisrendered = false;
-        this.ClsdBtndrop = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
-        this.ClsdBtndrop.visible = false;
-        this.ClsdBtndrop.on('pointerdown', function (pointer, gameObject) {
-            scene_ItemsFrames.closedrop();
-        });
-
-        this.input.on('pointerdown', function (pointer, gameObject) {
-            if (!gameObject.length || scene_ItemsFrames.drop == null) {
-                return;
-            }
-
-            for (let i in scene_ItemsFrames.drop.loot) {
-                let loot = scene_ItemsFrames.drop.loot[i];
-                if (loot.item.sprite == gameObject[0]) {
-                    for (let bi in player.bag) {
-                        if (player.bag[bi].item == null) {
-                            player.bag[bi].item = loot.item;
-                            player.bag[bi].quantity = loot.quantity;
-                            loot.item.sprite.visible = false;
-                            scene_ItemsFrames.input.setDraggable(loot.item.sprite);
-                            scene_ItemsFrames.drop.loot.splice(i, 1);
-                            if (!scene_ItemsFrames.drop.loot.length) {
-                                let drop = scene_ItemsFrames.drop;
-                                for (let di in drops) {
-                                    if (drop.sprite == drops[di].sprite) {
-                                        drops.splice(di, 1);
-                                        drop.sprite.destroy();
-                                        scene_ItemsFrames.closedrop();
-                                    }
-                                }
-                            }
-                            return;
-                        }
-                    }
-                }
-            }
+            scene_BagFrame.closebag()
         });
 
         this.input.on('drag', (pointer, obj, dragX, dragY) => {
             obj.setPosition(dragX, dragY);
-            this.dragobg = obj;
+            scene_BagFrame.dragobg = obj;
         });
 
         this.input.on('pointerup', function (pointer, obj) {
             if (obj.length == 0) {
                 return;
             }
-            let dragobg = scene_ItemsFrames.dragobg;
+            let dragobg = scene_BagFrame.dragobg;
             let dragcell = null;
             let dragitem = null;
             for (let i in player.bag) {
@@ -886,7 +828,7 @@ class ItemsFrames extends Phaser.Scene {
                 }
 
                 if (replacecell == null) {
-                    dragitem.sprite.setPosition(dragcell.x, dragitem.y);
+                    dragitem.sprite.setPosition(dragcell.x, dragcell.y);
                 }
                 else {
 
@@ -974,7 +916,7 @@ class ItemsFrames extends Phaser.Scene {
                 if (item.name != null) {
                     if (item.sprite == null) {
                         item.sprite = this.add.sprite(bagcell.x, bagcell.y, item.image).setInteractive();
-                        scene_ItemsFrames.input.setDraggable(item.sprite);
+                        scene_BagFrame.input.setDraggable(item.sprite);
                     }
                     item.sprite.visible = true;
                 }
@@ -1004,6 +946,60 @@ class ItemsFrames extends Phaser.Scene {
         this.bagisopen = false;
 
     }
+
+}
+
+
+class DropFrame extends Phaser.Scene {
+
+    create(){
+
+        scene_DropFrame = this;
+
+        this.drop = null;
+        this.dropisopen = false;
+        this.graphicsdrop = this.add.graphics();
+        this.dropisrendered = false;
+        this.ClsdBtndrop = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
+        this.ClsdBtndrop.visible = false;
+        this.ClsdBtndrop.on('pointerdown', function (pointer, gameObject) {
+            scene_DropFrame.closedrop();
+        });
+
+        this.input.on('pointerdown', function (pointer, gameObject) {
+            if (!gameObject.length || scene_DropFrame.drop == null) {
+                return;
+            }
+
+            for (let i in scene_DropFrame.drop.loot) {
+                let loot = scene_DropFrame.drop.loot[i];
+                if (loot.item.sprite == gameObject[0]) {
+                    for (let bi in player.bag) {
+                        if (player.bag[bi].item == null) {
+                            player.bag[bi].item = loot.item;
+                            player.bag[bi].quantity = loot.quantity;
+                            loot.item.sprite.destroy();
+                            loot.item.sprite = null;
+                            scene_DropFrame.drop.loot.splice(i, 1);
+                            if (!scene_DropFrame.drop.loot.length) {
+                                let drop = scene_DropFrame.drop;
+                                for (let di in drops) {
+                                    if (drop.sprite == drops[di].sprite) {
+                                        drops.splice(di, 1);
+                                        drop.sprite.destroy();
+                                        scene_DropFrame.closedrop();
+                                    }
+                                }
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+        });
+
+    }
+
 
     opendrop() {
 
@@ -1116,11 +1112,11 @@ class UI extends Phaser.Scene {
         let bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
         bag.on('pointerdown', function (pointer, gameObject) {
 
-            if (scene_ItemsFrames.bagisopen){
-                scene_ItemsFrames.closebag()
+            if (scene_BagFrame.bagisopen){
+                scene_BagFrame.closebag()
             }
             else{
-                scene_ItemsFrames.openbag()
+                scene_BagFrame.openbag()
             }
 
         });
@@ -1132,9 +1128,72 @@ class UI extends Phaser.Scene {
     }
 }
 
+class TextFrame extends Phaser.Scene {
+
+    create(){
+
+        const content = [
+            'The sky above the port was the color of television, tuned to a dead channel.',
+            '`It\'s not like I\'m using,\' Case heard someone say, as he shouldered his way ',
+            'through the crowd around the door of the Chat. `It\'s like my body\'s developed',
+            'this massive drug deficiency.\' It was a Sprawl voice and a Sprawl joke.',
+            'The Chatsubo was a bar for professional expatriates; you could drink there for',
+            'a week and never hear two words in Japanese.',
+            '',
+            'Ratz was tending bar, his prosthetic arm jerking monotonously as he filled a tray',
+            'of glasses with draft Kirin. He saw Case and smiled, his teeth a webwork of',
+            'East European steel and brown decay. Case found a place at the bar, between the',
+            'unlikely tan on one of Lonny Zone\'s whores and the crisp naval uniform of a tall',
+            'African whose cheekbones were ridged with precise rows of tribal scars. `Wage was',
+            'in here early, with two joeboys,\' Ratz said, shoving a draft across the bar with',
+            'his good hand. `Maybe some business with you, Case?\'',
+            '',
+            'Case shrugged. The girl to his right giggled and nudged him.',
+            'The bartender\'s smile widened. His ugliness was the stuff of legend. In an age of',
+            'affordable beauty, there was something heraldic about his lack of it. The antique',
+            'arm whined as he reached for another mug.',
+            '',
+            '',
+            'From Neuromancer by William Gibson'
+        ];
+
+        const gf = this.add.graphics();
+
+        gf.fillStyle(0x000000)
+        gf.fillRect(152, 133, 320, 250);
+
+        const graphics = this.make.graphics();
+        graphics.fillRect(152, 133, 320, 250);
+
+        const mask = new Phaser.Display.Masks.GeometryMask(this, graphics);
+
+        const text = this.add.text(160, 140, content, { fontFamily: 'Arial', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+
+        text.setMask(mask);
+
+        //  The rectangle they can 'drag' within
+        const zone = this.add.zone(152, 130, 320, 256).setOrigin(0).setInteractive();
+
+        zone.on('pointermove', pointer =>
+        {
+
+            if (pointer.isDown)
+            {
+                text.y += (pointer.velocity.y / 2);
+
+                text.y = Phaser.Math.Clamp(text.y, -400, 300);
+            }
+
+        });
+
+    }
+
+}
+
 class MainScene extends Phaser.Scene {
 
     preload() {
+
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'assets/chars.png', { frameWidth: 16, frameHeight: 24 });
         this.load.image('btn', 'assets/star.png');
@@ -1146,6 +1205,19 @@ class MainScene extends Phaser.Scene {
         this.load.spritesheet('Male1', 'assets/NPC/Male1.png', { frameWidth: 32, frameHeight: 48 });
         this.load.spritesheet('Male2', 'assets/NPC/Male2.png', { frameWidth: 32, frameHeight: 48 });
         this.load.spritesheet('Male3', 'assets/NPC/Male3.png', { frameWidth: 32, frameHeight: 48 });
+
+        this.load.image('ClsdBtn', 'assets/closedbuttonpng.png');
+        this.load.image('Apple', 'assets/equipment/Apple.png');
+        this.load.image('Beer', 'assets/equipment/Beer.png');
+        this.load.image('Bread', 'assets/equipment/Bread.png');
+        this.load.image('Cheese', 'assets/equipment/Cheese.png');
+        this.load.image('Ham', 'assets/equipment/Ham.png');
+        this.load.image('Mushroom', 'assets/equipment/Mushroom.png');
+        this.load.image('Wine', 'assets/equipment/Wine.png');
+        this.load.image('CopperCoin', 'assets/CopperCoin.png');
+        this.load.image('GoldenCoin', 'assets/GoldenCoin.png');
+        this.load.image('SilverCoin', 'assets/SilverCoin.png');
+
     }
 
     create() {
@@ -1268,9 +1340,9 @@ class MainScene extends Phaser.Scene {
                 for (let i in drops) {
                     let element = drops[i];
                     if (element.sprite == gameObject[0]) {
-                        scene_ItemsFrames.drop = element;
-                        if (!scene_ItemsFrames.dropisopen){
-                            scene_ItemsFrames.opendrop();
+                        scene_DropFrame.drop = element;
+                        if (!scene_DropFrame.dropisopen){
+                            scene_DropFrame.opendrop();
                         }
                         return
                     }
@@ -1571,10 +1643,12 @@ function createplayer(data) {
     scene_main.scene.add('PlayerFrame', PlayerFrame, true, { x: 400, y: 300 });
     scene_main.scene.add('XPBar', XPBar, true, { x: 400, y: 300 });
     scene_main.scene.add('UI', UI, true, { x: 400, y: 300 });
+    scene_main.scene.add('BagFrame', BagFrame, true, { x: 400, y: 300 });
     scene_main.scene.add('Joystick', Joystick, true, { x: 400, y: 300 });
-    scene_main.scene.add('ItemsFrames', ItemsFrames, true, { x: 400, y: 300 });
+    scene_main.scene.add('DropFrame', DropFrame, true, { x: 400, y: 300 });
     scene_main.scene.add('SpellsFrames', SpellsFrames, true, { x: 400, y: 300 });
     scene_main.scene.add('TargetFrame', TargetFrame, true, { x: 400, y: 300 })
+    scene_main.scene.add('TextFrame', TextFrame, true, { x: 400, y: 300 })
 
     game.input.addPointer(1);
 
