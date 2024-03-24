@@ -1,0 +1,4 @@
+[{"uid":1,"id":2,"skin":"bomb","name":"Чушпан","hp":110,"maxhp":110,"mp":10,"maxmp":10,"x":100,"y":100,"respx":100,"respy":100,"status":"Expectation","lvl":1},
+{"uid":2,"id":2,"skin":"bomb","name":"Чушпан","hp":110,"maxhp":110,"mp":10,"maxmp":10,"x":200,"y":100,"respx":200,"respy":100,"status":"Expectation","lvl":1},
+{"uid":3,"id":3,"skin":"bomb","name":"Чущпенсел","hp":120,"maxhp":120,"mp":20,"maxmp":20,"x":300,"y":100,"respx":300,"respy":100,"status":"Expectation","lvl":2},
+{"uid":4,"id":4,"skin":"bomb","name":"Чушпанище","hp":130,"maxhp":130,"mp":30,"maxmp":30,"x":400,"y":100,"respx":400,"respy":100,"status":"Expectation","lvl":3}]

@@ -14,6 +14,21 @@ var mobs = [];
 var npcs = [];
 var drops = [];
 
+var mobsdata = [
+    { "uid": 1, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 110, "maxhp": 110, "mp": 10, "maxmp": 10, "x": 100, "y": 100, "respx": 100, "respy": 100, "status": "Expectation", "lvl": 1 },
+    { "uid": 2, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 110, "maxhp": 110, "mp": 10, "maxmp": 10, "x": 200, "y": 100, "respx": 200, "respy": 100, "status": "Expectation", "lvl": 1 },
+    { "uid": 3, "id": 3, "skin": "bomb", "name": "Чущпенсел", "hp": 120, "maxhp": 120, "mp": 20, "maxmp": 20, "x": 300, "y": 100, "respx": 300, "respy": 100, "status": "Expectation", "lvl": 2 },
+    { "uid": 4, "id": 4, "skin": "bomb", "name": "Чушпанище", "hp": 130, "maxhp": 130, "mp": 30, "maxmp": 30, "x": 400, "y": 100, "respx": 400, "respy": 100, "status": "Expectation", "lvl": 3 }
+];
+
+var npcsdata = [
+    { "id": 6, "skin": "Female1", "name": "Female1", "respx": 900, "respy": 100 },
+    { "id": 7, "skin": "Female2", "name": "Female2", "respx": 1000, "respy": 100 },
+    { "id": 8, "skin": "Male1", "name": "Male1", "respx": 1100, "respy": 100 },
+    { "id": 9, "skin": "Male2", "name": "Male2", "respx": 1200, "respy": 100 },
+    { "id": 10, "skin": "Male3", "name": "Male3", "respx": 1300, "respy": 100 }
+];
+
 var bx;
 var by;
 var chase = false
@@ -1934,6 +1949,14 @@ class MainScene extends Phaser.Scene {
             }
 
         };
+
+        for (let i in mobsdata) {
+            createMob(mobsdata[i]);
+        }
+
+        for (let i in npcsdata) {
+            CreateNPC(npcsdata[i]);
+        }
 
 
     }
