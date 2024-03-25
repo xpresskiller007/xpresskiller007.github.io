@@ -810,8 +810,8 @@ class Mob {
         this.respx = data.respx;
         this.respy = data.respy;
         this.status = mobStatus[data.status];
-        this.attackdistance =
-            this.damage = 5 * this.lvl;
+        this.attackdistance = 50;
+        this.damage = 5 * this.lvl;
         this.timeattack = 2000;//мсек
         this.lastattack = 0;
 
@@ -855,7 +855,7 @@ class Mob {
         let distance = Math.sqrt((player.sprite.x - this.sprite.x) ** 2 + (player.sprite.y - this.sprite.y) ** 2)
 
         if (this.target == null) {
-            if (distance > 50 && distance < 250 && this.status != mobStatus.Chase && player.hp > 0) {
+            if (distance > this.attackdistance && distance < 250 && this.status != mobStatus.Chase && player.hp > 0) {
                 this.target = player
                 this.status = mobStatus.Chase
             }
@@ -866,10 +866,10 @@ class Mob {
                 this.status = mobStatus.Revert;
                 this.target = null;
             }
-            else if (distance < 50 && this.status != mobStatus.Attack) {
+            else if (distance < this.attackdistance && this.status != mobStatus.Attack) {
                 this.status = mobStatus.Attack
             }
-            else if (distance > 50 && distance < 250 && this.status != mobStatus.Chase) {
+            else if (distance > this.attackdistance && distance < 250 && this.status != mobStatus.Chase) {
                 this.status = mobStatus.Chase
             }
             else if (distance <= 10) {
