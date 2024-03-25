@@ -1,5 +1,5 @@
-const windowInnerWidth = window.innerWidth - 20
-const windowInnerHeight = window.innerHeight - 20
+const windowInnerWidth = window.innerWidth
+const windowInnerHeight = window.innerHeight
 
 
 var client_id = Date.now()
