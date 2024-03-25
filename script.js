@@ -540,6 +540,8 @@ class Player {
         this.target = null;
         this.x = this.sprite.x;
         this.y = this.sprite.y;
+        this.respx = this.x;
+        this.respy = this.y;
         this.lvl = 1;
         this.xp = 0;
         this.spell1 = null;
@@ -552,6 +554,7 @@ class Player {
 
     update() {
         this.moving();
+        this.respawn();
     }
 
     moving() {
@@ -774,6 +777,17 @@ class Player {
 
     }
 
+    respawn() {
+        if (this.hp <= 0) {
+            this.sprite.setVelocityX(0);
+            this.sprite.setVelocityY(0);
+            this.sprite.setPosition(this.respx, this.respy);
+            this.x = this.sprite.x;
+            this.y = this.sprite.y;
+            this.hp = this.maxhp;
+            this.mp = this.maxmp;
+        }
+    }
 }
 
 class Mob {
@@ -795,7 +809,11 @@ class Mob {
         this.y = this.sprite.y;
         this.respx = data.respx;
         this.respy = data.respy;
-        this.status = mobStatus[data.status]
+        this.status = mobStatus[data.status];
+        this.attackdistance =
+            this.damage = 5 * this.lvl;
+        this.timeattack = 2000;//мсек
+        this.lastattack = 0;
 
 
     }
@@ -806,10 +824,61 @@ class Mob {
             return
         }
 
-        this.chaseTarget()
-        this.revert()
-        this.stopMiving()
+        this.setStatus();
+        this.chaseTarget();
+        this.revert();
+        this.stopMiving();
+        this.atack();
 
+
+    }
+
+    atack() {
+
+        if (this.status == mobStatus.Attack
+            && this.target != null
+            && this.target.hp > 0
+            && Date.now() - this.lastattack >= this.timeattack) {
+            this.target.hp = this.target.hp - this.damage;
+            this.lastattack = Date.now();
+        }
+
+    }
+
+    setStatus() {
+
+        if (this.status == mobStatus.Revert || this.status == mobStatus.Dead
+            || this.hp <= 0) {
+            return
+        }
+
+        let distance = Math.sqrt((player.sprite.x - this.sprite.x) ** 2 + (player.sprite.y - this.sprite.y) ** 2)
+
+        if (this.target == null) {
+            if (distance > 50 && distance < 250 && this.status != mobStatus.Chase && player.hp > 0) {
+                this.target = player
+                this.status = mobStatus.Chase
+            }
+        }
+        else {
+            let distancetoresp = Math.sqrt((this.respx - this.sprite.x) ** 2 + (this.respy - this.sprite.y) ** 2)
+            if (distance > 250 || distancetoresp >= 500 || this.target.hp <= 0) {
+                this.status = mobStatus.Revert;
+                this.target = null;
+            }
+            else if (distance < 50 && this.status != mobStatus.Attack) {
+                this.status = mobStatus.Attack
+            }
+            else if (distance > 50 && distance < 250 && this.status != mobStatus.Chase) {
+                this.status = mobStatus.Chase
+            }
+            else if (distance <= 10) {
+                this.status = mobStatus.Expectation
+                this.target = null;
+                this.hp = this.maxhp
+                this.hp = this.maxmp
+            }
+        }
 
     }
 
@@ -844,7 +913,7 @@ class Mob {
             this.x = this.sprite.x;
             this.y = this.sprite.y;
 
-            this.status = mobStatus.Expectation
+            this.status = mobStatus.Expectation;
 
             // if (this.target == player) {
             //     let message = {
