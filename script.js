@@ -73,7 +73,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spells.push({ 'id': 1, 'sprite': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
+spells.push({ 'id': 1, damage: 5, cooldown: 0, distance: 300, 'sprite': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 50, starty: - 270, x: 0, y: 0,
@@ -88,7 +88,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spells.push({ 'id': 2, 'sprite': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
+spells.push({ 'id': 2, damage: 10, cooldown: 1000, distance: 300, 'sprite': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 100, starty: - 270, x: 0, y: 0,
@@ -103,7 +103,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spells.push({ 'id': 3, 'sprite': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
+spells.push({ 'id': 3, damage: 15, cooldown: 1500, distance: 300, 'sprite': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 150, starty: - 260, x: 0, y: 0,
@@ -120,7 +120,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spells.push({ 'id': 4, 'sprite': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
+spells.push({ 'id': 4, damage: 25, cooldown: 3000, distance: 300, 'sprite': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
 
 
 class CastFrame extends Phaser.Scene {
@@ -1029,7 +1029,7 @@ class Mob {
 class NPC {
 
     constructor(data) {
-        this.sprite = scene_main.physics.add.sprite(data.respx, data.respy, data.skin).setScale(2).setInteractive();
+        this.sprite = scene_main.physics.add.sprite(data.respx, data.respy, data.skin).setInteractive();
         this.type = targetType.NPC
         this.id = data.id;
         this.uid = data.uid;
@@ -2199,7 +2199,7 @@ function playerDamageReceived(data) {
 }
 
 function createplayer(data) {
-    player = new Player(scene_main.physics.add.sprite(data.x, data.y, 'dude').setScale(3));
+    player = new Player(scene_main.physics.add.sprite(data.x, data.y, 'dude').setScale(2));
     player.id = client_id;
     player.x = data.x;
     player.y = data.y;
@@ -2254,7 +2254,7 @@ function createplayer(data) {
 
 function addPlayer(data) {
 
-    let newplayer = new Player(scene_main.physics.add.sprite(data.x, data.y, 'dude').setScale(3));
+    let newplayer = new Player(scene_main.physics.add.sprite(data.x, data.y, 'dude').setScale(2));
     newplayer.sprite.setInteractive();
     newplayer.id = data.id;
     newplayer.thisplayer = false;
