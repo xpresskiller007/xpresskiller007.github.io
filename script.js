@@ -57,11 +57,55 @@ var scene_NpcDialoge;
 var scene_SpellsFrames;
 var scene_CastFrame;
 
+var loot = []
+
+loot.push({
+    'item': { id: 1, name: 'Apple', image: 'Apple', stack: true, stacksize: 20 },
+    'quantity': 1,
+    'chance': 100
+})
+
+loot.push({
+    'item': { id: 2, name: 'Bread', image: 'Bread', stack: true, stacksize: 20 },
+    'quantity': 1,
+    'chance': 90
+})
+
+loot.push({
+    'item': { id: 3, name: 'Cheese', image: 'Cheese', stack: true, stacksize: 10 },
+    'quantity': 1,
+    'chance': 80
+})
+
+loot.push({
+    'item': { id: 4, name: 'Ham', image: 'Ham', stack: true, stacksize: 5 },
+    'quantity': 1,
+    'chance': 70
+})
+
+loot.push({
+    'item': { id: 5, name: 'Mushroom', image: 'Mushroom', stack: true, stacksize: 3 },
+    'quantity': 1,
+    'chance': 50
+})
+
+loot.push({
+    'item': { id: 6, name: 'Wine', image: 'Wine', stack: false, stacksize: 0 },
+    'quantity': 1,
+    'chance': 25
+})
+
+loot.push({
+    'item': { id: 7, name: 'Beer', image: 'Beer', stack: false, stacksize: 0 },
+    'quantity': 1,
+    'chance': 10
+})
+
 var spellsdata = [];
 
 var spells = [];
 
-var lvldata = {1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0}
+var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 }
 
 let exemp = [];
 
@@ -139,7 +183,6 @@ class Player {
         this.hp = 100;
         this.maxhp = 100;
         this.mp = 100;
-        // this.mp = 0;
         this.maxmp = 100;
         this.speed = 150;
         this.target = null;
@@ -395,21 +438,21 @@ class Player {
         }
     }
 
-    addXp(xp){
+    addXp(xp) {
 
         this.xp += xp;
 
         let lvlinf = lvldata[this.lvl];
 
-        if (lvlinf){
-            if (this.xp > lvlinf){
+        if (lvlinf) {
+            if (this.xp > lvlinf) {
                 this.xp -= lvlinf;
                 this.lvl += 1;
                 this.hp = this.maxhp;
                 this.mp = this.maxmp;
             }
         }
-        
+
     }
 }
 
@@ -493,18 +536,18 @@ class Mob {
         }
         else {
             let dopdist = 0;
-            if (this.hp < this.maxhp){
-                dopdist = 100;   
+            if (this.hp < this.maxhp) {
+                dopdist = 100;
             }
             let distancetoresp = Math.sqrt((this.respx - this.sprite.x) ** 2 + (this.respy - this.sprite.y) ** 2)
-            if (distance-dopdist > 250 || distancetoresp >= 500 || this.target.hp <= 0) {
+            if (distance - dopdist > 250 || distancetoresp >= 500 || this.target.hp <= 0) {
                 this.status = mobStatus.Revert;
                 this.target = null;
             }
             else if (distance < this.attackdistance && this.status != mobStatus.Attack) {
                 this.status = mobStatus.Attack
             }
-            else if (distance > this.attackdistance && distance-dopdist < 250 && this.status != mobStatus.Chase) {
+            else if (distance > this.attackdistance && distance - dopdist < 250 && this.status != mobStatus.Chase) {
                 this.status = mobStatus.Chase
             }
             else if (distance <= 10) {
@@ -665,6 +708,9 @@ class Mob {
             return
         }
 
+        let resplootx = this.x;
+        let resplooty = this.y;
+
         this.target = null;
         this.sprite.setPosition(this.respx, this.respy);
         this.sprite.visible = false;
@@ -673,6 +719,42 @@ class Mob {
         this.deathtime = Date.now();
         this.status = mobStatus.Respawn;
 
+        let drop = []
+        for (let i in loot) {
+            let element = loot[i];
+            if (element.chance < 100) {
+                let rand = Math.random() * 100;
+                if (rand > element.chance) {
+                    continue
+                }
+                let item = element.item;
+                drop.push(
+                    {
+                        'id': item.id,
+                        'name': item.name,
+                        'image': item.image,
+                        'stack': item.stack,
+                        'stacksize': item.stacksize,
+                        'quantity': item.quantity
+                    }
+                )
+            }
+
+        }
+
+        if (drop.length) {
+            let Chest = new Drop(scene_main.physics.add.sprite(resplootx, resplooty, 'Chest').setInteractive());
+            for (let i in drop) {
+                let item = drop[i];
+
+                Chest.loot.push({
+                    'item': new Item(item.id, item.name, item.image, item.stack, item.stacksize),
+                    'quantity': item.quantity
+                })
+
+            }
+            drops.push(Chest);
+        }
 
     }
 
@@ -765,7 +847,7 @@ class XPBar extends Phaser.Scene {
 
         let xp = 0;
         let maxXp = lvldata[player.lvl];
-        if (maxXp){
+        if (maxXp) {
             xp = (windowInnerWidth - 102) * (player.xp / maxXp);
         }
         this.xpbar.fillRect(51, windowInnerHeight - 30, xp, 18);
@@ -1424,14 +1506,14 @@ class Spell {
 
         player.mp -= this.mp;
         player.target.hp -= this.damage;
-        this.lastattack = Date.now(); 
+        this.lastattack = Date.now();
 
-        if (player.target.hp<=0){
+        if (player.target.hp <= 0) {
             player.addXp(player.target.xp);
-            player.target = null;   
+            player.target = null;
         }
-        else if (player.target.target == null){
-            player.target.target = player;   
+        else if (player.target.target == null) {
+            player.target.target = player;
         }
 
     }
@@ -1443,9 +1525,9 @@ class Spell {
             return false;
         }
 
-        if(player.target == null){
+        if (player.target == null) {
             this.targetarr.play();
-            return;   
+            return;
         }
 
         if (player.mp < this.mp) {
@@ -1954,7 +2036,7 @@ class MainScene extends Phaser.Scene {
         this.load.audio('mparr', 'assets/mp.m4a');
         this.load.audio('distancearr', 'assets/distance.m4a');
         this.load.audio('targetarr', 'assets/targetarr.m4a');
-        
+
 
     }
 
