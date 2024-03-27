@@ -5,7 +5,7 @@ const windowInnerHeight = window.innerHeight
 var client_id = Date.now()
 
 
-const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation', Dead: 'Dead' }
+const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation', Dead: 'Dead', Respawn: 'Respawn' }
 const targetType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC' }
 var player;
 var players = [];
@@ -15,10 +15,10 @@ var npcs = [];
 var drops = [];
 
 var mobsdata = [
-    { "uid": 1, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 110, "maxhp": 110, "mp": 10, "maxmp": 10, "x": 100, "y": 100, "respx": 100, "respy": 100, "status": "Expectation", "lvl": 1 },
-    { "uid": 2, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 110, "maxhp": 110, "mp": 10, "maxmp": 10, "x": 200, "y": 100, "respx": 200, "respy": 100, "status": "Expectation", "lvl": 1 },
-    { "uid": 3, "id": 3, "skin": "bomb", "name": "Чущпенсел", "hp": 120, "maxhp": 120, "mp": 20, "maxmp": 20, "x": 300, "y": 100, "respx": 300, "respy": 100, "status": "Expectation", "lvl": 2 },
-    { "uid": 4, "id": 4, "skin": "bomb", "name": "Чушпанище", "hp": 130, "maxhp": 130, "mp": 30, "maxmp": 30, "x": 400, "y": 100, "respx": 400, "respy": 100, "status": "Expectation", "lvl": 3 }
+    { "uid": 1, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 110, "maxhp": 110, "mp": 10, "maxmp": 10, "x": 100, "y": 100, "respx": 100, "respy": 100, "status": "Expectation", "lvl": 1, xp: 25 },
+    { "uid": 2, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 110, "maxhp": 110, "mp": 10, "maxmp": 10, "x": 200, "y": 100, "respx": 200, "respy": 100, "status": "Expectation", "lvl": 1, xp: 25 },
+    { "uid": 3, "id": 3, "skin": "bomb", "name": "Чущпенсел", "hp": 120, "maxhp": 120, "mp": 20, "maxmp": 20, "x": 300, "y": 100, "respx": 300, "respy": 100, "status": "Expectation", "lvl": 2, xp: 50 },
+    { "uid": 4, "id": 4, "skin": "bomb", "name": "Чушпанище", "hp": 130, "maxhp": 130, "mp": 30, "maxmp": 30, "x": 400, "y": 100, "respx": 400, "respy": 100, "status": "Expectation", "lvl": 3, xp: 75 }
 ];
 
 var npcsdata = [
@@ -53,10 +53,15 @@ var map;
 var scene_main;
 var scene_BagFrame;
 var scene_DropFrame;
-var scene_NpcDialoge
+var scene_NpcDialoge;
+var scene_SpellsFrames;
 var scene_CastFrame;
 
+var spellsdata = [];
+
 var spells = [];
+
+var lvldata = {1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0}
 
 let exemp = [];
 
@@ -73,7 +78,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spells.push({ 'id': 1, damage: 5, cooldown: 0, distance: 300, 'sprite': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 1, damage: 20, mp: 5, cooldown: 0, distance: 300, 'sprite': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 50, starty: - 270, x: 0, y: 0,
@@ -88,7 +93,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spells.push({ 'id': 2, damage: 10, cooldown: 1000, distance: 300, 'sprite': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 2, damage: 40, mp: 10, cooldown: 2000, distance: 300, 'sprite': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 100, starty: - 270, x: 0, y: 0,
@@ -103,7 +108,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spells.push({ 'id': 3, damage: 15, cooldown: 1500, distance: 300, 'sprite': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 3, damage: 60, mp: 15, cooldown: 3000, distance: 300, 'sprite': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 150, starty: - 260, x: 0, y: 0,
@@ -120,409 +125,8 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spells.push({ 'id': 4, damage: 25, cooldown: 3000, distance: 300, 'sprite': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 4, damage: 100, mp: 25, cooldown: 5000, distance: 300, 'sprite': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
 
-
-class CastFrame extends Phaser.Scene {
-
-    create() {
-        scene_CastFrame = this;
-
-        this.castopen = false;
-        this.spell = NaN;
-        this.exemple = [];
-        this.spelldata = [];
-        this.isDraw = false;
-        this.beginDraw = 0;
-        this.nowDraw = 0;
-        this.drawPoint = []
-
-        this.resultDraw = this.add.graphics();
-        this.graphics = this.add.graphics();
-        this.ClsdBtn = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 100, 'ClsdBtn').setInteractive();
-        this.ClsdBtn.visible = false;
-        this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
-            scene_CastFrame.close()
-        });
-
-        this.exemplestep = Date.now();
-        this.exempleGraph = this.add.graphics();
-        this.drawGraph = this.add.graphics();
-        this.zone = this.add.zone(windowInnerWidth - 155, windowInnerHeight - 155, 300, 300).setInteractive();
-        this.zone.visible = false;
-
-        this.zone.on('pointermove', pointer => {
-
-            if (pointer.isDown) {
-
-                if (!this.isDraw) {
-                    this.clearExemple()
-                }
-
-                this.isDraw = true;
-
-                if (!this.drawPoint.length) {
-                    this.beginDraw = Date.now() / 1000;
-                }
-
-                this.drawPoint.push({ 'x': pointer.x, 'y': pointer.y })
-
-                let dx = pointer.position.x;
-                let dy = pointer.position.y;
-                let x = pointer.prevPosition.x;
-                let y = pointer.prevPosition.y;
-
-                this.drawGraph.beginPath();
-                this.drawGraph.moveTo(x, y);
-                this.drawGraph.lineTo(dx, dy);
-                this.drawGraph.stroke();
-                this.drawGraph.closePath();
-            }
-
-        });
-
-        this.zone.on('pointerup', function (pointer) {
-
-            scene_CastFrame.direction();
-            scene_CastFrame.drawPoint.splice(0, scene_CastFrame.drawPoint.length);
-            scene_CastFrame.isDraw = false;
-
-        });
-
-        this.zone.on('pointerout', function (pointer) {
-
-            scene_CastFrame.direction();
-            scene_CastFrame.drawPoint.splice(0, scene_CastFrame.drawPoint.length);
-            scene_CastFrame.isDraw = false;
-
-        });
-
-
-    }
-
-    update(p1, p2) {
-
-        if (!this.exemple.length) {
-            return;
-        }
-
-        if (this.castopen && !this.isDraw) {
-            for (let ii in this.spelldata) {
-
-                if (this.spelldata[ii].Done) {
-                    continue;
-                }
-
-                let exemp = this.exemple[ii];
-
-                for (let i in exemp.direction) {
-                    while (exemp.direction[i].stepcounter <= exemp.direction[i].steps - 1 && Date.now() - this.exemplestep > 15) {
-
-                        let x1 = 0;
-                        let y1 = 0;
-                        if (exemp.direction[i].stepcounter == 0 && i == 0) {
-                            x1 = exemp.startx + windowInnerWidth;
-                            y1 = exemp.starty + windowInnerHeight;
-                        }
-                        else {
-                            x1 = exemp.x;
-                            y1 = exemp.y;
-                        }
-
-                        let x2 = x1 + exemp.direction[i].stepx;
-                        let y2 = y1 + exemp.direction[i].stepy;
-
-                        exemp.x = x2;
-                        exemp.y = y2;
-
-                        this.exempleGraph.beginPath();
-                        this.exempleGraph.moveTo(x1, y1);
-                        this.exempleGraph.lineTo(x2, y2);
-                        this.exempleGraph.stroke();
-                        this.exempleGraph.closePath();
-                        exemp.direction[i].stepcounter += 1;
-                        this.exemplestep = Date.now();
-
-                    }
-
-                }
-
-            }
-
-        }
-
-        let exemp = this.exemple[this.exemple.length - 1];
-        let lastdir = exemp.direction[exemp.direction.length - 1];
-        let clear = lastdir.stepcounter == lastdir.steps
-        if (clear) {
-            this.clearExemple()
-        }
-
-    }
-
-    clearExemple() {
-
-        for (let ii in this.exemple) {
-            let exemp = this.exemple[ii];
-            exemp.x = 0;
-            exemp.y = 0;
-            for (let i in exemp.direction) {
-                exemp.direction[i].stepcounter = 0;
-            }
-        }
-        this.exempleGraph.clear();
-        this.exempleGraph.lineStyle(7, 0x0000ff);
-    }
-
-    direction() {
-        this.beginDraw = 0;
-        this.nowDraw = 0;
-        let step = 2;
-
-        let x = 0;
-        let y = 0;
-        let i = 0;
-
-        let lastdirection = '';
-
-        let maxind = this.drawPoint.length - 1;
-        let dirarray = [];
-        while (i <= maxind) {
-
-            let direction = '';
-
-            x = this.drawPoint[i].x;
-            y = this.drawPoint[i].y;
-
-            i += step;
-            if (i > maxind) {
-                i = maxind;
-            }
-            direction = this.calculateDirection(x, y, this.drawPoint[i].x, this.drawPoint[i].y);
-            while (direction == '' && i <= maxind) {
-                i += step;
-                if (i > maxind) {
-                    break;
-                }
-                direction = this.calculateDirection(x, y, this.drawPoint[i].x, this.drawPoint[i].y);
-            }
-
-            if (lastdirection != direction) {
-                lastdirection = direction;
-                dirarray.push({ 'direction': direction, 'counter': 1 });
-                console.log(direction);
-            }
-            else {
-                dirarray[dirarray.length - 1].counter += 1;
-            }
-
-            i += step;
-        }
-
-        this.processArrayDirections(dirarray);
-
-        let arr = false;
-
-        for (let ii in this.spelldata) {
-
-            if (this.spelldata[ii].Done) {
-                continue;
-            }
-
-            if (this.spelldata[ii].data.length != dirarray.length) {
-                arr = true;
-            }
-            else {
-
-                for (let i in dirarray) {
-                    let result = dirarray[i];
-                    let spelldata = this.spelldata[ii].data[i];
-                    if (result != spelldata) {
-                        arr = true;
-                        break;
-                    }
-                }
-
-            }
-
-            if (arr) {
-                console.log('не шмогла');
-                this.drawGraph.clear();
-                this.drawGraph.lineStyle(5, 0x0000ff);
-                return;
-            }
-            else {
-                this.spelldata[ii].Done = true;
-
-                this.drawResult(ii);
-
-                if (this.spelldata[this.spelldata.length - 1].Done) {
-                    this.close();
-                    return;
-                }
-                else {
-                    this.drawGraph.clear();
-                    this.drawGraph.lineStyle(5, 0x0000ff);
-                    return;
-                }
-            }
-
-        }
-
-
-    }
-
-    drawResult(ind) {
-
-        let exemp = this.exemple[ind];
-
-        for (let i in exemp.direction) {
-            while (exemp.direction[i].stepcounter <= exemp.direction[i].steps - 1) {
-
-                let x1 = 0;
-                let y1 = 0;
-                if (exemp.direction[i].stepcounter == 0 && i == 0) {
-                    x1 = exemp.startx + windowInnerWidth;
-                    y1 = exemp.starty + windowInnerHeight;
-                }
-                else {
-                    x1 = exemp.x;
-                    y1 = exemp.y;
-                }
-
-                let x2 = x1 + exemp.direction[i].stepx;
-                let y2 = y1 + exemp.direction[i].stepy;
-
-                exemp.x = x2;
-                exemp.y = y2;
-
-                this.resultDraw.beginPath();
-                this.resultDraw.moveTo(x1, y1);
-                this.resultDraw.lineTo(x2, y2);
-                this.resultDraw.stroke();
-                this.resultDraw.closePath();
-                exemp.direction[i].stepcounter += 1;
-
-            }
-
-        }
-
-    }
-
-    processArrayDirections(array) {
-
-        let i = 0;
-        while (i <= array.length - 1) {
-            let strarray = array[i];
-            if (strarray.counter <= 2) {
-                array.splice(i, 1);
-                continue;
-            }
-
-            array[i] = strarray.direction;
-
-            i += 1;
-        }
-
-        i = 0;
-        while (i <= array.length - 1) {
-            if (i + 1 <= array.length - 1) {
-                if (array[i] == array[i + 1]) {
-                    array.splice(i + 1, 1);
-                }
-            }
-            i += 1;
-        }
-
-    }
-
-    calculateDirection(x1, y1, x2, y2) {
-        let dx = x2 - x1;
-        let dy = y2 - y1;
-        let angle = Math.atan2(dy, dx) * (180 / Math.PI);
-
-        if (angle < 0) {
-            angle += 360;
-        }
-        let direction = '';
-        if (angle >= 345 || angle <= 15) {
-            direction = 'right';
-        }
-        else if (angle >= 30 && angle < 60) {
-            direction = 'rightdown';
-        }
-        else if (angle >= 75 && angle < 105) {
-            direction = 'down';
-        }
-        else if (angle >= 120 && angle < 150) {
-            direction = 'leftdown';
-        }
-        else if (angle >= 165 && angle < 195) {
-            direction = 'left';
-        }
-        else if (angle >= 210 && angle < 240) {
-            direction = 'leftup';
-        }
-        else if (angle >= 255 && angle < 285) {
-            direction = 'up';
-        }
-        else if (angle >= 300 && angle < 330) {
-            direction = 'rightup';
-        }
-
-        return direction;
-    }
-
-    open(spell) {
-
-        if (spell == NaN) {
-            return;
-        }
-
-        this.spell = spell;
-        this.exemple = this.spell.exemple;
-        this.clearExemple()
-        for (let i in this.spell.spelldata) {
-            this.spelldata.push({ 'data': this.spell.spelldata[i], 'Done': false })
-        }
-        let xsize = windowInnerWidth - 310;
-        let ysize = windowInnerHeight - 310;
-        this.resultDraw.lineStyle(5, 0x000000);
-        this.graphics.fillStyle(0x000000, 0.2);
-        this.graphics.fillRect(xsize, ysize, 300, 300);
-        this.exempleGraph.lineStyle(7, 0x0000ff);
-        this.drawGraph.lineStyle(5, 0x0000ff);
-        this.ClsdBtn.visible = true;
-        this.ClsdBtn.setPosition(xsize + 300 - 10, ysize - 10)
-        this.zone.visible = true;
-        this.castopen = true;
-
-        for (let i in spells) {
-            spells[i].sprite.visible = false;
-        }
-
-        this.exemplestep = Date.now();
-
-
-    }
-
-    close() {
-        this.clearExemple()
-        this.spell = NaN;
-        this.ClsdBtn.visible = false;
-        this.resultDraw.clear();
-        this.graphics.clear();
-        this.exempleGraph.clear()
-        this.drawGraph.clear();
-        this.zone.visible = false;
-        this.spelldata = [];
-        this.castopen = false
-        for (let i in spells) {
-            spells[i].sprite.visible = true;
-        }
-        this.exemple = [];
-    }
-}
 
 class Player {
 
@@ -553,6 +157,7 @@ class Player {
     }
 
     update() {
+
         this.moving();
         this.respawn();
     }
@@ -788,6 +393,23 @@ class Player {
             this.mp = this.maxmp;
         }
     }
+
+    addXp(xp){
+
+        this.xp += xp;
+
+        let lvlinf = lvldata[this.lvl];
+
+        if (lvlinf){
+            if (this.xp > lvlinf){
+                this.xp -= lvlinf;
+                this.lvl += 1;
+                this.hp = this.maxhp;
+                this.mp = this.maxmp;
+            }
+        }
+        
+    }
 }
 
 class Mob {
@@ -798,7 +420,8 @@ class Mob {
         this.id = data.id;
         this.uid = data.uid;
         this.name = data.name;
-        this.lvl = data.lvl
+        this.lvl = data.lvl;
+        this.xp = data.xp;
         this.hp = data.hp;
         this.maxhp = data.maxhp;
         this.mp = data.mp;
@@ -814,6 +437,8 @@ class Mob {
         this.damage = 5 * this.lvl;
         this.timeattack = 2000;//мсек
         this.lastattack = 0;
+        this.deathtime = 0;
+        this.resptime = 20000;
 
 
     }
@@ -829,6 +454,8 @@ class Mob {
         this.revert();
         this.stopMiving();
         this.atack();
+        this.death();
+        this.respawn();
 
 
     }
@@ -847,8 +474,11 @@ class Mob {
 
     setStatus() {
 
-        if (this.status == mobStatus.Revert || this.status == mobStatus.Dead
-            || this.hp <= 0) {
+        if (this.hp <= 0) {
+            this.status = mobStatus.Dead;
+        }
+
+        if (this.status == mobStatus.Revert || this.status == mobStatus.Dead || this.status == mobStatus.Respawn) {
             return
         }
 
@@ -861,15 +491,19 @@ class Mob {
             }
         }
         else {
+            let dopdist = 0;
+            if (this.hp < this.maxhp){
+                dopdist = 100;   
+            }
             let distancetoresp = Math.sqrt((this.respx - this.sprite.x) ** 2 + (this.respy - this.sprite.y) ** 2)
-            if (distance > 250 || distancetoresp >= 500 || this.target.hp <= 0) {
+            if (distance-dopdist > 250 || distancetoresp >= 500 || this.target.hp <= 0) {
                 this.status = mobStatus.Revert;
                 this.target = null;
             }
             else if (distance < this.attackdistance && this.status != mobStatus.Attack) {
                 this.status = mobStatus.Attack
             }
-            else if (distance > this.attackdistance && distance < 250 && this.status != mobStatus.Chase) {
+            else if (distance > this.attackdistance && distance-dopdist < 250 && this.status != mobStatus.Chase) {
                 this.status = mobStatus.Chase
             }
             else if (distance <= 10) {
@@ -1024,6 +658,38 @@ class Mob {
 
     }
 
+    death() {
+
+        if (this.status != mobStatus.Dead) {
+            return
+        }
+
+        this.target = null;
+        this.sprite.setPosition(this.respx, this.respy);
+        this.sprite.visible = false;
+        this.hp = this.maxhp;
+        this.mp = this.maxmp;
+        this.deathtime = Date.now();
+        this.status = mobStatus.Respawn;
+
+
+    }
+
+    respawn() {
+
+        if (this.status != mobStatus.Respawn) {
+            return
+        }
+
+        if (Date.now() - this.deathtime >= this.resptime) {
+            this.sprite.visible = true;
+            this.deathtime = 0;
+            this.status = mobStatus.Expectation;
+        }
+
+    }
+
+
 }
 
 class NPC {
@@ -1095,7 +761,14 @@ class XPBar extends Phaser.Scene {
         let xpbackwidth = windowInnerWidth - 100;
         this.xpbar.fillRect(windowInnerWidth / 2 - xpbackwidth / 2, windowInnerHeight - 30, xpbackwidth, 20);
         this.xpbar.fillStyle(0x0000ff, 1);
-        this.xpbar.fillRect(51, windowInnerHeight - 30, (windowInnerWidth - 102) * (player.xp / 100), 18);
+
+        let xp = 0;
+        let maxXp = lvldata[player.lvl];
+        if (maxXp){
+            xp = (windowInnerWidth - 102) * (player.xp / maxXp);
+        }
+        this.xpbar.fillRect(51, windowInnerHeight - 30, xp, 18);
+
     }
 
 }
@@ -1239,31 +912,38 @@ class TargetFrame extends Phaser.Scene {
 
 class SpellsFrames extends Phaser.Scene {
 
-    preload() {
-
-    }
-
     create() {
 
-        let step = 50 * spells.length;
-        for (let i in spells) {
-            let element = spells[i];
-            element.sprite = this.add.sprite(windowInnerWidth - 40, windowInnerHeight - step, element.sprite).setInteractive();
+        scene_SpellsFrames = this;
+
+        let step = 50 * spellsdata.length;
+        for (let i in spellsdata) {
+            let spelldata = spellsdata[i];
+            let newspell = new Spell(spelldata, windowInnerWidth - 40, windowInnerHeight - step);
+            spells.push(newspell);
+
             step -= 50;
         }
 
         this.input.on('pointerdown', function (pointer, gameObject) {
 
-            if (gameObject.length) {
-
-                for (let i in spells) {
-                    let element = spells[i];
-                    if (element.sprite == gameObject[0]) {
-                        scene_CastFrame.open(element);
-                    }
-                }
-
+            if (!gameObject.length || player.target == null) {
+                return;
             }
+
+            for (let i in spells) {
+                let element = spells[i];
+                if (element.sprite == gameObject[0]) {
+                    if (!element.check()) {
+                        return
+                    }
+                    if (scene_CastFrame.castopen) {
+                        scene_CastFrame.close();
+                    }
+                    scene_CastFrame.open(element);
+                }
+            }
+
 
         });
 
@@ -1313,6 +993,465 @@ class SpellsFrames extends Phaser.Scene {
         // }
 
     }
+}
+
+class CastFrame extends Phaser.Scene {
+
+    create() {
+        scene_CastFrame = this;
+
+        this.castopen = false;
+        this.spell = null;
+        this.exemple = [];
+        this.spelldata = [];
+        this.isDraw = false;
+        this.beginDraw = 0;
+        this.nowDraw = 0;
+        this.drawPoint = []
+
+        this.resultDraw = this.add.graphics();
+        this.graphics = this.add.graphics();
+        this.ClsdBtn = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 100, 'ClsdBtn').setInteractive();
+        this.ClsdBtn.visible = false;
+        this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
+            scene_CastFrame.close()
+        });
+
+        this.exemplestep = Date.now();
+        this.exempleGraph = this.add.graphics();
+        this.drawGraph = this.add.graphics();
+        this.zone = this.add.zone(windowInnerWidth - 155, windowInnerHeight - 155, 300, 300).setInteractive();
+        this.zone.visible = false;
+
+        this.zone.on('pointermove', pointer => {
+
+            if (pointer.isDown) {
+
+                if (!this.isDraw) {
+                    this.clearExemple()
+                }
+
+                this.isDraw = true;
+
+                if (!this.drawPoint.length) {
+                    this.beginDraw = Date.now() / 1000;
+                }
+
+                this.drawPoint.push({ 'x': pointer.x, 'y': pointer.y })
+
+                let dx = pointer.position.x;
+                let dy = pointer.position.y;
+                let x = pointer.prevPosition.x;
+                let y = pointer.prevPosition.y;
+
+                this.drawGraph.beginPath();
+                this.drawGraph.moveTo(x, y);
+                this.drawGraph.lineTo(dx, dy);
+                this.drawGraph.stroke();
+                this.drawGraph.closePath();
+            }
+
+        });
+
+        this.zone.on('pointerup', function (pointer) {
+
+            scene_CastFrame.direction();
+            scene_CastFrame.drawPoint.splice(0, scene_CastFrame.drawPoint.length);
+            scene_CastFrame.isDraw = false;
+
+        });
+
+        this.zone.on('pointerout', function (pointer) {
+
+            scene_CastFrame.direction();
+            scene_CastFrame.drawPoint.splice(0, scene_CastFrame.drawPoint.length);
+            scene_CastFrame.isDraw = false;
+
+        });
+
+
+    }
+
+    update(p1, p2) {
+
+        if (!this.exemple.length) {
+            return;
+        }
+
+        if (this.castopen && !this.isDraw) {
+            if (!this.spell.check()) {
+                this.close();
+                return;
+            }
+            for (let ii in this.spelldata) {
+
+                if (this.spelldata[ii].Done) {
+                    continue;
+                }
+
+                let exemp = this.exemple[ii];
+
+                for (let i in exemp.direction) {
+                    while (exemp.direction[i].stepcounter <= exemp.direction[i].steps - 1 && Date.now() - this.exemplestep > 15) {
+
+                        let x1 = 0;
+                        let y1 = 0;
+                        if (exemp.direction[i].stepcounter == 0 && i == 0) {
+                            x1 = exemp.startx + windowInnerWidth;
+                            y1 = exemp.starty + windowInnerHeight;
+                        }
+                        else {
+                            x1 = exemp.x;
+                            y1 = exemp.y;
+                        }
+
+                        let x2 = x1 + exemp.direction[i].stepx;
+                        let y2 = y1 + exemp.direction[i].stepy;
+
+                        exemp.x = x2;
+                        exemp.y = y2;
+
+                        this.exempleGraph.beginPath();
+                        this.exempleGraph.moveTo(x1, y1);
+                        this.exempleGraph.lineTo(x2, y2);
+                        this.exempleGraph.stroke();
+                        this.exempleGraph.closePath();
+                        exemp.direction[i].stepcounter += 1;
+                        this.exemplestep = Date.now();
+
+                    }
+
+                }
+
+            }
+
+        }
+
+        let exemp = this.exemple[this.exemple.length - 1];
+        let lastdir = exemp.direction[exemp.direction.length - 1];
+        let clear = lastdir.stepcounter == lastdir.steps
+        if (clear) {
+            this.clearExemple()
+        }
+
+    }
+
+    clearExemple() {
+
+        for (let ii in this.exemple) {
+            let exemp = this.exemple[ii];
+            exemp.x = 0;
+            exemp.y = 0;
+            for (let i in exemp.direction) {
+                exemp.direction[i].stepcounter = 0;
+            }
+        }
+        this.exempleGraph.clear();
+        this.exempleGraph.lineStyle(7, 0x0000ff);
+    }
+
+    direction() {
+        this.beginDraw = 0;
+        this.nowDraw = 0;
+        let step = 2;
+
+        let x = 0;
+        let y = 0;
+        let i = 0;
+
+        let lastdirection = '';
+
+        let maxind = this.drawPoint.length - 1;
+        let dirarray = [];
+        while (i <= maxind) {
+
+            let direction = '';
+
+            x = this.drawPoint[i].x;
+            y = this.drawPoint[i].y;
+
+            i += step;
+            if (i > maxind) {
+                i = maxind;
+            }
+            direction = this.calculateDirection(x, y, this.drawPoint[i].x, this.drawPoint[i].y);
+            while (direction == '' && i <= maxind) {
+                i += step;
+                if (i > maxind) {
+                    break;
+                }
+                direction = this.calculateDirection(x, y, this.drawPoint[i].x, this.drawPoint[i].y);
+            }
+
+            if (lastdirection != direction) {
+                lastdirection = direction;
+                dirarray.push({ 'direction': direction, 'counter': 1 });
+                console.log(direction);
+            }
+            else {
+                if (dirarray.length) {
+                    dirarray[dirarray.length - 1].counter += 1;
+                }
+            }
+
+            i += step;
+        }
+
+        this.processArrayDirections(dirarray);
+
+        let arr = false;
+
+        for (let ii in this.spelldata) {
+
+            if (this.spelldata[ii].Done) {
+                continue;
+            }
+
+            if (this.spelldata[ii].data.length != dirarray.length) {
+                arr = true;
+            }
+            else {
+
+                for (let i in dirarray) {
+                    let result = dirarray[i];
+                    let spelldata = this.spelldata[ii].data[i];
+                    if (result != spelldata) {
+                        arr = true;
+                        break;
+                    }
+                }
+
+            }
+
+            if (arr) {
+                console.log('не шмогла');
+                this.drawGraph.clear();
+                this.drawGraph.lineStyle(5, 0x0000ff);
+                return;
+            }
+            else {
+                this.spelldata[ii].Done = true;
+
+                this.drawResult(ii);
+
+                if (this.spelldata[this.spelldata.length - 1].Done) {
+                    this.spell.use();
+                    this.close();
+                    return;
+                }
+                else {
+                    this.drawGraph.clear();
+                    this.drawGraph.lineStyle(5, 0x0000ff);
+                    return;
+                }
+            }
+
+        }
+
+
+    }
+
+    drawResult(ind) {
+
+        let exemp = this.exemple[ind];
+
+        for (let i in exemp.direction) {
+            while (exemp.direction[i].stepcounter <= exemp.direction[i].steps - 1) {
+
+                let x1 = 0;
+                let y1 = 0;
+                if (exemp.direction[i].stepcounter == 0 && i == 0) {
+                    x1 = exemp.startx + windowInnerWidth;
+                    y1 = exemp.starty + windowInnerHeight;
+                }
+                else {
+                    x1 = exemp.x;
+                    y1 = exemp.y;
+                }
+
+                let x2 = x1 + exemp.direction[i].stepx;
+                let y2 = y1 + exemp.direction[i].stepy;
+
+                exemp.x = x2;
+                exemp.y = y2;
+
+                this.resultDraw.beginPath();
+                this.resultDraw.moveTo(x1, y1);
+                this.resultDraw.lineTo(x2, y2);
+                this.resultDraw.stroke();
+                this.resultDraw.closePath();
+                exemp.direction[i].stepcounter += 1;
+
+            }
+
+        }
+
+    }
+
+    processArrayDirections(array) {
+
+        let i = 0;
+        while (i <= array.length - 1) {
+            let strarray = array[i];
+            if (strarray.counter <= 2) {
+                array.splice(i, 1);
+                continue;
+            }
+
+            array[i] = strarray.direction;
+
+            i += 1;
+        }
+
+        i = 0;
+        while (i <= array.length - 1) {
+            if (i + 1 <= array.length - 1) {
+                if (array[i] == array[i + 1]) {
+                    array.splice(i + 1, 1);
+                }
+            }
+            i += 1;
+        }
+
+    }
+
+    calculateDirection(x1, y1, x2, y2) {
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+        if (angle < 0) {
+            angle += 360;
+        }
+        let direction = '';
+        if (angle >= 345 || angle <= 15) {
+            direction = 'right';
+        }
+        else if (angle >= 30 && angle < 60) {
+            direction = 'rightdown';
+        }
+        else if (angle >= 75 && angle < 105) {
+            direction = 'down';
+        }
+        else if (angle >= 120 && angle < 150) {
+            direction = 'leftdown';
+        }
+        else if (angle >= 165 && angle < 195) {
+            direction = 'left';
+        }
+        else if (angle >= 210 && angle < 240) {
+            direction = 'leftup';
+        }
+        else if (angle >= 255 && angle < 285) {
+            direction = 'up';
+        }
+        else if (angle >= 300 && angle < 330) {
+            direction = 'rightup';
+        }
+
+        return direction;
+    }
+
+    open(spell) {
+
+        if (spell == NaN) {
+            return;
+        }
+
+        this.spell = spell;
+        this.exemple = this.spell.exemple;
+        this.clearExemple()
+        for (let i in this.spell.spelldata) {
+            this.spelldata.push({ 'data': this.spell.spelldata[i], 'Done': false })
+        }
+        let xsize = windowInnerWidth - 310;
+        let ysize = windowInnerHeight - 310;
+        this.resultDraw.lineStyle(5, 0x000000);
+        this.graphics.fillStyle(0x000000, 0.2);
+        this.graphics.fillRect(xsize, ysize, 300, 300);
+        this.exempleGraph.lineStyle(7, 0x0000ff);
+        this.drawGraph.lineStyle(5, 0x0000ff);
+        this.ClsdBtn.visible = true;
+        this.ClsdBtn.setPosition(xsize + 300 - 10, ysize - 10)
+        this.zone.visible = true;
+        this.castopen = true;
+
+        for (let i in spells) {
+            spells[i].sprite.visible = false;
+        }
+
+        this.exemplestep = Date.now();
+
+
+    }
+
+    close() {
+        this.clearExemple()
+        this.spell = null;
+        this.ClsdBtn.visible = false;
+        this.resultDraw.clear();
+        this.graphics.clear();
+        this.exempleGraph.clear()
+        this.drawGraph.clear();
+        this.zone.visible = false;
+        this.spelldata = [];
+        this.castopen = false
+        for (let i in spells) {
+            spells[i].sprite.visible = true;
+        }
+        this.exemple = [];
+    }
+}
+
+class Spell {
+    constructor(data, Width, Height) {
+        this.id = data.id;
+        this.damage = data.damage;
+        this.mp = data.mp;
+        this.cooldown = data.cooldown;
+        this.distance = data.distance;
+        this.sprite = scene_SpellsFrames.add.sprite(Width, Height, data.sprite).setInteractive();
+        this.spelldata = data.spelldata;
+        this.exemple = data.exemple;
+        this.lastattack = 0;
+    }
+
+    use() {
+
+        player.mp -= this.mp;
+        player.target.hp -= this.damage;
+        this.lastattack = Date.now(); 
+
+        if (player.target.hp<=0){
+            player.addXp(player.target.xp);
+            player.target = null;   
+        }
+        else if (player.target.target == null){
+            player.target.target = player;   
+        }
+
+    }
+
+    check() {
+
+        if (player.mp < this.mp) {
+            return false;
+        }
+
+        if (Date.now() - this.lastattack <= this.cooldown) {
+            return false;
+        }
+
+        let distance = Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2);
+
+        if (distance > this.distance) {
+            return false;
+        }
+
+        return true;
+
+    }
+
 }
 
 class BagFrame extends Phaser.Scene {
@@ -2021,6 +2160,7 @@ class MainScene extends Phaser.Scene {
 
         for (let i in mobsdata) {
             createMob(mobsdata[i]);
+
         }
 
         for (let i in npcsdata) {
