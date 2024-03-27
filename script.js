@@ -139,6 +139,7 @@ class Player {
         this.hp = 100;
         this.maxhp = 100;
         this.mp = 100;
+        // this.mp = 0;
         this.maxmp = 100;
         this.speed = 150;
         this.target = null;
@@ -927,7 +928,7 @@ class SpellsFrames extends Phaser.Scene {
 
         this.input.on('pointerdown', function (pointer, gameObject) {
 
-            if (!gameObject.length || player.target == null) {
+            if (!gameObject.length) {
                 return;
             }
 
@@ -1414,6 +1415,9 @@ class Spell {
         this.spelldata = data.spelldata;
         this.exemple = data.exemple;
         this.lastattack = 0;
+        this.mparr = scene_main.sound.add('mparr');
+        this.distancearr = scene_main.sound.add('distancearr');
+        this.targetarr = scene_main.sound.add('targetarr');
     }
 
     use() {
@@ -1434,17 +1438,25 @@ class Spell {
 
     check() {
 
-        if (player.mp < this.mp) {
+
+        if (Date.now() - this.lastattack <= this.cooldown) {
             return false;
         }
 
-        if (Date.now() - this.lastattack <= this.cooldown) {
+        if(player.target == null){
+            this.targetarr.play();
+            return;   
+        }
+
+        if (player.mp < this.mp) {
+            this.mparr.play();
             return false;
         }
 
         let distance = Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2);
 
         if (distance > this.distance) {
+            this.distancearr.play();
             return false;
         }
 
@@ -1938,6 +1950,11 @@ class MainScene extends Phaser.Scene {
         this.load.image('spell2', 'assets/spell2.png');
         this.load.image('spell3', 'assets/spell3.png');
         this.load.image('spell4', 'assets/spell4.png');
+
+        this.load.audio('mparr', 'assets/mp.m4a');
+        this.load.audio('distancearr', 'assets/distance.m4a');
+        this.load.audio('targetarr', 'assets/targetarr.m4a');
+        
 
     }
 
