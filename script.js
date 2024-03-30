@@ -15,10 +15,10 @@ var npcs = [];
 var drops = [];
 
 var mobsdata = [
-    { "uid": 1, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 110, "maxhp": 110, "mp": 10, "maxmp": 10, "x": 100, "y": 100, "respx": 100, "respy": 100, "status": "Expectation", "lvl": 1, xp: 25 },
-    { "uid": 2, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 110, "maxhp": 110, "mp": 10, "maxmp": 10, "x": 200, "y": 100, "respx": 200, "respy": 100, "status": "Expectation", "lvl": 1, xp: 25 },
-    { "uid": 3, "id": 3, "skin": "bomb", "name": "Чущпенсел", "hp": 120, "maxhp": 120, "mp": 20, "maxmp": 20, "x": 300, "y": 100, "respx": 300, "respy": 100, "status": "Expectation", "lvl": 2, xp: 50 },
-    { "uid": 4, "id": 4, "skin": "bomb", "name": "Чушпанище", "hp": 130, "maxhp": 130, "mp": 30, "maxmp": 30, "x": 400, "y": 100, "respx": 400, "respy": 100, "status": "Expectation", "lvl": 3, xp: 75 }
+    { "uid": 1, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 50, "maxhp": 50, "mp": 30, "maxmp": 30, "x": 100, "y": 100, "respx": 100, "respy": 100, "status": "Expectation", "lvl": 1, xp: 25 },
+    { "uid": 2, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 50, "maxhp": 50, "mp": 30, "maxmp": 30, "x": 200, "y": 100, "respx": 200, "respy": 100, "status": "Expectation", "lvl": 1, xp: 25 },
+    { "uid": 3, "id": 3, "skin": "bomb", "name": "Чущпенсел", "hp": 70, "maxhp": 70, "mp": 30, "maxmp": 30, "x": 300, "y": 100, "respx": 300, "respy": 100, "status": "Expectation", "lvl": 2, xp: 50 },
+    { "uid": 4, "id": 4, "skin": "bomb", "name": "Чушпанище", "hp": 100, "maxhp": 100, "mp": 30, "maxmp": 30, "x": 400, "y": 100, "respx": 400, "respy": 100, "status": "Expectation", "lvl": 3, xp: 75 }
 ];
 
 var npcsdata = [
@@ -56,6 +56,8 @@ var scene_DropFrame;
 var scene_NpcDialoge;
 var scene_SpellsFrames;
 var scene_CastFrame;
+var scene_XpBar;
+var scene_CharFrame;
 
 var loot = []
 
@@ -180,30 +182,64 @@ class Player {
         this.thisplayer = true;
         this.type = targetType.Player
         this.name = String(client_id);
-        this.hp = 100;
-        this.maxhp = 100;
-        this.mp = 100;
-        this.maxmp = 100;
+        this.lvl = 1;
+        this.xp = 0;
+        this.performancepoints = 10;
+        this.stamina = 0;
+        this.intellect = 0;
+        this.fortitude = 0;
+        this.skill = 0;
+        this.luck = 0;
+        this.hp = 50;
+        this.maxhp = 50;
+        this.mp = 50;
+        this.maxmp = 50;
+        this.magicpower = 0;
+        this.lastrecovery = 0;
+        this.healthrecovery = 0; 
+        this.manarecovery = 0;
         this.speed = 150;
         this.target = null;
         this.x = this.sprite.x;
         this.y = this.sprite.y;
         this.respx = this.x;
         this.respy = this.y;
-        this.lvl = 1;
-        this.xp = 0;
-        this.spell1 = null;
-        this.spell2 = null;
-        this.spell3 = null;
         this.bag = [null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null];
+        this.recalculateParameters();
+    }
+
+    recalculateParameters() {
+
+        this.maxhp = 50 + this.stamina*10;
+        this.maxmp = 50 + this.intellect*10;
+
+        this.healthrecovery = this.fortitude; 
+        this.manarecovery = this.fortitude;
+
+    }
+
+    hpmpcovery(){
+
+        if (Date.now()- this.lastrecovery > 1000){
+            this.lastrecovery = Date.now();
+            if (this.hp < this.maxhp){
+                this.hp += this.fortitude;
+            }
+            if (this.mp < this.maxmp){
+                this.mp += this.fortitude;
+            }
+        }
+
+
     }
 
     update() {
 
         this.moving();
         this.respawn();
+        this.hpmpcovery();
     }
 
     moving() {
@@ -450,6 +486,7 @@ class Player {
                 this.lvl += 1;
                 this.hp = this.maxhp;
                 this.mp = this.maxmp;
+                this.performancepoints += 10;
             }
         }
 
@@ -479,7 +516,7 @@ class Mob {
         this.status = mobStatus[data.status];
         this.attackdistance = 50;
         this.damage = 5 * this.lvl;
-        this.timeattack = 2000;//мсек
+        this.timeattack = 3000;//мсек
         this.lastattack = 0;
         this.deathtime = 0;
         this.resptime = 20000;
@@ -510,7 +547,7 @@ class Mob {
             && this.target != null
             && this.target.hp > 0
             && Date.now() - this.lastattack >= this.timeattack) {
-            this.target.hp = this.target.hp - this.damage;
+            this.target.hp -= this.damage;
             this.lastattack = Date.now();
         }
 
@@ -821,7 +858,7 @@ class Drop {
     }
 }
 
-class BagCell {
+class itemCell {
     constructor() {
         this.index = 0;
         this.x = 0;
@@ -835,10 +872,12 @@ class BagCell {
 class XPBar extends Phaser.Scene {
 
     create() {
+        scene_XpBar = this;
         this.xpbar = this.add.graphics();
+        this.updatexpbar();
     }
 
-    update() {
+    updatexpbar() {
         this.xpbar.clear()
         this.xpbar.fillStyle(0x000000, 0.5);
         let xpbackwidth = windowInnerWidth - 100;
@@ -853,6 +892,7 @@ class XPBar extends Phaser.Scene {
         this.xpbar.fillRect(51, windowInnerHeight - 30, xp, 18);
 
     }
+
 
 }
 
@@ -1511,6 +1551,7 @@ class Spell {
         if (player.target.hp <= 0) {
             player.addXp(player.target.xp);
             player.target = null;
+            scene_XpBar.updatexpbar();
         }
         else if (player.target.target == null) {
             player.target.target = player;
@@ -1543,6 +1584,343 @@ class Spell {
         }
 
         return true;
+
+    }
+
+}
+
+class CharFrame extends Phaser.Scene {
+
+    create() {
+        scene_CharFrame = this;
+
+        this.dragobg = null;
+        this.isopen = false;
+        this.graphics = this.add.graphics();
+        this.ClsdBtn = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
+        this.ClsdBtn.visible = false;
+        this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
+            scene_CharFrame.close()
+        });
+
+
+        this.textperformancepoints = this.add.text(20, 180, 'Свободные очки', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textperformancepoints.visible = false;
+
+        this.textstamina = this.add.text(20, 210, 'Выносливость', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textstamina.visible = false;
+
+        this.textintellect = this.add.text(20, 230, 'Интелект', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textintellect.visible = false;
+
+        this.textfortitude = this.add.text(20, 250, 'Сила духа', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textfortitude.visible = false;
+
+        this.textskill = this.add.text(20, 270, 'Мастерство', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textskill.visible = false;
+
+        this.textluck = this.add.text(20, 290, 'Удача', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textluck.visible = false;
+
+        this.staminaplus = this.add.text(250, 210, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.staminaplus.setInteractive();
+        this.staminaplus.visible = false;
+        this.staminaplus.on('pointerdown', function (pointer, gameObject) {
+            if (player.performancepoints) {
+                player.performancepoints -= 1;
+                player.stamina += 1;
+                player.recalculateParameters();
+                scene_CharFrame.plusvisible(player.performancepoints > 0);
+                scene_CharFrame.textperformancepoints.setText('Свободные очки: ' + player.performancepoints);
+                scene_CharFrame.textstamina.setText('Выносливость: ' + player.stamina);
+            }
+        });
+
+        this.intellectplus = this.add.text(250, 230, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.intellectplus.setInteractive();
+        this.intellectplus.visible = false;
+        this.intellectplus.on('pointerdown', function (pointer, gameObject) {
+            if (player.performancepoints) {
+                player.performancepoints -= 1;  
+                player.intellect += 1;
+                player.recalculateParameters();
+                scene_CharFrame.plusvisible(player.performancepoints > 0);
+                scene_CharFrame.textperformancepoints.setText('Свободные очки: ' + player.performancepoints);
+                scene_CharFrame.textintellect.setText('Интелект: ' + player.intellect);
+            }
+        });
+
+        this.fortitudeplus = this.add.text(250, 250, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.fortitudeplus.setInteractive();
+        this.fortitudeplus.visible = false;
+        this.fortitudeplus.on('pointerdown', function (pointer, gameObject) {
+            if (player.performancepoints) {
+                player.performancepoints -= 1;
+                player.fortitude += 1;
+                player.recalculateParameters();
+                scene_CharFrame.plusvisible(player.performancepoints > 0);
+                scene_CharFrame.textperformancepoints.setText('Свободные очки: ' + player.performancepoints)
+                scene_CharFrame.textfortitude.setText('Сила духа: ' + player.fortitude);
+            }
+        });
+
+        this.skillplus = this.add.text(250, 270, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.skillplus.setInteractive();
+        this.skillplus.visible = false;
+        this.skillplus.on('pointerdown', function (pointer, gameObject) {
+            if (player.performancepoints) {
+                player.performancepoints -= 1;
+                player.skill += 1;
+                player.recalculateParameters();
+                scene_CharFrame.plusvisible(player.performancepoints > 0);
+                scene_CharFrame.textperformancepoints.setText('Свободные очки: ' + player.performancepoints);
+                scene_CharFrame.textskill.setText('Мастерство: ' + player.skill);
+            }
+        });
+
+        this.luckplus = this.add.text(250, 290, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.luckplus.setInteractive();
+        this.luckplus.visible = false;
+        this.luckplus.on('pointerdown', function (pointer, gameObject) {
+            if (player.performancepoints) {
+                player.performancepoints -= 1;
+                player.luck += 1;
+                player.recalculateParameters();
+                scene_CharFrame.plusvisible(player.performancepoints > 0);
+                scene_CharFrame.textperformancepoints.setText('Свободные очки: ' + player.performancepoints);
+                scene_CharFrame.textluck.setText('Удача: ' + player.luck);
+            }
+        });
+
+        this.input.on('drag', (pointer, obj, dragX, dragY) => {
+            // obj.setPosition(dragX, dragY);
+            // scene_BagFrame.dragobg = obj;
+        });
+
+        this.input.on('pointerup', function (pointer, obj) {
+            // if (obj.length == 0) {
+            //     return;
+            // }
+            // let dragobg = scene_BagFrame.dragobg;
+            // let dragcell = null;
+            // let dragitem = null;
+            // for (let i in player.bag) {
+            //     if (player.bag[i].item != null) {
+            //         if (player.bag[i].item.sprite == dragobg) {
+            //             dragcell = player.bag[i];
+            //             dragitem = dragcell.item;
+            //             break
+            //         }
+            //     }
+            // }
+
+            // if (dragitem != null) {
+            //     let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
+
+            //     if (distance <= 25) {
+            //         dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+            //         return
+            //     }
+
+            //     let replacecell = null;
+
+            //     for (let i in player.bag) {
+            //         if (dragcell.index == i) {
+            //             continue;
+            //         }
+            //         let replaceelement = player.bag[i];
+            //         let replacedistance = Math.sqrt((dragitem.sprite.x - replaceelement.x) ** 2 + (dragitem.sprite.y - replaceelement.y) ** 2);
+            //         if (replacedistance <= 25) {
+            //             replacecell = replaceelement;
+            //             break;
+            //         }
+            //     }
+
+            //     if (replacecell == null) {
+            //         dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+            //     }
+            //     else {
+
+            //         let replaceitem = replacecell.item;
+            //         replaceitem = replacecell.item;
+            //         replacecell.item = dragitem;
+            //         dragitem.sprite.setPosition(replacecell.x, replacecell.y);
+            //         dragcell.item = replaceitem;
+            //         if (replaceitem != null) {
+            //             replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
+            //         }
+
+            //     }
+            // }
+
+        });
+
+    }
+
+    open() {
+
+
+        this.isopen = true;
+
+        this.graphics.fillStyle(0x0000ff);
+        this.graphics.fillRect(10, 20, 300, 300);
+
+        this.ClsdBtn.visible = true;
+        this.ClsdBtn.setPosition(300, 10);
+        this.ClsdBtn.visible = true;
+
+        this.textperformancepoints.setText('Свободные очки: ' + player.performancepoints)
+        this.textperformancepoints.visible = true;
+
+        this.textstamina.setText('Выносливость: ' + player.stamina)
+        this.textstamina.visible = true;
+
+        this.textintellect.setText('Интелект: ' + player.intellect)
+        this.textintellect.visible = true;
+
+        this.textfortitude.setText('Сила духа: ' + player.fortitude)
+        this.textfortitude.visible = true;
+
+        this.textskill.setText('Мастерство: ' + player.skill)
+        this.textskill.visible = true;
+
+        this.textluck.setText('Удача: ' + player.luck)
+        this.textluck.visible = true;
+
+        if (player.performancepoints) {
+
+            this.staminaplus.visible = true;
+            this.intellectplus.visible = true;
+            this.fortitudeplus.visible = true;
+            this.skillplus.visible = true;
+            this.luckplus.visible = true;
+
+        }
+
+
+
+        return;
+
+        let xsize = windowInnerWidth / 2 + 50;
+        let ysize = windowInnerHeight / 2 - 200;
+
+        let columns = Math.floor(Math.sqrt(player.bag.length)) + 1;
+
+        let rows = Math.floor(player.bag.length / columns);
+
+        if (rows < player.bag.length / columns) {
+            rows += 1;
+        }
+
+        this.graphics.fillStyle(0x0000ff, 0.5);
+        this.graphics.fillRect(xsize, ysize, columns * 50, rows * 50 + 25);
+
+        let cellxsize = xsize;
+        let cellysize = ysize + 20;
+
+        this.graphics.fillStyle(0x0000ff);
+        this.graphics.fillRect(xsize, ysize, columns * 50, rows + 15);
+
+        this.graphics.fillStyle(0x000000);
+        this.graphics.fillRect(xsize + columns * 50 - 20, ysize, 20, rows + 15);
+
+        this.ClsdBtn.visible = true;
+        this.ClsdBtn.setPosition(xsize + columns * 50 - 10, ysize + 11)
+
+        cellysize = ysize + 25;
+
+        let counterstring = 0;
+
+        for (let i in player.bag) {
+
+            if (i == 0) {
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+            }
+            else if (i % columns == 0) {
+                counterstring = counterstring + 1;
+                cellxsize = xsize;
+                cellysize = ysize + 25 + 50 * counterstring;
+
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+            }
+            else {
+                cellxsize = cellxsize + 45;
+                cellysize = cellysize - 5;
+            }
+
+            this.graphics.fillStyle(0x000000, 0.5);
+            this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+            cellxsize = cellxsize + 5;
+            cellysize = cellysize + 5;
+            this.graphics.fillStyle(0x000000, 1);
+            this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+
+            let bagcell = player.bag[i];
+            bagcell.x = cellxsize + 16;
+            bagcell.y = cellysize + 16;
+            let item = bagcell.item;
+            if (item != null) {
+
+                if (item.name != null) {
+                    if (item.sprite == null) {
+                        item.sprite = this.add.sprite(bagcell.x, bagcell.y, item.image).setInteractive();
+                        scene_BagFrame.input.setDraggable(item.sprite);
+                    }
+                    item.sprite.visible = true;
+                }
+                item.sprite.setPosition(bagcell.x, bagcell.y);
+
+            }
+
+        }
+
+        this.bagisopen = true;
+
+    }
+
+    close() {
+
+        this.isopen = false;
+
+        this.graphics.clear();
+        this.ClsdBtn.visible = false;
+
+        this.textperformancepoints.visible = false;
+        this.textstamina.visible = false;
+        this.textintellect.visible = false;
+        this.textfortitude.visible = false;
+        this.textskill.visible = false;
+        this.textluck.visible = false;
+
+        this.staminaplus.visible = false;
+        this.intellectplus.visible = false;
+        this.fortitudeplus.visible = false;
+        this.skillplus.visible = false;
+        this.luckplus.visible = false;
+
+        // for (let i in player.bag) {
+        //     let item = player.bag[i].item;
+        //     if (item != null) {
+        //         if (item.sprite != null) {
+        //             item.sprite.visible = false;
+        //         }
+        //     }
+        // }
+
+        // this.bagisopen = false;
+
+    }
+
+    plusvisible(visible) {
+
+        this.staminaplus.visible = visible;
+        this.intellectplus.visible = visible;
+        this.fortitudeplus.visible = visible;
+        this.skillplus.visible = visible;
+        this.luckplus.visible = visible;
 
     }
 
@@ -1887,14 +2265,26 @@ class UI extends Phaser.Scene {
     create() {
 
 
-        let bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
-        bag.on('pointerdown', function (pointer, gameObject) {
+        this.bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
+        this.bag.on('pointerdown', function (pointer, gameObject) {
 
             if (scene_BagFrame.bagisopen) {
                 scene_BagFrame.closebag()
             }
             else {
                 scene_BagFrame.openbag()
+            }
+
+        });
+
+        this.charframe = this.add.sprite(windowInnerWidth - 250, windowInnerHeight - 70, 'Heart').setInteractive();
+        this.charframe.on('pointerdown', function (pointer, gameObject) {
+
+            if (scene_CharFrame.isopen) {
+                scene_CharFrame.close()
+            }
+            else {
+                scene_CharFrame.open()
             }
 
         });
@@ -2027,6 +2417,8 @@ class MainScene extends Phaser.Scene {
         this.load.image('CopperCoin', 'assets/CopperCoin.png');
         this.load.image('GoldenCoin', 'assets/GoldenCoin.png');
         this.load.image('SilverCoin', 'assets/SilverCoin.png');
+
+        this.load.image('Heart', 'assets/Heart.png')
 
         this.load.image('spell1', 'assets/spell1.png');
         this.load.image('spell2', 'assets/spell2.png');
@@ -2469,7 +2861,7 @@ function createplayer(data) {
     // ws.send(JSON.stringify(inf))
 
     for (let i in player.bag) {
-        player.bag[i] = new BagCell()
+        player.bag[i] = new itemCell()
         player.bag[i].index = i;
     }
 
@@ -2486,6 +2878,7 @@ function createplayer(data) {
     scene_main.scene.add('TargetFrame', TargetFrame, true, { x: 400, y: 300 })
     scene_main.scene.add('NpcDialoge', NpcDialoge, true, { x: 400, y: 300 })
     scene_main.scene.add('CastFrame', CastFrame, true, { x: 400, y: 300 });
+    scene_main.scene.add('CharFrame', CharFrame, true, { x: 400, y: 300 });
 
     game.input.addPointer(1);
 
