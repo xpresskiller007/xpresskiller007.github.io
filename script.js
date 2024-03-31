@@ -7,6 +7,7 @@ var client_id = Date.now()
 
 const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation', Dead: 'Dead', Respawn: 'Respawn' }
 const targetType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC' }
+const playerStatus = {Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn', Battle: 'Battle'}
 var player;
 var players = [];
 var bombs;
@@ -178,6 +179,7 @@ class Player {
 
     constructor(sprite) {
         this.id = 0;
+        this.status = playerStatus.Traveling;
         this.sprite = sprite;
         this.thisplayer = true;
         this.type = targetType.Player
@@ -202,11 +204,14 @@ class Player {
         this.target = null;
         this.x = this.sprite.x;
         this.y = this.sprite.y;
-        this.respx = this.x;
-        this.respy = this.y;
+        this.respx = 800;
+        this.respy = 800;
         this.bag = [null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null];
+        this.lastsetstatus = 0;
+        this.deathtime = 0;
+        this.respawntime = 5000;
         this.recalculateParameters();
     }
 
@@ -224,11 +229,21 @@ class Player {
 
         if (Date.now()- this.lastrecovery > 1000){
             this.lastrecovery = Date.now();
-            if (this.hp < this.maxhp){
+            if (this.hp < this.maxhp && this.status == playerStatus.Traveling){
                 this.hp += this.fortitude;
+                if (this.hp>this.maxhp){
+                    this.hp = this.maxhp;    
+                }
             }
             if (this.mp < this.maxmp){
+                let manarecovery = this.fortitude;
+                if (this.status == playerStatus.Battle){
+                    manarecovery = Math.floor(manarecovery/2);
+                }
                 this.mp += this.fortitude;
+                if (this.mp>this.maxmp){
+                    this.mp = this.maxmp;    
+                }
             }
         }
 
@@ -238,11 +253,61 @@ class Player {
     update() {
 
         this.moving();
-        this.respawn();
+        this.setStatus();
         this.hpmpcovery();
+        this.respawn();
+    }
+
+    setStatus(){
+
+        if (this.hp <= 0 && this.status != playerStatus.Death && this.status != playerStatus.Respawn){
+            this.status = playerStatus.Death; 
+            this.deathtime = Date.now(); 
+            this.sprite.visible = false;
+            scene_BagFrame.closebag();
+            scene_CastFrame.close()
+            return; 
+        }
+
+        if (this.status == playerStatus.Death && Date.now()-this.deathtime > this.respawntime && this.status != playerStatus.Respawn){
+            this.status = playerStatus.Respawn;
+        }
+
+        if (this.status == playerStatus.Death 
+            || this.status == playerStatus.Respawn){
+                return;
+            }
+
+        if (Date.now() - this.lastsetstatus > 5000){
+
+            let statusattack = false;
+
+            for(let i in mobs){
+                let mob = mobs[i];
+                if (mob.target == this){
+                    statusattack = true;
+                    break;
+                }
+            }
+
+            if (statusattack){
+                this.status = playerStatus.Battle;   
+            }
+            else{
+                this.status = playerStatus.Traveling;    
+            }
+    
+            this.lastsetstatus = Date.now();
+
+        }
+    
     }
 
     moving() {
+
+        if (this.status == playerStatus.Death){
+            return;
+        }
 
         let left = false;
         let right = false;
@@ -463,7 +528,7 @@ class Player {
     }
 
     respawn() {
-        if (this.hp <= 0) {
+        if (this.status == playerStatus.Respawn) {
             this.sprite.setVelocityX(0);
             this.sprite.setVelocityY(0);
             this.sprite.setPosition(this.respx, this.respy);
@@ -471,6 +536,8 @@ class Player {
             this.y = this.sprite.y;
             this.hp = this.maxhp;
             this.mp = this.maxmp;
+            this.sprite.visible = true;
+            this.status = playerStatus.Traveling
         }
     }
 
@@ -547,7 +614,8 @@ class Mob {
             && this.target != null
             && this.target.hp > 0
             && Date.now() - this.lastattack >= this.timeattack) {
-            this.target.hp -= this.damage;
+            player.hp -= this.damage;
+            player.status = playerStatus.Battle;
             this.lastattack = Date.now();
         }
 
@@ -1477,6 +1545,11 @@ class CastFrame extends Phaser.Scene {
 
     open(spell) {
 
+        if (player.status == playerStatus.Death
+            || player.status == playerStatus.Respawn){
+                return;
+        }
+
         if (spell == NaN) {
             return;
         }
@@ -1544,6 +1617,7 @@ class Spell {
 
     use() {
 
+        player.status = playerStatus.Battle;
         player.mp -= this.mp;
         player.target.hp -= this.damage;
         this.lastattack = Date.now();
@@ -2007,6 +2081,11 @@ class BagFrame extends Phaser.Scene {
 
     openbag() {
 
+        if (player.status == playerStatus.Death
+            || player.status == playerStatus.Respawn){
+                return;
+        }
+
         let xsize = windowInnerWidth / 2 + 50;
         let ysize = windowInnerHeight / 2 - 200;
 
@@ -2264,6 +2343,8 @@ class UI extends Phaser.Scene {
 
     create() {
 
+        this.text = this.add.text(20, 60, player.status, { fontFamily: 'Arial', fontSize: '15px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        
 
         this.bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
         this.bag.on('pointerdown', function (pointer, gameObject) {
@@ -2292,7 +2373,7 @@ class UI extends Phaser.Scene {
     }
 
     update(p1, p2) {
-
+        this.text.setText(player.status)
     }
 }
 
