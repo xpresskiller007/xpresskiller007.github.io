@@ -243,7 +243,7 @@ class Player {
                 if (this.status == playerStatus.Battle) {
                     manarecovery = Math.floor(manarecovery / 2);
                 }
-                this.mp += this.fortitude;
+                this.mp += manarecovery;
                 if (this.mp > this.maxmp) {
                     this.mp = this.maxmp;
                 }
