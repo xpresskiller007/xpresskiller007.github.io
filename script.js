@@ -7,7 +7,7 @@ var client_id = Date.now()
 
 const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation', Dead: 'Dead', Respawn: 'Respawn' }
 const targetType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC' }
-const playerStatus = {Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn', Battle: 'Battle'}
+const playerStatus = { Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn', Battle: 'Battle' }
 var player;
 var players = [];
 var bombs;
@@ -198,7 +198,7 @@ class Player {
         this.maxmp = 50;
         this.magicpower = 0;
         this.lastrecovery = 0;
-        this.healthrecovery = 0; 
+        this.healthrecovery = 0;
         this.manarecovery = 0;
         this.speed = 150;
         this.target = null;
@@ -217,32 +217,35 @@ class Player {
 
     recalculateParameters() {
 
-        this.maxhp = 50 + this.stamina*10;
-        this.maxmp = 50 + this.intellect*10;
+        this.maxhp = 50 + this.stamina * 10;
+        this.maxmp = 50 + this.intellect * 10;
+        this.magicpower = this.intellect * 2;
 
-        this.healthrecovery = this.fortitude; 
+        this.healthrecovery = this.fortitude;
         this.manarecovery = this.fortitude;
+
+
 
     }
 
-    hpmpcovery(){
+    hpmpcovery() {
 
-        if (Date.now()- this.lastrecovery > 1000){
+        if (Date.now() - this.lastrecovery > 1000) {
             this.lastrecovery = Date.now();
-            if (this.hp < this.maxhp && this.status == playerStatus.Traveling){
+            if (this.hp < this.maxhp && this.status == playerStatus.Traveling) {
                 this.hp += this.fortitude;
-                if (this.hp>this.maxhp){
-                    this.hp = this.maxhp;    
+                if (this.hp > this.maxhp) {
+                    this.hp = this.maxhp;
                 }
             }
-            if (this.mp < this.maxmp){
+            if (this.mp < this.maxmp) {
                 let manarecovery = this.fortitude;
-                if (this.status == playerStatus.Battle){
-                    manarecovery = Math.floor(manarecovery/2);
+                if (this.status == playerStatus.Battle) {
+                    manarecovery = Math.floor(manarecovery / 2);
                 }
                 this.mp += this.fortitude;
-                if (this.mp>this.maxmp){
-                    this.mp = this.maxmp;    
+                if (this.mp > this.maxmp) {
+                    this.mp = this.maxmp;
                 }
             }
         }
@@ -258,54 +261,54 @@ class Player {
         this.respawn();
     }
 
-    setStatus(){
+    setStatus() {
 
-        if (this.hp <= 0 && this.status != playerStatus.Death && this.status != playerStatus.Respawn){
-            this.status = playerStatus.Death; 
-            this.deathtime = Date.now(); 
+        if (this.hp <= 0 && this.status != playerStatus.Death && this.status != playerStatus.Respawn) {
+            this.status = playerStatus.Death;
+            this.deathtime = Date.now();
             this.sprite.visible = false;
             scene_BagFrame.closebag();
             scene_CastFrame.close()
-            return; 
+            return;
         }
 
-        if (this.status == playerStatus.Death && Date.now()-this.deathtime > this.respawntime && this.status != playerStatus.Respawn){
+        if (this.status == playerStatus.Death && Date.now() - this.deathtime > this.respawntime && this.status != playerStatus.Respawn) {
             this.status = playerStatus.Respawn;
         }
 
-        if (this.status == playerStatus.Death 
-            || this.status == playerStatus.Respawn){
-                return;
-            }
+        if (this.status == playerStatus.Death
+            || this.status == playerStatus.Respawn) {
+            return;
+        }
 
-        if (Date.now() - this.lastsetstatus > 5000){
+        if (Date.now() - this.lastsetstatus > 5000) {
 
             let statusattack = false;
 
-            for(let i in mobs){
+            for (let i in mobs) {
                 let mob = mobs[i];
-                if (mob.target == this){
+                if (mob.target == this) {
                     statusattack = true;
                     break;
                 }
             }
 
-            if (statusattack){
-                this.status = playerStatus.Battle;   
+            if (statusattack) {
+                this.status = playerStatus.Battle;
             }
-            else{
-                this.status = playerStatus.Traveling;    
+            else {
+                this.status = playerStatus.Traveling;
             }
-    
+
             this.lastsetstatus = Date.now();
 
         }
-    
+
     }
 
     moving() {
 
-        if (this.status == playerStatus.Death){
+        if (this.status == playerStatus.Death) {
             return;
         }
 
@@ -617,6 +620,9 @@ class Mob {
             player.hp -= this.damage;
             player.status = playerStatus.Battle;
             this.lastattack = Date.now();
+            if (player.target == null) {
+                player.target = this;
+            }
         }
 
     }
@@ -1060,39 +1066,46 @@ class TargetFrame extends Phaser.Scene {
     }
 
     update(p1, p2) {
-        if (player.target != null) {
-            if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 700) {
-                player.target = null;
-            }
-            if (player.target.type == targetType.NPC) {
-                if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 200) {
+        try {
+
+            if (player.target != null) {
+                if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 700) {
                     player.target = null;
-                    scene_NpcDialoge.closedialoge();
+                }
+                if (player.target.type == targetType.NPC) {
+                    if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 200) {
+                        player.target = null;
+                        scene_NpcDialoge.closedialoge();
+                    }
                 }
             }
-        }
 
-        if (player.target != null && player.target.type != targetType.NPC) {
-            this.frback.visible = true;
-            this.hpmpbar.visible = true;
-            this.nameTexttarget.visible = true;
-            this.hpTexttarget.visible = true;
-            this.mpTexttarget.visible = true;
-            this.nameTexttarget.setText(player.target.name + ',lvl ' + String(player.target.lvl));
-            this.hpTexttarget.setText(player.target.hp);
-            this.mpTexttarget.setText(player.target.mp);
-            this.hpmpbar.clear();
-            this.hpmpbar.fillStyle(0xff0000, 1);
-            this.hpmpbar.fillRect(252, 30, 198 * (player.target.hp / player.target.maxhp), 15);
-            this.hpmpbar.fillStyle(0x0000ff, 1);
-            this.hpmpbar.fillRect(252, 45, 198 * (player.target.mp / player.target.maxmp), 15);
+            if (player.target != null && player.target.type != targetType.NPC) {
+                this.frback.visible = true;
+                this.hpmpbar.visible = true;
+                this.nameTexttarget.visible = true;
+                this.hpTexttarget.visible = true;
+                this.mpTexttarget.visible = true;
+                this.nameTexttarget.setText(player.target.name + ',lvl ' + String(player.target.lvl));
+                this.hpTexttarget.setText(player.target.hp);
+                this.mpTexttarget.setText(player.target.mp);
+                this.hpmpbar.clear();
+                this.hpmpbar.fillStyle(0xff0000, 1);
+                this.hpmpbar.fillRect(252, 30, 198 * (player.target.hp / player.target.maxhp), 15);
+                this.hpmpbar.fillStyle(0x0000ff, 1);
+                this.hpmpbar.fillRect(252, 45, 198 * (player.target.mp / player.target.maxmp), 15);
+            }
+            else {
+                this.frback.visible = false;
+                this.hpmpbar.visible = false;
+                this.nameTexttarget.visible = false;
+                this.hpTexttarget.visible = false;
+                this.mpTexttarget.visible = false;
+            }
+
         }
-        else {
-            this.frback.visible = false;
-            this.hpmpbar.visible = false;
-            this.nameTexttarget.visible = false;
-            this.hpTexttarget.visible = false;
-            this.mpTexttarget.visible = false;
+        catch (err) {
+
         }
 
 
@@ -1546,8 +1559,8 @@ class CastFrame extends Phaser.Scene {
     open(spell) {
 
         if (player.status == playerStatus.Death
-            || player.status == playerStatus.Respawn){
-                return;
+            || player.status == playerStatus.Respawn) {
+            return;
         }
 
         if (spell == NaN) {
@@ -1619,7 +1632,7 @@ class Spell {
 
         player.status = playerStatus.Battle;
         player.mp -= this.mp;
-        player.target.hp -= this.damage;
+        player.target.hp -= this.damage + player.magicpower;
         this.lastattack = Date.now();
 
         if (player.target.hp <= 0) {
@@ -1715,7 +1728,7 @@ class CharFrame extends Phaser.Scene {
         this.intellectplus.visible = false;
         this.intellectplus.on('pointerdown', function (pointer, gameObject) {
             if (player.performancepoints) {
-                player.performancepoints -= 1;  
+                player.performancepoints -= 1;
                 player.intellect += 1;
                 player.recalculateParameters();
                 scene_CharFrame.plusvisible(player.performancepoints > 0);
@@ -2082,8 +2095,8 @@ class BagFrame extends Phaser.Scene {
     openbag() {
 
         if (player.status == playerStatus.Death
-            || player.status == playerStatus.Respawn){
-                return;
+            || player.status == playerStatus.Respawn) {
+            return;
         }
 
         let xsize = windowInnerWidth / 2 + 50;
@@ -2343,8 +2356,8 @@ class UI extends Phaser.Scene {
 
     create() {
 
-        this.text = this.add.text(20, 60, player.status, { fontFamily: 'Arial', fontSize: '15px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
-        
+        // this.text = this.add.text(20, 60, player.status, { fontFamily: 'Arial', fontSize: '15px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+
 
         this.bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
         this.bag.on('pointerdown', function (pointer, gameObject) {
@@ -2373,7 +2386,7 @@ class UI extends Phaser.Scene {
     }
 
     update(p1, p2) {
-        this.text.setText(player.status)
+        // this.text.setText(player.status)
     }
 }
 
@@ -2960,6 +2973,10 @@ function createplayer(data) {
     scene_main.scene.add('NpcDialoge', NpcDialoge, true, { x: 400, y: 300 })
     scene_main.scene.add('CastFrame', CastFrame, true, { x: 400, y: 300 });
     scene_main.scene.add('CharFrame', CharFrame, true, { x: 400, y: 300 });
+
+    if (player.performancepoints) {
+        scene_CharFrame.open();
+    }
 
     game.input.addPointer(1);
 
