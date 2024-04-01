@@ -8,6 +8,8 @@ var client_id = Date.now()
 const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation', Dead: 'Dead', Respawn: 'Respawn' }
 const targetType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC' }
 const playerStatus = { Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn', Battle: 'Battle' }
+const itemType = { Runestone: 'Runestone', Equipment: 'Equipment', Meal: 'Meal', Drink: 'Drink' };
+const equipType = {};
 var player;
 var players = [];
 var bombs;
@@ -59,56 +61,12 @@ var scene_SpellsFrames;
 var scene_CastFrame;
 var scene_XpBar;
 var scene_CharFrame;
-
-var loot = []
-
-loot.push({
-    'item': { id: 1, name: 'Apple', image: 'Apple', stack: true, stacksize: 20 },
-    'quantity': 1,
-    'chance': 100
-})
-
-loot.push({
-    'item': { id: 2, name: 'Bread', image: 'Bread', stack: true, stacksize: 20 },
-    'quantity': 1,
-    'chance': 90
-})
-
-loot.push({
-    'item': { id: 3, name: 'Cheese', image: 'Cheese', stack: true, stacksize: 10 },
-    'quantity': 1,
-    'chance': 80
-})
-
-loot.push({
-    'item': { id: 4, name: 'Ham', image: 'Ham', stack: true, stacksize: 5 },
-    'quantity': 1,
-    'chance': 70
-})
-
-loot.push({
-    'item': { id: 5, name: 'Mushroom', image: 'Mushroom', stack: true, stacksize: 3 },
-    'quantity': 1,
-    'chance': 50
-})
-
-loot.push({
-    'item': { id: 6, name: 'Wine', image: 'Wine', stack: false, stacksize: 0 },
-    'quantity': 1,
-    'chance': 25
-})
-
-loot.push({
-    'item': { id: 7, name: 'Beer', image: 'Beer', stack: false, stacksize: 0 },
-    'quantity': 1,
-    'chance': 10
-})
+var scene_RunesTableFrame;
+var scene_ItemsSprites;
+var scene_MagicBook;
 
 var spellsdata = [];
-
 var spells = [];
-
-var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 }
 
 let exemp = [];
 
@@ -125,7 +83,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 1, damage: 20, mp: 5, cooldown: 0, distance: 300, 'sprite': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 1, damage: 20, mp: 5, cooldown: 0, distance: 300, 'image': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 50, starty: - 270, x: 0, y: 0,
@@ -140,7 +98,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 2, damage: 40, mp: 10, cooldown: 2000, distance: 300, 'sprite': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 2, damage: 40, mp: 10, cooldown: 2000, distance: 300, 'image': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 100, starty: - 270, x: 0, y: 0,
@@ -155,7 +113,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 3, damage: 60, mp: 15, cooldown: 3000, distance: 300, 'sprite': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 3, damage: 60, mp: 15, cooldown: 3000, distance: 300, 'image': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 150, starty: - 260, x: 0, y: 0,
@@ -172,7 +130,72 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 4, damage: 100, mp: 25, cooldown: 5000, distance: 300, 'sprite': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 4, damage: 100, mp: 25, cooldown: 5000, distance: 300, 'image': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
+
+
+var loot = []
+
+loot.push({
+    'item': { id: 1, name: 'Apple', image: 'Apple', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 },
+    'quantity': 1,
+    'chance': 100
+})
+
+loot.push({
+    'item': { id: 2, name: 'Bread', image: 'Bread', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 },
+    'quantity': 1,
+    'chance': 90
+})
+
+loot.push({
+    'item': { id: 3, name: 'Cheese', image: 'Cheese', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 10 },
+    'quantity': 1,
+    'chance': 80
+})
+
+loot.push({
+    'item': { id: 4, name: 'Ham', image: 'Ham', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 5 },
+    'quantity': 1,
+    'chance': 70
+})
+
+loot.push({
+    'item': { id: 5, name: 'Mushroom', image: 'Mushroom', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 3 },
+    'quantity': 1,
+    'chance': 50
+})
+
+loot.push({
+    'item': { id: 6, name: 'Wine', image: 'Wine', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 },
+    'quantity': 1,
+    'chance': 25
+})
+
+loot.push({
+    'item': { id: 7, name: 'Beer', image: 'Beer', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 },
+    'quantity': 1,
+    'chance': 10
+})
+
+loot.push({
+    'item': { id: 8, name: 'spell2', image: 'spell2', itemtype: itemType.Runestone, equiptype: null, spell: 2, stack: false, stacksize: 0 },
+    'quantity': 1,
+    'chance': 40
+})
+
+loot.push({
+    'item': { id: 9, name: 'spell3', image: 'spell3', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 },
+    'quantity': 1,
+    'chance': 20
+})
+
+loot.push({
+    'item': { id: 10, name: 'spell4', image: 'spell4', itemtype: itemType.Runestone, equiptype: null, spell: 4, stack: false, stacksize: 0 },
+    'quantity': 1,
+    'chance': 10
+})
+
+var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 }
 
 
 class Player {
@@ -206,6 +229,11 @@ class Player {
         this.y = this.sprite.y;
         this.respx = 800;
         this.respy = 800;
+        this.runestones = [null, null, null, null];
+        this.panel = [null, null, null, null,
+            null, null, null, null,
+            null, null, null, null,
+            null, null, null, null];
         this.bag = [null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null,
             null, null, null, null, null, null, null, null];
@@ -914,14 +942,25 @@ class NPC {
 }
 
 class Item {
-    constructor(id, name, image, stack, stacksize) {
-        this.id = id;
-        this.name = name;
-        this.image = image;
+    constructor(data) {
+        this.id = data.id;
+        this.name = data.name;
+        this.image = data.image;
         this.sprite = null;
-        this.stack = stack;
-        this.stacksize = stacksize;
+        this.itemtype = data.itemtype;
+        this.equiptype = data.equiptype;
+        this.spell = data.spell;
+        this.stack = data.stack;
+        this.stacksize = data.stacksize;
 
+        if (this.spell) {
+            for (let i in spells) {
+                if (spells[i].id = this.spell) {
+                    this.spell = spells[i];
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -933,11 +972,13 @@ class Drop {
 }
 
 class itemCell {
-    constructor() {
+    constructor(itemtype, equiptype) {
         this.index = 0;
         this.x = 0;
         this.y = 0;
         this.item = null;
+        this.itemtype = itemtype;
+        this.equiptype = equiptype;
         this.quantity = 0;
         this.quantitytext = null;
     }
@@ -967,6 +1008,287 @@ class XPBar extends Phaser.Scene {
 
     }
 
+
+}
+
+class ItemsSprites extends Phaser.Scene {
+
+    create() {
+        scene_ItemsSprites = this;
+
+        this.dragobg = null;
+
+        this.input.on('drag', (pointer, obj, dragX, dragY) => {
+            if (scene_MagicBook.isopen) {
+                if (scene_ItemsSprites.dragobg == null) {
+                    scene_ItemsSprites.dragobg = obj;
+                    for (let i in player.runestones) {
+                        let item = player.runestones[i].item;
+                        if (item == null){
+                            continue;
+                        }
+                        if (item.sprite == obj) {
+                            if (item.spell.sprite == null) {
+                                item.spell.sprite = scene_ItemsSprites.add.sprite(obj.x, obj.y, item.image).setInteractive();
+                                scene_ItemsSprites.input.setDraggable(item.spell.sprite);
+                            }
+                            else{
+                                obj.setPosition(player.runestones[i].x, player.runestones[i].y);
+                                scene_ItemsSprites.dragobg = null;
+                                return;
+                            }
+                            break;
+                        }
+                    }
+                }
+                obj.setPosition(dragX, dragY);
+            }
+            else {
+
+                if (scene_ItemsSprites.dragobg == null) {
+                    scene_ItemsSprites.dragobg = obj;
+                }
+                obj.setPosition(dragX, dragY);
+            }
+        });
+
+        this.input.on('pointerup', function (pointer, obj) {
+
+            if (obj.length == 0 || scene_ItemsSprites.dragobg == null) {
+                return;
+            }
+
+            let dragobg = scene_ItemsSprites.dragobg;
+
+            let dragcell = null;
+            let dragitem = null;
+
+            for (let i in player.bag) {
+                if (player.bag[i].item != null) {
+                    if (player.bag[i].item.sprite == dragobg) {
+                        dragcell = player.bag[i];
+                        dragitem = dragcell.item;
+                        break
+                    }
+                }
+            }
+
+            if (dragitem != null) {
+                scene_ItemsSprites.bagitem(dragcell, dragitem);
+                return;
+            }
+
+            for (let i in player.runestones) {
+                if (player.runestones[i].item != null) {
+                    if (player.runestones[i].item.sprite == dragobg) {
+                        dragcell = player.runestones[i];
+                        dragitem = dragcell.item;
+                        break
+                    }
+                }
+            }
+
+            if (dragitem != null) {
+                if (scene_MagicBook.isopen) {
+                    scene_ItemsSprites.mbspell(dragitem);
+                }
+                else {
+                    scene_ItemsSprites.runeitem(dragcell, dragitem);
+                }
+                return;
+            }
+
+        });
+
+        this.input.on('pointerup', function (pointer, obj) {
+
+            if (obj.length == 0 && scene_MagicBook.isopen) {
+                return;
+            }
+
+            for (let i in player.panel){
+
+                let item = player.panel[i].item;
+                if (item == null){
+                    continue;
+                }
+
+                if (item.spell.sprite = obj[0]){
+
+                    if (!item.spell.check()) {
+                        return
+                    }
+                    if (scene_CastFrame.castopen) {
+                        scene_CastFrame.close();
+                    }
+                    scene_CastFrame.open(item.spell);
+
+                }
+            }
+
+        });
+    }
+
+    bagitem(dragcell, dragitem) {
+
+        let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
+
+        if (distance <= 25) {
+            dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+            return
+        }
+
+        let replacecell = null;
+
+        for (let i in player.bag) {
+            if (dragcell.index == i) {
+                continue;
+            }
+            let replaceelement = player.bag[i];
+            let replacedistance = Math.sqrt((dragitem.sprite.x - replaceelement.x) ** 2 + (dragitem.sprite.y - replaceelement.y) ** 2);
+            if (replacedistance <= 25) {
+                replacecell = replaceelement;
+                break;
+            }
+        }
+
+        if (replacecell == null) {
+            if (scene_RunesTableFrame.isopen) {
+                for (let i in player.runestones) {
+                    let replaceelement = player.runestones[i];
+                    let replacedistance = Math.sqrt((dragitem.sprite.x - replaceelement.x) ** 2 + (dragitem.sprite.y - replaceelement.y) ** 2);
+                    if (replacedistance <= 25) {
+                        replacecell = replaceelement;
+                        break;
+                    }
+                }
+            }
+            if (replacecell == null) {
+                dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+            }
+            else {
+                let replaceitem = replacecell.item;
+                replaceitem = replacecell.item;
+                replacecell.item = dragitem;
+                dragitem.sprite.setPosition(replacecell.x, replacecell.y);
+                dragcell.item = replaceitem;
+                if (replaceitem != null) {
+                    replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
+                }
+            }
+        }
+        else {
+
+            let replaceitem = replacecell.item;
+            replaceitem = replacecell.item;
+            replacecell.item = dragitem;
+            dragitem.sprite.setPosition(replacecell.x, replacecell.y);
+            dragcell.item = replaceitem;
+            if (replaceitem != null) {
+                replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
+            }
+
+        }
+
+        scene_ItemsSprites.dragobg = null;
+
+    }
+
+    runeitem(dragcell, dragitem) {
+
+        let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
+
+        if (distance <= 25) {
+            dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+            return
+        }
+
+        let replacecell = null;
+
+        for (let i in player.runestones) {
+            if (dragcell.index == i) {
+                continue;
+            }
+            let replaceelement = player.runestones[i];
+            let replacedistance = Math.sqrt((dragitem.sprite.x - replaceelement.x) ** 2 + (dragitem.sprite.y - replaceelement.y) ** 2);
+            if (replacedistance <= 25) {
+                replacecell = replaceelement;
+                break;
+            }
+        }
+
+        if (replacecell == null) {
+            if (scene_BagFrame.bagisopen) {
+                for (let i in player.bag) {
+                    let replaceelement = player.bag[i];
+                    let replacedistance = Math.sqrt((dragitem.sprite.x - replaceelement.x) ** 2 + (dragitem.sprite.y - replaceelement.y) ** 2);
+                    if (replacedistance <= 25) {
+                        replacecell = replaceelement;
+                        break;
+                    }
+                }
+            }
+            if (replacecell == null) {
+                dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+            }
+            else {
+                let replaceitem = replacecell.item;
+                replaceitem = replacecell.item;
+                replacecell.item = dragitem;
+                dragitem.sprite.setPosition(replacecell.x, replacecell.y);
+                dragcell.item = replaceitem;
+                if (replaceitem != null) {
+                    replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
+                }
+            }
+        }
+        else {
+
+            let replaceitem = replacecell.item;
+            replaceitem = replacecell.item;
+            replacecell.item = dragitem;
+            dragitem.sprite.setPosition(replacecell.x, replacecell.y);
+            dragcell.item = replaceitem;
+            if (replaceitem != null) {
+                replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
+            }
+
+        }
+
+        scene_ItemsSprites.dragobg = null;
+
+    }
+
+    mbspell(dragitem) {
+
+        let replacecell = null;
+
+        for (let i in player.panel) {
+            let replaceelement = player.panel[i];
+            let replacedistance = Math.sqrt((dragitem.sprite.x - 16 - replaceelement.x) ** 2 + (dragitem.sprite.y  - 16 - replaceelement.y) ** 2);
+            if (replacedistance <= 25) {
+                replacecell = replaceelement;
+                break;
+            }
+        }
+
+        if (replacecell == null) {
+            dragitem.sprite.setPosition(dragitem.spell.sprite.x, dragitem.spell.sprite.y);
+            dragitem.spell.sprite.destroy();
+            dragitem.spell.sprite = null;
+        }
+        else {
+
+            dragitem.sprite.setPosition(dragitem.spell.sprite.x, dragitem.spell.sprite.y);
+            dragitem.spell.sprite.setPosition(replacecell.x+17, replacecell.y+17);
+
+            replacecell.item = dragitem;
+
+        }
+
+        scene_ItemsSprites.dragobg = null;
+
+    }
 
 }
 
@@ -1120,14 +1442,14 @@ class SpellsFrames extends Phaser.Scene {
 
         scene_SpellsFrames = this;
 
-        let step = 50 * spellsdata.length;
-        for (let i in spellsdata) {
-            let spelldata = spellsdata[i];
-            let newspell = new Spell(spelldata, windowInnerWidth - 40, windowInnerHeight - step);
-            spells.push(newspell);
+        // let step = 50 * spellsdata.length;
+        // for (let i in spellsdata) {
+        //     let spelldata = spellsdata[i];
+        //     let newspell = new Spell(spelldata);
+        //     spells.push(newspell);
 
-            step -= 50;
-        }
+        //     step -= 50;
+        // }
 
         this.input.on('pointerdown', function (pointer, gameObject) {
 
@@ -1151,6 +1473,8 @@ class SpellsFrames extends Phaser.Scene {
 
         });
 
+
+
         // if (player.spell1 != null) {
         //     let WoodenSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'WoodenSword').setInteractive();
         //     WoodenSword.on('pointerdown', function (pointer, gameObject) {
@@ -1165,6 +1489,7 @@ class SpellsFrames extends Phaser.Scene {
         //         // }
         //     });
         // }
+
 
         // if (player.spell2 != null) {
         //     let SilverSword = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 150, 'SilverSword').setInteractive();
@@ -1613,13 +1938,14 @@ class CastFrame extends Phaser.Scene {
 }
 
 class Spell {
-    constructor(data, Width, Height) {
+    constructor(data) {
         this.id = data.id;
         this.damage = data.damage;
         this.mp = data.mp;
         this.cooldown = data.cooldown;
         this.distance = data.distance;
-        this.sprite = scene_SpellsFrames.add.sprite(Width, Height, data.sprite).setInteractive();
+        this.image = data.sprite;
+        this.sprite = null;
         this.spelldata = data.spelldata;
         this.exemple = data.exemple;
         this.lastattack = 0;
@@ -2027,69 +2353,6 @@ class BagFrame extends Phaser.Scene {
             scene_BagFrame.closebag()
         });
 
-        this.input.on('drag', (pointer, obj, dragX, dragY) => {
-            obj.setPosition(dragX, dragY);
-            scene_BagFrame.dragobg = obj;
-        });
-
-        this.input.on('pointerup', function (pointer, obj) {
-            if (obj.length == 0) {
-                return;
-            }
-            let dragobg = scene_BagFrame.dragobg;
-            let dragcell = null;
-            let dragitem = null;
-            for (let i in player.bag) {
-                if (player.bag[i].item != null) {
-                    if (player.bag[i].item.sprite == dragobg) {
-                        dragcell = player.bag[i];
-                        dragitem = dragcell.item;
-                        break
-                    }
-                }
-            }
-
-            if (dragitem != null) {
-                let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
-
-                if (distance <= 25) {
-                    dragitem.sprite.setPosition(dragcell.x, dragcell.y);
-                    return
-                }
-
-                let replacecell = null;
-
-                for (let i in player.bag) {
-                    if (dragcell.index == i) {
-                        continue;
-                    }
-                    let replaceelement = player.bag[i];
-                    let replacedistance = Math.sqrt((dragitem.sprite.x - replaceelement.x) ** 2 + (dragitem.sprite.y - replaceelement.y) ** 2);
-                    if (replacedistance <= 25) {
-                        replacecell = replaceelement;
-                        break;
-                    }
-                }
-
-                if (replacecell == null) {
-                    dragitem.sprite.setPosition(dragcell.x, dragcell.y);
-                }
-                else {
-
-                    let replaceitem = replacecell.item;
-                    replaceitem = replacecell.item;
-                    replacecell.item = dragitem;
-                    dragitem.sprite.setPosition(replacecell.x, replacecell.y);
-                    dragcell.item = replaceitem;
-                    if (replaceitem != null) {
-                        replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
-                    }
-
-                }
-            }
-
-        });
-
     }
 
     openbag() {
@@ -2099,8 +2362,8 @@ class BagFrame extends Phaser.Scene {
             return;
         }
 
-        let xsize = windowInnerWidth / 2 + 50;
-        let ysize = windowInnerHeight / 2 - 200;
+        let xsize = windowInnerWidth / 2 + 40;
+        let ysize = 50;
 
         let columns = Math.floor(Math.sqrt(player.bag.length)) + 1;
 
@@ -2164,8 +2427,8 @@ class BagFrame extends Phaser.Scene {
 
                 if (item.name != null) {
                     if (item.sprite == null) {
-                        item.sprite = this.add.sprite(bagcell.x, bagcell.y, item.image).setInteractive();
-                        scene_BagFrame.input.setDraggable(item.sprite);
+                        item.sprite = scene_ItemsSprites.add.sprite(bagcell.x, bagcell.y, item.image).setInteractive();
+                        scene_ItemsSprites.input.setDraggable(item.sprite);
                     }
                     item.sprite.visible = true;
                 }
@@ -2193,6 +2456,257 @@ class BagFrame extends Phaser.Scene {
         }
 
         this.bagisopen = false;
+
+    }
+
+}
+
+class RunesTableFrame extends Phaser.Scene {
+
+    create() {
+        scene_RunesTableFrame = this;
+
+        this.dragobg = null;
+        this.isopen = false;
+        this.graphics = this.add.graphics();
+        this.ClsdBtn = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
+        this.ClsdBtn.visible = false;
+        this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
+            scene_RunesTableFrame.close()
+        });
+
+    }
+
+    open() {
+
+        if (player.status == playerStatus.Death
+            || player.status == playerStatus.Respawn) {
+            return;
+        }
+
+        let xsize = 100;
+        let ysize = 100;
+
+        let columns = 2;
+
+        let rows = 2;
+
+
+        this.graphics.fillStyle(0x0000ff, 0.5);
+        this.graphics.fillRect(xsize, ysize, columns * 50, rows * 50 + 25);
+
+        let cellxsize = xsize;
+        let cellysize = ysize + 20;
+
+        this.graphics.fillStyle(0x0000ff);
+        this.graphics.fillRect(xsize, ysize, columns * 50, rows + 15);
+
+        this.graphics.fillStyle(0x000000);
+        this.graphics.fillRect(xsize + columns * 50 - 20, ysize, 20, rows + 15);
+
+        this.ClsdBtn.visible = true;
+        this.ClsdBtn.setPosition(xsize + columns * 50 - 10, ysize + 11)
+
+        cellysize = ysize + 25;
+
+        let counterstring = 0;
+
+        for (let i in player.runestones) {
+
+            if (i == 0) {
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+            }
+            else if (i % columns == 0) {
+                counterstring = counterstring + 1;
+                cellxsize = xsize;
+                cellysize = ysize + 25 + 50 * counterstring;
+
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+            }
+            else {
+                cellxsize = cellxsize + 45;
+                cellysize = cellysize - 5;
+            }
+
+            this.graphics.fillStyle(0x000000, 0.5);
+            this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+            cellxsize = cellxsize + 5;
+            cellysize = cellysize + 5;
+            this.graphics.fillStyle(0x000000, 1);
+            this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+
+            let bagcell = player.runestones[i];
+            bagcell.x = cellxsize + 16;
+            bagcell.y = cellysize + 16;
+            let item = bagcell.item;
+            if (item != null) {
+
+                if (item.name != null) {
+                    if (item.sprite == null) {
+                        item.sprite = scene_ItemsSprites.add.sprite(bagcell.x, bagcell.y, item.image).setInteractive();
+                        scene_ItemsSprites.input.setDraggable(item.sprite);
+                    }
+                    item.sprite.visible = true;
+                }
+                item.sprite.setPosition(bagcell.x, bagcell.y);
+
+            }
+
+        }
+
+        this.isopen = true;
+
+    }
+
+    close() {
+
+        this.graphics.clear();
+        this.ClsdBtn.visible = false;
+        for (let i in player.runestones) {
+            let item = player.runestones[i].item;
+            if (item != null) {
+                if (item.sprite != null) {
+                    item.sprite.visible = false;
+                }
+            }
+        }
+
+        this.isopen = false;
+
+    }
+
+}
+
+class MagicBook extends Phaser.Scene {
+
+    create() {
+        scene_MagicBook = this;
+
+        this.dragobg = null;
+        this.isopen = false;
+        this.graphics = this.add.graphics();
+        this.ClsdBtn = this.add.sprite(windowInnerWidth - 50, windowInnerHeight - 200, 'ClsdBtn').setInteractive();
+        this.ClsdBtn.visible = false;
+        this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
+            scene_MagicBook.close()
+        });
+
+    }
+
+    open() {
+
+        if (player.status == playerStatus.Death
+            || player.status == playerStatus.Respawn) {
+            return;
+        }
+
+        let xsize = 50;
+        let ysize = 50;
+
+        let columns = 5;
+
+        let rows = 5;
+
+        this.graphics.fillStyle(0x0000ff, 0.5);
+        this.graphics.fillRect(xsize, ysize, columns * 50, rows * 50 + 25);
+
+        let cellxsize = xsize;
+        let cellysize = ysize + 20;
+
+        this.graphics.fillStyle(0x0000ff);
+        this.graphics.fillRect(xsize, ysize, columns * 50, rows + 15);
+
+        this.graphics.fillStyle(0x000000);
+        this.graphics.fillRect(xsize + columns * 50 - 20, ysize, 20, rows + 15);
+
+        this.ClsdBtn.visible = true;
+        this.ClsdBtn.setPosition(xsize + columns * 50 - 10, ysize + 11)
+
+        cellysize = ysize + 25;
+
+        let counterstring = 0;
+
+        let ind = 0;
+
+        let maxind = player.runestones.length - 1;
+
+        while (ind <= 24) {
+
+            if (ind == 0) {
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+            }
+            else if (ind % columns == 0) {
+                counterstring = counterstring + 1;
+                cellxsize = xsize;
+                cellysize = ysize + 25 + 50 * counterstring;
+
+                cellxsize = cellxsize + 5;
+                cellysize = cellysize + 5;
+            }
+            else {
+                cellxsize = cellxsize + 45;
+                cellysize = cellysize - 5;
+            }
+
+            this.graphics.fillStyle(0x000000, 0.5);
+            this.graphics.fillRect(cellxsize, cellysize, 40, 40);
+
+            cellxsize = cellxsize + 5;
+            cellysize = cellysize + 5;
+            this.graphics.fillStyle(0x000000, 1);
+            this.graphics.fillRect(cellxsize, cellysize, 30, 30);
+
+            if (ind <= maxind) {
+
+                let bagcell = player.runestones[ind];
+                let item = bagcell.item;
+                if (item != null) {
+
+                    if (item.name != null) {
+                        if (item.sprite == null) {
+                            item.sprite = scene_ItemsSprites.add.sprite(cellxsize + 16, cellysize + 16, item.image).setInteractive();
+                            scene_ItemsSprites.input.setDraggable(item.sprite);
+                        }
+                        item.sprite.visible = true;
+                    }
+                    item.sprite.setPosition(bagcell.x, bagcell.y);
+
+                }
+
+            }
+
+            ind += 1;
+
+        }
+
+        this.graphics.fillStyle(0x000000, 0.5);
+        for (let i in player.panel) {
+            let panelcell = player.panel[i];
+            this.graphics.fillRect(panelcell.x, panelcell.y, 36, 36);
+        }
+
+        this.isopen = true;
+
+    }
+
+    close() {
+
+        this.graphics.clear();
+        this.ClsdBtn.visible = false;
+        for (let i in player.runestones) {
+            let item = player.runestones[i].item;
+            if (item != null) {
+                if (item.sprite != null) {
+                    item.sprite.visible = false;
+                }
+            }
+        }
+
+        this.isopen = false;
 
     }
 
@@ -2359,7 +2873,7 @@ class UI extends Phaser.Scene {
         // this.text = this.add.text(20, 60, player.status, { fontFamily: 'Arial', fontSize: '15px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
 
 
-        this.bag = this.add.sprite(windowInnerWidth - 150, windowInnerHeight - 70, 'Bag').setInteractive();
+        this.bag = this.add.sprite(windowInnerWidth - 500, windowInnerHeight - 50, 'Bag').setInteractive();
         this.bag.on('pointerdown', function (pointer, gameObject) {
 
             if (scene_BagFrame.bagisopen) {
@@ -2371,7 +2885,7 @@ class UI extends Phaser.Scene {
 
         });
 
-        this.charframe = this.add.sprite(windowInnerWidth - 250, windowInnerHeight - 70, 'Heart').setInteractive();
+        this.charframe = this.add.sprite(windowInnerWidth - 550, windowInnerHeight - 50, 'Heart').setInteractive();
         this.charframe.on('pointerdown', function (pointer, gameObject) {
 
             if (scene_CharFrame.isopen) {
@@ -2379,6 +2893,30 @@ class UI extends Phaser.Scene {
             }
             else {
                 scene_CharFrame.open()
+            }
+
+        });
+
+        this.runetable = this.add.sprite(windowInnerWidth - 450, windowInnerHeight - 50, 'Pearl').setInteractive();
+        this.runetable.on('pointerdown', function (pointer, gameObject) {
+
+            if (scene_RunesTableFrame.isopen) {
+                scene_RunesTableFrame.close()
+            }
+            else {
+                scene_RunesTableFrame.open()
+            }
+
+        });
+
+        this.magicbook = this.add.sprite(windowInnerWidth - 400, windowInnerHeight - 50, 'Book').setInteractive();
+        this.magicbook.on('pointerdown', function (pointer, gameObject) {
+
+            if (scene_MagicBook.isopen) {
+                scene_MagicBook.close()
+            }
+            else {
+                scene_MagicBook.open()
             }
 
         });
@@ -2513,6 +3051,8 @@ class MainScene extends Phaser.Scene {
         this.load.image('SilverCoin', 'assets/SilverCoin.png');
 
         this.load.image('Heart', 'assets/Heart.png')
+        this.load.image('Book', 'assets/Book.png');
+        this.load.image('Pearl', 'assets/Pearl.png');
 
         this.load.image('spell1', 'assets/spell1.png');
         this.load.image('spell2', 'assets/spell2.png');
@@ -2693,6 +3233,11 @@ class MainScene extends Phaser.Scene {
             x: 500,
             y: 500
         }
+
+        for (let i in spellsdata) {
+            spells.push(new Spell(spellsdata[i]));
+        }
+
         createplayer(playerdata);
 
         if (false) {
@@ -2815,7 +3360,7 @@ function mobDead(data) {
                     let loot = data.loot[i];
 
                     drop.loot.push({
-                        'item': new Item(loot.id, loot.name, loot.image, loot.stack, loot.stacksize),
+                        'item': new Item(loot),
                         'quantity': loot.quantity
                     })
 
@@ -2954,10 +3499,35 @@ function createplayer(data) {
     // }
     // ws.send(JSON.stringify(inf))
 
+    let step = windowInnerHeight - 100;
+    let counter = 0;
+    let x = windowInnerWidth - 50;
+    for (let i in player.panel) {
+        if (counter % 4 == 0 && counter != 0) {
+            step = windowInnerHeight - 100;
+            x -= 50;
+        }
+        player.panel[i] = new itemCell(itemType.Runestone)
+        player.panel[i].index = i;
+        player.panel[i].x = x;
+        player.panel[i].y = step;
+        counter += 1;
+        step -= 50;
+
+    }
+
     for (let i in player.bag) {
         player.bag[i] = new itemCell()
         player.bag[i].index = i;
     }
+
+    for (let i in player.runestones) {
+        player.runestones[i] = new itemCell(itemType.Runestone)
+        player.runestones[i].index = i;
+    }
+
+    let item = new Item({ id: 11, name: 'spell1', image: 'spell1', itemtype: itemType.Drink, equiptype: null, spell: 4, stack: false, stacksize: 0 });
+    player.bag[0].item = item;
 
     scene_main.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
     scene_main.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
@@ -2973,6 +3543,9 @@ function createplayer(data) {
     scene_main.scene.add('NpcDialoge', NpcDialoge, true, { x: 400, y: 300 })
     scene_main.scene.add('CastFrame', CastFrame, true, { x: 400, y: 300 });
     scene_main.scene.add('CharFrame', CharFrame, true, { x: 400, y: 300 });
+    scene_main.scene.add('RunesTableFrame', RunesTableFrame, true, { x: 400, y: 300 });
+    scene_main.scene.add('MagicBook', MagicBook, true, { x: 400, y: 300 });
+    scene_main.scene.add('ItemsSprites', ItemsSprites, true, { x: 400, y: 300 });
 
     if (player.performancepoints) {
         scene_CharFrame.open();
