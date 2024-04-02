@@ -1100,7 +1100,7 @@ class ItemsSprites extends Phaser.Scene {
 
         });
 
-        this.input.on('pointerup', function (pointer, obj) {
+        this.input.on('pointerdown', function (pointer, obj) {
 
             if (obj.length == 0 && scene_MagicBook.isopen) {
                 return;
@@ -1910,8 +1910,11 @@ class CastFrame extends Phaser.Scene {
         this.zone.visible = true;
         this.castopen = true;
 
-        for (let i in spells) {
-            spells[i].sprite.visible = false;
+        for (let i in player.panel) {
+            if (player.panel[i].item == null){
+                continue;
+            }
+            player.panel[i].item.spell.sprite.visible = false;
         }
 
         this.exemplestep = Date.now();
@@ -1930,8 +1933,11 @@ class CastFrame extends Phaser.Scene {
         this.zone.visible = false;
         this.spelldata = [];
         this.castopen = false
-        for (let i in spells) {
-            spells[i].sprite.visible = true;
+        for (let i in player.panel) {
+            if (player.panel[i].item == null){
+                continue;
+            }
+            player.panel[i].item.spell.sprite.visible = true;
         }
         this.exemple = [];
     }
