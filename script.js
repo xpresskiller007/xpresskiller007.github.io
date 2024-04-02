@@ -869,7 +869,7 @@ class Mob {
                 drop.push(
                     {
                         'item': new Item(item),
-                        'quantity': item.quantity
+                        'quantity': element.quantity
                     }
                 )
             }
@@ -1007,7 +1007,7 @@ class ItemsSprites extends Phaser.Scene {
 
         this.input.on('drag', (pointer, obj, dragX, dragY) => {
 
-            if (!scene_MagicBook.isopen && !scene_BagFrame.isopen && !scene_RunesTableFrame.isopen){
+            if (!scene_MagicBook.isopen && !scene_BagFrame.isopen && !scene_RunesTableFrame.isopen) {
                 scene_ItemsSprites.dragobg = null;
                 return;
             }
@@ -2676,28 +2676,92 @@ class DropFrame extends Phaser.Scene {
             for (let i in scene_DropFrame.drop.loot) {
                 let loot = scene_DropFrame.drop.loot[i];
                 if (loot.item.sprite == gameObject[0]) {
+                    let firstEmptyCell = null;
                     for (let bi in player.bag) {
+
                         if (player.bag[bi].item == null) {
-                            player.bag[bi].item = loot.item;
-                            player.bag[bi].quantity = loot.quantity;
-                            loot.item.sprite.destroy();
-                            loot.item.sprite = null;
-                            scene_DropFrame.drop.loot.splice(i, 1);
-                            if (!scene_DropFrame.drop.loot.length) {
-                                let drop = scene_DropFrame.drop;
-                                for (let di in drops) {
-                                    if (drop.sprite == drops[di].sprite) {
-                                        drops.splice(di, 1);
-                                        drop.sprite.destroy();
-                                        scene_DropFrame.closedrop();
+                            if (firstEmptyCell == null) {
+                                firstEmptyCell = bi;
+                            }
+                            if (!loot.item.stack) {
+                                player.bag[bi].item = loot.item;
+                                player.bag[bi].quantity = loot.quantity;
+                                loot.item.sprite.destroy();
+                                loot.item.sprite = null;
+                                scene_DropFrame.drop.loot.splice(i, 1);
+                                if (!scene_DropFrame.drop.loot.length) {
+                                    let drop = scene_DropFrame.drop;
+                                    for (let di in drops) {
+                                        if (drop.sprite == drops[di].sprite) {
+                                            drops.splice(di, 1);
+                                            drop.sprite.destroy();
+                                            scene_DropFrame.closedrop();
+                                        }
                                     }
                                 }
+                                return;
                             }
-                            return;
+                            else{
+                                continue
+                            }
                         }
+                        if (!loot.item.stack){
+                            continue;
+                        }
+                        if (loot.quantity > 0 && player.bag[bi].item.id == loot.item.id
+                            && player.bag[bi].quantity < player.bag[bi].item.stacksize) {
+                            player.bag[bi].quantity += loot.quantity;
+                            loot.quantity = 0;
+                            if (player.bag[bi].quantity > player.bag[bi].item.stacksize) {
+                                loot.quantity = player.bag[bi].quantity - player.bag[bi].item.stacksize;
+                                player.bag[bi].quantity = player.bag[bi].item.stacksize;
+                            }
+                            if (loot.quantity == 0) {
+                                loot.item.sprite.destroy();
+                                loot.item.sprite = null;
+                                loot.item = null;
+                                scene_DropFrame.drop.loot.splice(i, 1);
+                                if (!scene_DropFrame.drop.loot.length) {
+                                    let drop = scene_DropFrame.drop;
+                                    for (let di in drops) {
+                                        if (drop.sprite == drops[di].sprite) {
+                                            drops.splice(di, 1);
+                                            drop.sprite.destroy();
+                                            scene_DropFrame.closedrop();
+                                        }
+                                    }
+                                }
+                                return;
+                            }
+
+                        }
+
                     }
+
+                    if (firstEmptyCell != null) {
+                        player.bag[firstEmptyCell].item = loot.item;
+                        player.bag[firstEmptyCell].quantity = loot.quantity;
+                        loot.item.sprite.destroy();
+                        loot.item.sprite = null;
+                        scene_DropFrame.drop.loot.splice(i, 1);
+                        if (!scene_DropFrame.drop.loot.length) {
+                            let drop = scene_DropFrame.drop;
+                            for (let di in drops) {
+                                if (drop.sprite == drops[di].sprite) {
+                                    drops.splice(di, 1);
+                                    drop.sprite.destroy();
+                                    scene_DropFrame.closedrop();
+                                }
+                            }
+                        }
+                        return;
+                    }
+
                 }
+
             }
+
+
         });
 
     }
