@@ -1091,18 +1091,19 @@ class ItemsSprites extends Phaser.Scene {
                 return;
             }
 
-            for (let i in player.runestones) {
+            for (let i in player.panel) {
 
-                if (player.runestones[i].item == null) {
+                if (player.panel[i].item == null) {
                     continue;
                 }
 
-                if (player.runestones[i].item.spell == null) {
+                if (player.panel[i].item.spell == null) {
                     continue;
                 }
 
-                if (player.runestones[i].item.spell.sprite == dragobg) {
-                    dragitem = player.runestones[i].item;
+                if (player.panel[i].item.spell.sprite == dragobg) {
+                    dragcell = player.panel[i];
+                    dragitem = dragcell.item;
                     break
                 }
 
@@ -1110,14 +1111,14 @@ class ItemsSprites extends Phaser.Scene {
 
             if (dragitem != null) {
                 scene_ItemsSprites.dragobg = null;
-                // player.hp = 0;
+                scene_ItemsSprites.spallpanel(dragcell, dragitem);
             }
 
         });
 
         this.input.on('pointerdown', function (pointer, obj) {
 
-            if (obj.length == 0 && scene_MagicBook.isopen) {
+            if (obj.length == 0 || scene_MagicBook.isopen) {
                 return;
             }
 
@@ -1210,48 +1211,48 @@ class ItemsSprites extends Phaser.Scene {
                 replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
             }
 
-            if (dragcell.quantity > 1){
-                if (dragcell.quantitytext != null){
+            if (dragcell.quantity > 1) {
+                if (dragcell.quantitytext != null) {
                     dragcell.quantitytext.destroy();
-                } 
+                }
                 dragcell.quantitytext = scene_ItemsSprites.add.text(dragcell.x - 5, dragcell.y, dragcell.quantity, { fontSize: 'bold Arial', fontSize: 15, fill: 'white' });
                 dragcell.quantitytext.setStroke('black', 5);
 
             }
-            else{
-                if (dragcell.quantitytext != null){
+            else {
+                if (dragcell.quantitytext != null) {
                     dragcell.quantitytext.destroy();
-                    dragcell.quantitytext = null;  
+                    dragcell.quantitytext = null;
                 }
             }
 
-            if (dragcell.quantity > 1){
-                if (dragcell.quantitytext != null){
+            if (dragcell.quantity > 1) {
+                if (dragcell.quantitytext != null) {
                     dragcell.quantitytext.destroy();
-                } 
+                }
                 dragcell.quantitytext = scene_ItemsSprites.add.text(dragcell.x - 5, dragcell.y, dragcell.quantity, { fontSize: 'bold Arial', fontSize: 15, fill: 'white' });
                 dragcell.quantitytext.setStroke('black', 5);
 
             }
-            else{
-                if (dragcell.quantitytext != null){
+            else {
+                if (dragcell.quantitytext != null) {
                     dragcell.quantitytext.destroy();
-                    dragcell.quantitytext = null;  
+                    dragcell.quantitytext = null;
                 }
             }
 
-            if (replacecell.quantity > 1){
-                if (replacecell.quantitytext != null){
+            if (replacecell.quantity > 1) {
+                if (replacecell.quantitytext != null) {
                     replacecell.quantitytext.destroy();
-                } 
+                }
                 replacecell.quantitytext = scene_ItemsSprites.add.text(replacecell.x - 5, replacecell.y, replacecell.quantity, { fontSize: 'bold Arial', fontSize: 15, fill: 'white' });
                 replacecell.quantitytext.setStroke('black', 5);
 
             }
-            else{
-                if (replacecell.quantitytext != null){
+            else {
+                if (replacecell.quantitytext != null) {
                     replacecell.quantitytext.destroy();
-                    replacecell.quantitytext = null;  
+                    replacecell.quantitytext = null;
                 }
             }
 
@@ -1352,6 +1353,62 @@ class ItemsSprites extends Phaser.Scene {
             dragitem.spell.sprite.setPosition(replacecell.x + 17, replacecell.y + 17);
 
             replacecell.item = dragitem;
+
+        }
+
+    }
+
+    spallpanel(dragcell, dragitem) {
+
+        scene_ItemsSprites.dragobg = null;
+
+        let distance = Math.sqrt((dragitem.spell.sprite.x-16 - dragcell.x) ** 2 + (dragitem.spell.sprite.y-16 - dragcell.y) ** 2);
+
+        if (distance <= 25) {
+            dragitem.spell.sprite.setPosition(dragcell.x + 17, dragcell.y + 17);
+            return
+        }
+
+        let replacecell = null;
+
+        for (let i in player.panel) {
+            if (dragcell.index == i) {
+                continue;
+            }
+            let replaceelement = player.panel[i];
+            let replacedistance = Math.sqrt((dragitem.spell.sprite.x-16 - replaceelement.x) ** 2 + (dragitem.spell.sprite.y-16 - replaceelement.y) ** 2);
+            if (replacedistance <= 25) {
+                replacecell = replaceelement;
+                break;
+            }
+        }
+
+        if (replacecell == null) {
+
+            let centralpanelelement = player.panel[8];
+
+            distance = Math.sqrt((dragitem.spell.sprite.x-16 - centralpanelelement.x) ** 2 + (dragitem.spell.sprite.y-16 - centralpanelelement.y) ** 2);
+
+            if (distance>100){
+                dragitem.spell.sprite.destroy();
+                dragitem.spell.sprite = null;
+                dragcell.item = null;
+            }
+            else{
+                dragitem.spell.sprite.setPosition(dragcell.x + 17, dragcell.y + 17);
+            }
+            
+        }
+        else {
+
+            let replaceitem = replacecell.item;
+            replaceitem = replacecell.item;
+            replacecell.item = dragitem;
+            dragitem.spell.sprite.setPosition(replacecell.x + 17, replacecell.y + 17);
+            dragcell.item = replaceitem;
+            if (replaceitem != null) {
+                replaceitem.spell.sprite.setPosition(dragcell.x + 17, dragcell.y + 17);
+            }
 
         }
 
