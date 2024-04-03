@@ -1182,7 +1182,24 @@ class ItemsSprites extends Phaser.Scene {
                 }
             }
             if (replacecell == null) {
-                dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+
+                let centralpanelelement = player.bag[Math.floor(player.bag.length / 2)];
+
+                distance = Math.sqrt((dragitem.sprite.x - centralpanelelement.x) ** 2 + (dragitem.sprite.y - centralpanelelement.y) ** 2);
+
+                if (distance > 200) {
+                    dragitem.sprite.destroy();
+                    dragitem.sprite = null;
+                    dragcell.item = null;
+                    dragcell.quantity = 0;
+                    if (dragcell.quantitytext != null) {
+                        dragcell.quantitytext.destroy();
+                        dragcell.quantitytext = null;
+                    }
+                }
+                else {
+                    dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+                }
             }
             else {
                 let replaceitem = replacecell.item;
@@ -1362,7 +1379,7 @@ class ItemsSprites extends Phaser.Scene {
 
         scene_ItemsSprites.dragobg = null;
 
-        let distance = Math.sqrt((dragitem.spell.sprite.x-16 - dragcell.x) ** 2 + (dragitem.spell.sprite.y-16 - dragcell.y) ** 2);
+        let distance = Math.sqrt((dragitem.spell.sprite.x - 16 - dragcell.x) ** 2 + (dragitem.spell.sprite.y - 16 - dragcell.y) ** 2);
 
         if (distance <= 25) {
             dragitem.spell.sprite.setPosition(dragcell.x + 17, dragcell.y + 17);
@@ -1376,7 +1393,7 @@ class ItemsSprites extends Phaser.Scene {
                 continue;
             }
             let replaceelement = player.panel[i];
-            let replacedistance = Math.sqrt((dragitem.spell.sprite.x-16 - replaceelement.x) ** 2 + (dragitem.spell.sprite.y-16 - replaceelement.y) ** 2);
+            let replacedistance = Math.sqrt((dragitem.spell.sprite.x - 16 - replaceelement.x) ** 2 + (dragitem.spell.sprite.y - 16 - replaceelement.y) ** 2);
             if (replacedistance <= 25) {
                 replacecell = replaceelement;
                 break;
@@ -1387,17 +1404,17 @@ class ItemsSprites extends Phaser.Scene {
 
             let centralpanelelement = player.panel[8];
 
-            distance = Math.sqrt((dragitem.spell.sprite.x-16 - centralpanelelement.x) ** 2 + (dragitem.spell.sprite.y-16 - centralpanelelement.y) ** 2);
+            distance = Math.sqrt((dragitem.spell.sprite.x - 16 - centralpanelelement.x) ** 2 + (dragitem.spell.sprite.y - 16 - centralpanelelement.y) ** 2);
 
-            if (distance>100){
+            if (distance > 100) {
                 dragitem.spell.sprite.destroy();
                 dragitem.spell.sprite = null;
                 dragcell.item = null;
             }
-            else{
+            else {
                 dragitem.spell.sprite.setPosition(dragcell.x + 17, dragcell.y + 17);
             }
-            
+
         }
         else {
 
