@@ -1196,13 +1196,63 @@ class ItemsSprites extends Phaser.Scene {
         }
         else {
 
+            let dragquantity = dragcell.quantity;
+            let replacequantity = replacecell.quantity;
+
             let replaceitem = replacecell.item;
             replaceitem = replacecell.item;
             replacecell.item = dragitem;
+            replacecell.quantity = dragquantity;
             dragitem.sprite.setPosition(replacecell.x, replacecell.y);
             dragcell.item = replaceitem;
+            dragcell.quantity = replacequantity;
             if (replaceitem != null) {
                 replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
+            }
+
+            if (dragcell.quantity > 1){
+                if (dragcell.quantitytext != null){
+                    dragcell.quantitytext.destroy();
+                } 
+                dragcell.quantitytext = scene_ItemsSprites.add.text(dragcell.x - 5, dragcell.y, dragcell.quantity, { fontSize: 'bold Arial', fontSize: 15, fill: 'white' });
+                dragcell.quantitytext.setStroke('black', 5);
+
+            }
+            else{
+                if (dragcell.quantitytext != null){
+                    dragcell.quantitytext.destroy();
+                    dragcell.quantitytext = null;  
+                }
+            }
+
+            if (dragcell.quantity > 1){
+                if (dragcell.quantitytext != null){
+                    dragcell.quantitytext.destroy();
+                } 
+                dragcell.quantitytext = scene_ItemsSprites.add.text(dragcell.x - 5, dragcell.y, dragcell.quantity, { fontSize: 'bold Arial', fontSize: 15, fill: 'white' });
+                dragcell.quantitytext.setStroke('black', 5);
+
+            }
+            else{
+                if (dragcell.quantitytext != null){
+                    dragcell.quantitytext.destroy();
+                    dragcell.quantitytext = null;  
+                }
+            }
+
+            if (replacecell.quantity > 1){
+                if (replacecell.quantitytext != null){
+                    replacecell.quantitytext.destroy();
+                } 
+                replacecell.quantitytext = scene_ItemsSprites.add.text(replacecell.x - 5, replacecell.y, replacecell.quantity, { fontSize: 'bold Arial', fontSize: 15, fill: 'white' });
+                replacecell.quantitytext.setStroke('black', 5);
+
+            }
+            else{
+                if (replacecell.quantitytext != null){
+                    replacecell.quantitytext.destroy();
+                    replacecell.quantitytext = null;  
+                }
             }
 
         }
@@ -2369,6 +2419,11 @@ class BagFrame extends Phaser.Scene {
                 }
                 item.sprite.setPosition(bagcell.x, bagcell.y);
 
+                if (bagcell.quantity > 1) {
+                    bagcell.quantitytext = scene_ItemsSprites.add.text(bagcell.x - 5, bagcell.y, bagcell.quantity, { fontSize: 'bold Arial', fontSize: 15, fill: 'white' });
+                    bagcell.quantitytext.setStroke('black', 5);
+                }
+
             }
 
         }
@@ -2382,7 +2437,12 @@ class BagFrame extends Phaser.Scene {
         this.graphics.clear();
         this.ClsdBtn.visible = false;
         for (let i in player.bag) {
-            let item = player.bag[i].item;
+            let bagcell = player.bag[i];
+            if (bagcell.quantitytext != null) {
+                bagcell.quantitytext.destroy();
+                bagcell.quantitytext = null;
+            }
+            let item = bagcell.item;
             if (item != null) {
                 if (item.sprite != null) {
                     item.sprite.visible = false;
@@ -2701,11 +2761,11 @@ class DropFrame extends Phaser.Scene {
                                 }
                                 return;
                             }
-                            else{
+                            else {
                                 continue
                             }
                         }
-                        if (!loot.item.stack){
+                        if (!loot.item.stack) {
                             continue;
                         }
                         if (loot.quantity > 0 && player.bag[bi].item.id == loot.item.id
@@ -2874,9 +2934,6 @@ class UI extends Phaser.Scene {
 
     create() {
 
-        // this.text = this.add.text(20, 60, player.status, { fontFamily: 'Arial', fontSize: '15px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
-
-
         this.bag = this.add.sprite(windowInnerWidth - 500, windowInnerHeight - 50, 'Bag').setInteractive();
         this.bag.on('pointerdown', function (pointer, gameObject) {
 
@@ -2928,7 +2985,6 @@ class UI extends Phaser.Scene {
     }
 
     update(p1, p2) {
-        // this.text.setText(player.status)
     }
 }
 
@@ -3519,6 +3575,7 @@ function createplayer(data) {
 
     let item = new Item({ id: 11, name: 'spell1', image: 'spell1', itemtype: itemType.Runestone, equiptype: null, spell: 1, stack: false, stacksize: 0 });
     player.bag[0].item = item;
+    player.bag[0].quantity = 1;
 
     scene_main.cameras.main.setSize(windowInnerWidth, windowInnerHeight);
     scene_main.cameras.add(windowInnerWidth, 0, windowInnerWidth, windowInnerHeight);
