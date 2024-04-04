@@ -63,6 +63,7 @@ var scene_CharFrame;
 var scene_RunesTableFrame;
 var scene_ItemsSprites;
 var scene_MagicBook;
+var scene_SpellItemInfo;
 
 var spellsdata = [];
 var spells = [];
@@ -1112,7 +1113,24 @@ class ItemsSprites extends Phaser.Scene {
             if (dragitem != null) {
                 scene_ItemsSprites.dragobg = null;
                 scene_ItemsSprites.spallpanel(dragcell, dragitem);
+                return;
             }
+            
+            if (scene_BagFrame.isopen){
+              for (let i in player.bag) {
+                if (player.bag[i].item != null) {
+                  if (player.bag[i].item.sprite == obj[0]) {
+                    if (scene_SpellItemInfo.isopen){
+                      scene_SpellItemInfo.close();
+                    }
+                    scene_SpellItemInfo.open(player.bag[i]);
+                    return
+                  }
+                }
+              }
+              
+            }
+    
 
         });
 
@@ -1150,6 +1168,13 @@ class ItemsSprites extends Phaser.Scene {
         scene_ItemsSprites.dragobg = null;
 
         let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
+        
+        if(distance <= 3){
+          if (scene_SpellItemInfo.isopen) {
+            scene_SpellItemInfo.close();
+          }
+          scene_SpellItemInfo.open(dragitem);
+        }
 
         if (distance <= 25) {
             dragitem.sprite.setPosition(dragcell.x, dragcell.y);
@@ -3000,6 +3025,78 @@ class DropFrame extends Phaser.Scene {
 
 }
 
+class SpellItemInfo extends Phaser.Scene {
+
+    create() {
+
+        scene_SpellItemInfo = this;
+
+        this.item = null;
+        this.isopen = false;
+        this.graphics = this.add.graphics();
+        this.ClsdBtn = this.add.sprite(0, 0, 'ClsdBtn').setInteractive();
+        this.ClsdBtn.visible = false;
+        this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
+            scene_SpellItemInfo.close();
+        });
+
+    }
+
+
+    open(item) {
+
+      let xsize = 0;
+      let ysize = 0;
+      
+      if (item.sprite != null){
+        xsize = item.sprite.x;
+        ysize = item.sprite.y;
+      }
+      else{
+        
+        if (item.spell != null){
+          if (item.spell.sprite != null){
+            xsize = item.spell.sprite.x;
+            ysize = item.spell.sprite.y;
+          }
+          else {
+            return;
+          }
+        }
+        else {
+          return;
+        }
+      }
+
+
+        this.graphics.fillStyle(0x000000, 0.7);
+        this.graphics.fillRect(xsize, ysize, 150, 250);
+
+        let cellxsize = xsize;
+        let cellysize = ysize + 20;
+
+
+        this.graphics.fillStyle(0x000000);
+        this.graphics.fillRect(xsize, ysize, 150, 20);
+
+        this.ClsdBtn.visible = true;
+        this.ClsdBtn.setPosition(xsize + 150 - 10, ysize + 11)
+
+
+        this.isopen = true;
+
+    }
+
+    close() {
+
+        this.graphics.clear();
+        this.ClsdBtn.visible = false;
+        this.isopen = false;
+
+    }
+
+}
+
 class UI extends Phaser.Scene {
 
     preload() {
@@ -3667,13 +3764,14 @@ function createplayer(data) {
     scene_main.scene.add('RunesTableFrame', RunesTableFrame, true, { x: 400, y: 300 });
     scene_main.scene.add('MagicBook', MagicBook, true, { x: 400, y: 300 });
     scene_main.scene.add('ItemsSprites', ItemsSprites, true, { x: 400, y: 300 });
+    scene_main.scene.add('SpellItemInfo', SpellItemInfo, true, { x: 400, y: 300 });
 
     if (player.performancepoints) {
         scene_CharFrame.open();
     }
 
     game.input.addPointer(1);
-
+    
 }
 
 function addPlayer(data) {
