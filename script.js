@@ -136,66 +136,67 @@ spellsdata.push({ 'id': 4, damage: 100, mp: 25, cooldown: 5000, distance: 300, '
 var loot = []
 
 loot.push({
-    'item': { id: 1, name: 'Apple', image: 'Apple', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 },
+    'item': { id: 1, name: 'Apple', description: ['Вроде яблоко', 'Но не уверен', '', , 'Проверка отступа'], image: 'Apple', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 },
     'quantity': 1,
     'chance': 100
 })
 
 loot.push({
-    'item': { id: 2, name: 'Bread', image: 'Bread', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 },
+    'item': { id: 2, name: 'Bread', description: ['Просто хлебушек', 'Жрать низя'], image: 'Bread', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 },
     'quantity': 1,
     'chance': 90
 })
 
 loot.push({
-    'item': { id: 3, name: 'Cheese', image: 'Cheese', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 10 },
+    'item': { id: 3, name: 'Cheese', description: ['Сырок'], image: 'Cheese', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 10 },
     'quantity': 1,
     'chance': 80
 })
 
 loot.push({
-    'item': { id: 4, name: 'Ham', image: 'Ham', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 5 },
+    'item': { id: 4, name: 'Ham', description: ['Окорок'], image: 'Ham', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 5 },
     'quantity': 1,
     'chance': 70
 })
 
 loot.push({
-    'item': { id: 5, name: 'Mushroom', image: 'Mushroom', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 3 },
+    'item': { id: 5, name: 'Mushroom', description: ['Гриб'], image: 'Mushroom', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 3 },
     'quantity': 1,
     'chance': 50
 })
 
 loot.push({
-    'item': { id: 6, name: 'Wine', image: 'Wine', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 },
+    'item': { id: 6, name: 'Wine', description: ['Винишка много не бывает'], image: 'Wine', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 },
     'quantity': 1,
     'chance': 25
 })
 
 loot.push({
-    'item': { id: 7, name: 'Beer', image: 'Beer', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 },
+    'item': { id: 7, name: 'Beer', description: ['Жидкое злато'], image: 'Beer', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 },
     'quantity': 1,
     'chance': 10
 })
 
 loot.push({
-    'item': { id: 8, name: 'spell2', image: 'spell2', itemtype: itemType.Runestone, equiptype: null, spell: 2, stack: false, stacksize: 0 },
+    'item': { id: 8, name: 'spell2', description: ['Рунный камушек второго скила', 'Вставлять в таблицу камней'], image: 'spell2', itemtype: itemType.Runestone, equiptype: null, spell: 2, stack: false, stacksize: 0 },
     'quantity': 1,
     'chance': 40
 })
 
 loot.push({
-    'item': { id: 9, name: 'spell3', image: 'spell3', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 },
+    'item': { id: 9, name: 'spell3', description: ['Рунный камушек третьего скила', 'Вставлять в таблицу камней'], image: 'spell3', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 },
     'quantity': 1,
     'chance': 20
 })
 
 loot.push({
-    'item': { id: 10, name: 'spell4', image: 'spell4', itemtype: itemType.Runestone, equiptype: null, spell: 4, stack: false, stacksize: 0 },
-    'quantity': 1,
-    'chance': 10
+  'item': { id: 10, name: 'spell4', description: ['Рунный камушек четвертого скила', 'Вставлять в таблицу камней'], image: 'spell4', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 },
+  'quantity': 1,
+  'chance': 10
 })
 
-var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 }
+
+var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 };
 
 
 class Player {
@@ -933,6 +934,7 @@ class Item {
     constructor(data) {
         this.id = data.id;
         this.name = data.name;
+        this.description = data.description;
         this.image = data.image;
         this.sprite = null;
         this.itemtype = data.itemtype;
@@ -1084,7 +1086,7 @@ class ItemsSprites extends Phaser.Scene {
 
             if (dragitem != null) {
                 if (scene_MagicBook.isopen) {
-                    scene_ItemsSprites.mbspell(dragitem);
+                    scene_ItemsSprites.mbspell(dragcell);
                 }
                 else {
                     scene_ItemsSprites.runeitem(dragcell, dragitem);
@@ -1227,14 +1229,19 @@ class ItemsSprites extends Phaser.Scene {
                 }
             }
             else {
+              if (dragitem.itemtype == itemType.Runestone){
                 let replaceitem = replacecell.item;
                 replaceitem = replacecell.item;
                 replacecell.item = dragitem;
                 dragitem.sprite.setPosition(replacecell.x, replacecell.y);
                 dragcell.item = replaceitem;
                 if (replaceitem != null) {
-                    replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
+                  replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
                 }
+              }
+              else {
+                dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+              }
             }
         }
         else {
@@ -1310,6 +1317,13 @@ class ItemsSprites extends Phaser.Scene {
 
         let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
 
+        if (distance <= 3) {
+          if (scene_SpellItemInfo.isopen) {
+            scene_SpellItemInfo.close();
+          }
+          scene_SpellItemInfo.open(dragitem);
+        }
+
         if (distance <= 25) {
             dragitem.sprite.setPosition(dragcell.x, dragcell.y);
             return
@@ -1345,6 +1359,12 @@ class ItemsSprites extends Phaser.Scene {
             }
             else {
                 let replaceitem = replacecell.item;
+                if (replaceitem != null) {
+                  if (replaceitem.itemtype != itemType.Runestone) {
+                    dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+                    return;
+                  }
+                }
                 replaceitem = replacecell.item;
                 replacecell.item = dragitem;
                 dragitem.sprite.setPosition(replacecell.x, replacecell.y);
@@ -1352,6 +1372,7 @@ class ItemsSprites extends Phaser.Scene {
                 if (replaceitem != null) {
                     replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
                 }
+                
             }
         }
         else {
@@ -1369,15 +1390,25 @@ class ItemsSprites extends Phaser.Scene {
 
     }
 
-    mbspell(dragitem) {
+    mbspell(dragcell) {
 
         scene_ItemsSprites.dragobg = null;
 
         let replacecell = null;
+        
+        let dragitem = dragcell.item;
 
         for (let i in player.panel) {
             let replaceelement = player.panel[i];
             let replacedistance = Math.sqrt((dragitem.sprite.x - 16 - replaceelement.x) ** 2 + (dragitem.sprite.y - 16 - replaceelement.y) ** 2);
+            if (dragitem.index == i){
+              if (replacedistance <= 3) {
+                if (scene_SpellItemInfo.isopen) {
+                  scene_SpellItemInfo.close();
+                }
+                scene_SpellItemInfo.open(dragitem);
+              }
+            }
             if (replacedistance <= 25) {
                 replacecell = replaceelement;
                 break;
@@ -1405,6 +1436,13 @@ class ItemsSprites extends Phaser.Scene {
         scene_ItemsSprites.dragobg = null;
 
         let distance = Math.sqrt((dragitem.spell.sprite.x - 16 - dragcell.x) ** 2 + (dragitem.spell.sprite.y - 16 - dragcell.y) ** 2);
+        
+        if (distance <= 3) {
+          if (scene_SpellItemInfo.isopen) {
+            scene_SpellItemInfo.close();
+          }
+          scene_SpellItemInfo.open(dragitem);
+        }
 
         if (distance <= 25) {
             dragitem.spell.sprite.setPosition(dragcell.x + 17, dragcell.y + 17);
@@ -3034,6 +3072,10 @@ class SpellItemInfo extends Phaser.Scene {
         this.item = null;
         this.isopen = false;
         this.graphics = this.add.graphics();
+        this.nametext = this.add.text(10, 10, '', { fontSize: '25px', fill: 'white' });
+        this.nametext.visible = false;
+        this.descriptiontext = this.add.text(10, 10, '', { fontSize: '15px', fill: 'white' , wordWrap: { width: 140 } });
+        this.descriptiontext.visible = false;
         this.ClsdBtn = this.add.sprite(0, 0, 'ClsdBtn').setInteractive();
         this.ClsdBtn.visible = false;
         this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
@@ -3081,7 +3123,16 @@ class SpellItemInfo extends Phaser.Scene {
 
         this.ClsdBtn.visible = true;
         this.ClsdBtn.setPosition(xsize + 150 - 10, ysize + 11)
-
+         
+         
+        this.nametext.setText(item.name);
+        this.nametext.setPosition(xsize + 5, ysize + 20);
+        this.descriptiontext.setText(item.description);
+        this.descriptiontext.setPosition(xsize + 5, ysize+ 45);
+         
+        this.nametext.visible = true;
+        this.descriptiontext.visible = true;
+        
 
         this.isopen = true;
 
@@ -3090,6 +3141,8 @@ class SpellItemInfo extends Phaser.Scene {
     close() {
 
         this.graphics.clear();
+        this.nametext.visible = false;
+        this.descriptiontext.visible = false;
         this.ClsdBtn.visible = false;
         this.isopen = false;
 
@@ -3744,7 +3797,7 @@ function createplayer(data) {
         player.runestones[i].index = i;
     }
 
-    let item = new Item({ id: 11, name: 'spell1', image: 'spell1', itemtype: itemType.Runestone, equiptype: null, spell: 1, stack: false, stacksize: 0 });
+    let item = new Item({ id: 11, name: 'spell1',  description: ['Рунный камушек второго скила', 'Вставлять в таблицу камней'], image: 'spell1', itemtype: itemType.Runestone, equiptype: null, spell: 1, stack: false, stacksize: 0 });
     player.bag[0].item = item;
     player.bag[0].quantity = 1;
 
