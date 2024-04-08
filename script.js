@@ -9,7 +9,8 @@ const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectat
 const targetType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC' }
 const playerStatus = { Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn', Battle: 'Battle' }
 const itemType = { Runestone: 'Runestone', Equipment: 'Equipment', Meal: 'Meal', Drink: 'Drink' };
-const questuslovie = {Kill: 'Kill', Sbor: 'Sbor'};
+const questuslovie = { Kill: 'Kill', Sbor: 'Sbor' };
+const dialogePage = { Main: 'Main', QuestsList: 'QuestsList', QuestsElementList: 'QuestsElementList' };
 const equipType = {};
 var player;
 var players = [];
@@ -26,11 +27,11 @@ var mobsdata = [
 ];
 
 var npcsdata = [
-    { "id": 6, "skin": "Female1", "name": "Female1", "respx": 900, "respy": 100 },
-    { "id": 7, "skin": "Female2", "name": "Female2", "respx": 1000, "respy": 100 },
-    { "id": 8, "skin": "Male1", "name": "Male1", "respx": 1100, "respy": 100 },
-    { "id": 9, "skin": "Male2", "name": "Male2", "respx": 1200, "respy": 100 },
-    { "id": 10, "skin": "Male3", "name": "Male3", "respx": 1300, "respy": 100 }
+    { "id": 6, "skin": "Female1", "name": "Female1", phrases: ['Ну здравстуй чушпан', 'Ну здравстуй чушпенсел', 'Ну здравстуй чушпанище'], "respx": 900, "respy": 100 },
+    { "id": 7, "skin": "Female2", "name": "Female2", phrases: ['Ну здравстуй чушпан', 'Ну здравстуй чушпенсел', 'Ну здравстуй чушпанище'], "respx": 1000, "respy": 100 },
+    { "id": 8, "skin": "Male1", "name": "Male1", phrases: ['Ну здравстуй чушпан', 'Ну здравстуй чушпенсел', 'Ну здравстуй чушпанище'], "respx": 1100, "respy": 100 },
+    { "id": 9, "skin": "Male2", "name": "Male2", phrases: ['Ну здравстуй чушпан', 'Ну здравстуй чушпенсел', 'Ну здравстуй чушпанище'], "respx": 1200, "respy": 100 },
+    { "id": 10, "skin": "Male3", "name": "Male3", phrases: ['Ну здравстуй чушпан', 'Ну здравстуй чушпенсел', 'Ну здравстуй чушпанище'], "respx": 1300, "respy": 100 }
 ];
 
 var bx;
@@ -191,21 +192,22 @@ loot.push({
 })
 
 loot.push({
-  'item': { id: 10, name: 'spell4', description: ['Рунный камушек четвертого скила', 'Вставлять в таблицу камней'], image: 'spell4', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 },
-  'quantity': 1,
-  'chance': 10
+    'item': { id: 10, name: 'spell4', description: ['Рунный камушек четвертого скила', 'Вставлять в таблицу камней'], image: 'spell4', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 },
+    'quantity': 1,
+    'chance': 10
 })
 
 var questdata = [];
 
 questdata.push({
-  id: 0,
-  name: 'Гаси чушпанов',
-  description: 'Надо убить 5 чушпанов',
-  condition: [{condition: questuslovie.Kill, target: 2, quantity: 2}],
-  outstanding: 6,
-  recipient: 7,
-  chain: null
+    id: 0,
+    name: 'Гаси чушпанов',
+    description: 'Надо убить 5 чушпанов',
+    condition: [{ condition: questuslovie.Kill, target: 2, quantity: 2 }],
+    outstanding: 6,
+    recipient: 7,
+    chain: null,
+    done: false
 });
 
 var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 };
@@ -213,19 +215,21 @@ var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 
 class Quest {
 
     constructor(data) {
-        
+
         this.id = data.id;
         this.name = data.name;
+        this.description = data.description;
         this.condition = [];
         this.outstanding = data.outstanding;
         this.recipient = data.recipient;
+        this.done = data.done;
 
         this.addCondition(data.condition)
 
     }
 
-    addCondition(conditiondata){
-        for (let i in conditiondata){
+    addCondition(conditiondata) {
+        for (let i in conditiondata) {
             this.condition.push(new Condition(conditiondata[i]));
         }
     }
@@ -273,6 +277,7 @@ class Player {
         this.y = this.sprite.y;
         this.respx = 800;
         this.respy = 800;
+        this.quests = [];
         this.runestones = [null, null, null, null];
         this.panel = [null, null, null, null,
             null, null, null, null,
@@ -971,6 +976,8 @@ class NPC {
             this.sprite.anims.play('m3turn');
         }
 
+        this.phrases = data.phrases;
+
         this.quests = [];
     }
 
@@ -1077,7 +1084,7 @@ class ItemsSprites extends Phaser.Scene {
                             }
                             else {
                                 if (scene_SpellItemInfo.isopen) {
-                                  scene_SpellItemInfo.close();
+                                    scene_SpellItemInfo.close();
                                 }
                                 scene_SpellItemInfo.open(item);
                                 obj.setPosition(player.runestones[i].x, player.runestones[i].y);
@@ -1167,22 +1174,22 @@ class ItemsSprites extends Phaser.Scene {
                 scene_ItemsSprites.spallpanel(dragcell, dragitem);
                 return;
             }
-            
-            if (scene_BagFrame.isopen){
-              for (let i in player.bag) {
-                if (player.bag[i].item != null) {
-                  if (player.bag[i].item.sprite == obj[0]) {
-                    if (scene_SpellItemInfo.isopen){
-                      scene_SpellItemInfo.close();
+
+            if (scene_BagFrame.isopen) {
+                for (let i in player.bag) {
+                    if (player.bag[i].item != null) {
+                        if (player.bag[i].item.sprite == obj[0]) {
+                            if (scene_SpellItemInfo.isopen) {
+                                scene_SpellItemInfo.close();
+                            }
+                            scene_SpellItemInfo.open(player.bag[i]);
+                            return
+                        }
                     }
-                    scene_SpellItemInfo.open(player.bag[i]);
-                    return
-                  }
                 }
-              }
-              
+
             }
-    
+
 
         });
 
@@ -1220,12 +1227,12 @@ class ItemsSprites extends Phaser.Scene {
         scene_ItemsSprites.dragobg = null;
 
         let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
-        
-        if(distance <= 3){
-          if (scene_SpellItemInfo.isopen) {
-            scene_SpellItemInfo.close();
-          }
-          scene_SpellItemInfo.open(dragitem);
+
+        if (distance <= 3) {
+            if (scene_SpellItemInfo.isopen) {
+                scene_SpellItemInfo.close();
+            }
+            scene_SpellItemInfo.open(dragitem);
         }
 
         if (distance <= 25) {
@@ -1279,19 +1286,19 @@ class ItemsSprites extends Phaser.Scene {
                 }
             }
             else {
-              if (dragitem.itemtype == itemType.Runestone){
-                let replaceitem = replacecell.item;
-                replaceitem = replacecell.item;
-                replacecell.item = dragitem;
-                dragitem.sprite.setPosition(replacecell.x, replacecell.y);
-                dragcell.item = replaceitem;
-                if (replaceitem != null) {
-                  replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
+                if (dragitem.itemtype == itemType.Runestone) {
+                    let replaceitem = replacecell.item;
+                    replaceitem = replacecell.item;
+                    replacecell.item = dragitem;
+                    dragitem.sprite.setPosition(replacecell.x, replacecell.y);
+                    dragcell.item = replaceitem;
+                    if (replaceitem != null) {
+                        replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
+                    }
                 }
-              }
-              else {
-                dragitem.sprite.setPosition(dragcell.x, dragcell.y);
-              }
+                else {
+                    dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+                }
             }
         }
         else {
@@ -1368,10 +1375,10 @@ class ItemsSprites extends Phaser.Scene {
         let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
 
         if (distance <= 3) {
-          if (scene_SpellItemInfo.isopen) {
-            scene_SpellItemInfo.close();
-          }
-          scene_SpellItemInfo.open(dragitem);
+            if (scene_SpellItemInfo.isopen) {
+                scene_SpellItemInfo.close();
+            }
+            scene_SpellItemInfo.open(dragitem);
         }
 
         if (distance <= 25) {
@@ -1410,10 +1417,10 @@ class ItemsSprites extends Phaser.Scene {
             else {
                 let replaceitem = replacecell.item;
                 if (replaceitem != null) {
-                  if (replaceitem.itemtype != itemType.Runestone) {
-                    dragitem.sprite.setPosition(dragcell.x, dragcell.y);
-                    return;
-                  }
+                    if (replaceitem.itemtype != itemType.Runestone) {
+                        dragitem.sprite.setPosition(dragcell.x, dragcell.y);
+                        return;
+                    }
                 }
                 replaceitem = replacecell.item;
                 replacecell.item = dragitem;
@@ -1422,7 +1429,7 @@ class ItemsSprites extends Phaser.Scene {
                 if (replaceitem != null) {
                     replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
                 }
-                
+
             }
         }
         else {
@@ -1443,33 +1450,33 @@ class ItemsSprites extends Phaser.Scene {
     mbspell(dragitem) {
 
         scene_ItemsSprites.dragobg = null;
-        
+
         let distance = Math.sqrt((dragitem.sprite.x - 16 - dragitem.spell.sprite.x) ** 2 + (dragitem.sprite.y - 16 - dragitem.spell.sprite.y) ** 2);
-        
-        
+
+
         if (distance <= 25) {
-          if (scene_SpellItemInfo.isopen) {
-            scene_SpellItemInfo.close();
-          }
-          scene_SpellItemInfo.open(dragitem);
-          dragitem.sprite.setPosition(dragitem.spell.sprite.x, dragitem.spell.sprite.y);
-          dragitem.spell.sprite.destroy();
-          dragitem.spell.sprite = null;
-          return;
+            if (scene_SpellItemInfo.isopen) {
+                scene_SpellItemInfo.close();
+            }
+            scene_SpellItemInfo.open(dragitem);
+            dragitem.sprite.setPosition(dragitem.spell.sprite.x, dragitem.spell.sprite.y);
+            dragitem.spell.sprite.destroy();
+            dragitem.spell.sprite = null;
+            return;
         }
 
         let replacecell = null;
-        
+
         for (let i in player.panel) {
             let replaceelement = player.panel[i];
             let replacedistance = Math.sqrt((dragitem.sprite.x - 16 - replaceelement.x) ** 2 + (dragitem.sprite.y - 16 - replaceelement.y) ** 2);
-            if (dragitem.index == i){
-              if (replacedistance <= 3) {
-                if (scene_SpellItemInfo.isopen) {
-                  scene_SpellItemInfo.close();
+            if (dragitem.index == i) {
+                if (replacedistance <= 3) {
+                    if (scene_SpellItemInfo.isopen) {
+                        scene_SpellItemInfo.close();
+                    }
+                    scene_SpellItemInfo.open(dragitem);
                 }
-                scene_SpellItemInfo.open(dragitem);
-              }
             }
             if (replacedistance <= 25) {
                 replacecell = replaceelement;
@@ -1498,12 +1505,12 @@ class ItemsSprites extends Phaser.Scene {
         scene_ItemsSprites.dragobg = null;
 
         let distance = Math.sqrt((dragitem.spell.sprite.x - 16 - dragcell.x) ** 2 + (dragitem.spell.sprite.y - 16 - dragcell.y) ** 2);
-        
+
         if (distance <= 3) {
-          if (scene_SpellItemInfo.isopen) {
-            scene_SpellItemInfo.close();
-          }
-          scene_SpellItemInfo.open(dragitem);
+            if (scene_SpellItemInfo.isopen) {
+                scene_SpellItemInfo.close();
+            }
+            scene_SpellItemInfo.open(dragitem);
         }
 
         if (distance <= 25) {
@@ -1662,7 +1669,6 @@ class TargetFrame extends Phaser.Scene {
                 }
                 if (player.target.type == targetType.NPC) {
                     if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 200) {
-                        player.target = null;
                         scene_NpcDialoge.closedialoge();
                     }
                 }
@@ -2199,25 +2205,25 @@ class CharFrame extends Phaser.Scene {
         });
 
 
-        this.textperformancepoints = this.add.text(20, 180, 'Свободные очки', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textperformancepoints = this.add.text(20, 140, 'Свободные очки', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.textperformancepoints.visible = false;
 
-        this.textstamina = this.add.text(20, 210, 'Выносливость', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textstamina = this.add.text(20, 170, 'Выносливость', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.textstamina.visible = false;
 
-        this.textintellect = this.add.text(20, 230, 'Интелект', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textintellect = this.add.text(20, 200, 'Интелект', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.textintellect.visible = false;
 
-        this.textfortitude = this.add.text(20, 250, 'Сила духа', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textfortitude = this.add.text(20, 230, 'Сила духа', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.textfortitude.visible = false;
 
-        this.textskill = this.add.text(20, 270, 'Мастерство', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textskill = this.add.text(20, 260, 'Мастерство', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.textskill.visible = false;
 
-        this.textluck = this.add.text(20, 290, 'Удача', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.textluck = this.add.text(20, 290, 'Удача', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.textluck.visible = false;
 
-        this.staminaplus = this.add.text(250, 210, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.staminaplus = this.add.text(250, 170, '+', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.staminaplus.setInteractive();
         this.staminaplus.visible = false;
         this.staminaplus.on('pointerdown', function (pointer, gameObject) {
@@ -2231,7 +2237,7 @@ class CharFrame extends Phaser.Scene {
             }
         });
 
-        this.intellectplus = this.add.text(250, 230, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.intellectplus = this.add.text(250, 200, '+', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.intellectplus.setInteractive();
         this.intellectplus.visible = false;
         this.intellectplus.on('pointerdown', function (pointer, gameObject) {
@@ -2245,7 +2251,7 @@ class CharFrame extends Phaser.Scene {
             }
         });
 
-        this.fortitudeplus = this.add.text(250, 250, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.fortitudeplus = this.add.text(250, 230, '+', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.fortitudeplus.setInteractive();
         this.fortitudeplus.visible = false;
         this.fortitudeplus.on('pointerdown', function (pointer, gameObject) {
@@ -2259,7 +2265,7 @@ class CharFrame extends Phaser.Scene {
             }
         });
 
-        this.skillplus = this.add.text(250, 270, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.skillplus = this.add.text(250, 260, '+', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.skillplus.setInteractive();
         this.skillplus.visible = false;
         this.skillplus.on('pointerdown', function (pointer, gameObject) {
@@ -2273,7 +2279,7 @@ class CharFrame extends Phaser.Scene {
             }
         });
 
-        this.luckplus = this.add.text(250, 290, '+', { fontFamily: 'Arial', fontSize: '20px', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.luckplus = this.add.text(250, 290, '+', { fontFamily: 'Arial', fontSize: '25px', color: 'white' }).setOrigin(0);
         this.luckplus.setInteractive();
         this.luckplus.visible = false;
         this.luckplus.on('pointerdown', function (pointer, gameObject) {
@@ -2357,7 +2363,7 @@ class CharFrame extends Phaser.Scene {
 
         this.isopen = true;
 
-        this.graphics.fillStyle(0x0000ff);
+        this.graphics.fillStyle(0x000000);
         this.graphics.fillRect(10, 20, 300, 300);
 
         this.ClsdBtn.visible = true;
@@ -3134,7 +3140,7 @@ class SpellItemInfo extends Phaser.Scene {
         this.graphics = this.add.graphics();
         this.nametext = this.add.text(10, 10, '', { fontSize: '25px', fill: 'white' });
         this.nametext.visible = false;
-        this.descriptiontext = this.add.text(10, 10, '', { fontSize: '15px', fill: 'white' , wordWrap: { width: 140 } });
+        this.descriptiontext = this.add.text(10, 10, '', { fontSize: '15px', fill: 'white', wordWrap: { width: 140 } });
         this.descriptiontext.visible = false;
         this.ClsdBtn = this.add.sprite(0, 0, 'ClsdBtn').setInteractive();
         this.ClsdBtn.visible = false;
@@ -3147,9 +3153,9 @@ class SpellItemInfo extends Phaser.Scene {
 
     open(item) {
 
-      let xsize = windowInnerWidth/2-150;
-      let ysize = windowInnerHeight/2-250;
-  
+        let xsize = windowInnerWidth / 2 - 150;
+        let ysize = windowInnerHeight / 2 - 250;
+
 
         this.graphics.fillStyle(0x000000, 0.7);
         this.graphics.fillRect(xsize, ysize, 150, 250);
@@ -3163,16 +3169,16 @@ class SpellItemInfo extends Phaser.Scene {
 
         this.ClsdBtn.visible = true;
         this.ClsdBtn.setPosition(xsize + 150 - 10, ysize + 11)
-         
-         
+
+
         this.nametext.setText(item.name);
         this.nametext.setPosition(xsize + 5, ysize + 20);
         this.descriptiontext.setText(item.description);
-        this.descriptiontext.setPosition(xsize + 5, ysize+ 45);
-         
+        this.descriptiontext.setPosition(xsize + 5, ysize + 45);
+
         this.nametext.visible = true;
         this.descriptiontext.visible = true;
-        
+
 
         this.isopen = true;
 
@@ -3270,52 +3276,147 @@ class NpcDialoge extends Phaser.Scene {
 
         scene_NpcDialoge = this;
 
-        this.frameopen = true;
-
-        this.content = [
-            'The sky above the port was the color of television, tuned to a dead channel.',
-            '`It\'s not like I\'m using,\' Case heard someone say, as he shouldered his way ',
-            'through the crowd around the door of the Chat. `It\'s like my body\'s developed',
-            'this massive drug deficiency.\' It was a Sprawl voice and a Sprawl joke.',
-            'The Chatsubo was a bar for professional expatriates; you could drink there for',
-            'a week and never hear two words in Japanese.',
-            '',
-            'Ratz was tending bar, his prosthetic arm jerking monotonously as he filled a tray',
-            'of glasses with draft Kirin. He saw Case and smiled, his teeth a webwork of',
-            'East European steel and brown decay. Case found a place at the bar, between the',
-            'unlikely tan on one of Lonny Zone\'s whores and the crisp naval uniform of a tall',
-            'African whose cheekbones were ridged with precise rows of tribal scars. `Wage was',
-            'in here early, with two joeboys,\' Ratz said, shoving a draft across the bar with',
-            'his good hand. `Maybe some business with you, Case?\'',
-            '',
-            'Case shrugged. The girl to his right giggled and nudged him.',
-            'The bartender\'s smile widened. His ugliness was the stuff of legend. In an age of',
-            'affordable beauty, there was something heraldic about his lack of it. The antique',
-            'arm whined as he reached for another mug.',
-            '',
-            '',
-            'From Neuromancer by William Gibson'
-        ];
-
+        this.page = dialogePage.Main;
+        this.frameopen = false;
+        this.npc = null;
+        this.selectionquest = null;
         this.gf = this.add.graphics();
 
-        this.gf.fillStyle(0x000000)
-        this.gf.fillRect(152, 133, 320, 250);
+        this.npcName = this.add.text(155, 115, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.npcName.visible = false;
 
-        this.ClsdBtndrop = this.add.sprite(465, 125, 'ClsdBtn').setInteractive();
-        this.ClsdBtndrop.on('pointerdown', function (pointer, gameObject) {
+        this.phrase = this.add.text(160, 150, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.phrase.visible = false;
+
+        this.command1 = this.add.text(170, 190, 'Задания', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command1.setInteractive();
+        this.command1.on('pointerdown', function () {
+
+            if (scene_NpcDialoge.page == dialogePage.Main) {
+                scene_NpcDialoge.openQuestsList();
+                return;
+            }
+
+            if (scene_NpcDialoge.page == dialogePage.QuestsList){
+                scene_NpcDialoge.openQuest(0); 
+                return;  
+            }
+
+        });
+
+        this.command1.visible = false;
+
+        this.command2 = this.add.text(170, 220, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command2.setInteractive();
+        this.command2.on('pointerdown', function () {
+
+            if (scene_NpcDialoge.page == dialogePage.QuestsList){
+                scene_NpcDialoge.openQuest(1); 
+                return;  
+            }
+
+        });
+        this.command2.visible = false;
+
+        this.command3 = this.add.text(170, 250, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command3.setInteractive();
+        this.command3.on('pointerdown', function () {
+
+            if (scene_NpcDialoge.page == dialogePage.QuestsList){
+                scene_NpcDialoge.openQuest(2); 
+                return;  
+            }
+
+        });
+        this.command3.visible = false;
+
+        this.command4 = this.add.text(170, 280, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command4.setInteractive();
+        this.command4.on('pointerdown', function () {
+
+            if (scene_NpcDialoge.page == dialogePage.QuestsList){
+                scene_NpcDialoge.openQuest(3); 
+                return;  
+            }
+
+        });
+        this.command4.visible = false;
+
+        this.command5 = this.add.text(170, 310, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command5.setInteractive();
+        this.command5.on('pointerdown', function () {
+
+            if (scene_NpcDialoge.page == dialogePage.QuestsList){
+                scene_NpcDialoge.openQuest(4); 
+                return;  
+            }
+
+        });
+        this.command5.visible = false;
+
+        this.command6 = this.add.text(170, 340, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command6.setInteractive();
+        this.command6.on('pointerdown', function () {
+
+            if (scene_NpcDialoge.page == dialogePage.QuestsList){
+                scene_NpcDialoge.openQuest(5); 
+                return;  
+            }
+
+        });
+        this.command6.visible = false;
+
+        this.command7 = this.add.text(170, 370, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command7.setInteractive();
+        this.command7.on('pointerdown', function () {
+
+            if (scene_NpcDialoge.page == dialogePage.QuestsList){
+                scene_NpcDialoge.openQuest(6); 
+                return;  
+            }
+
+        });
+        this.command7.visible = false;
+
+        this.commandback = this.add.text(170, 370, 'Назад', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.commandback.setInteractive();
+        this.commandback.on('pointerdown', function () {
+
+            if (scene_NpcDialoge.page == dialogePage.QuestsList){
+                scene_NpcDialoge.backPage(); 
+                return;  
+            }
+
+        });
+        this.commandback.visible = false;
+
+        this.acceptquest = this.add.text(300, 370, 'Принять', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.acceptquest.setInteractive();
+        this.acceptquest.on('pointerdown', function () {
+
+            // if (scene_NpcDialoge.page == dialogePage.QuestsList){
+            //     scene_NpcDialoge.backPage(); 
+            //     return;  
+            // }
+
+        });
+        this.acceptquest.visible = false;
+
+        this.ClsdBtndrop = this.add.sprite(462, 125, 'ClsdBtn').setInteractive();
+        this.ClsdBtndrop.on('pointerdown', function () {
             scene_NpcDialoge.closedialoge();
             player.target = null;
         });
+        this.ClsdBtndrop.visible = false;
 
-        this.graphics = this.make.graphics();
-        this.graphics.fillRect(152, 133, 320, 250);
+        this.maskgf = this.make.graphics('black', 1);
+        this.maskgf.fillRect(155, 120, 320, 250);
 
-        this.mask = new Phaser.Display.Masks.GeometryMask(this, this.graphics);
+        this.mask = new Phaser.Display.Masks.GeometryMask(this, this.maskgf);
 
-        this.text = this.add.text(160, 140, this.content, { fontFamily: 'Arial', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.questtext = this.add.text(155, 120, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
 
-        this.text.setMask(this.mask);
+        this.questtext.setMask(this.mask);
 
         //  The rectangle they can 'drag' within
         this.zone = this.add.zone(152, 130, 320, 256).setOrigin(0).setInteractive();
@@ -3323,36 +3424,191 @@ class NpcDialoge extends Phaser.Scene {
         this.zone.on('pointermove', pointer => {
 
             if (pointer.isDown) {
-                scene_NpcDialoge.text.y += (pointer.velocity.y / 2);
+                scene_NpcDialoge.questtext.y += (pointer.velocity.y / 2);
 
-                scene_NpcDialoge.text.y = Phaser.Math.Clamp(this.text.y, -400, 300);
+                scene_NpcDialoge.questtext.y = Phaser.Math.Clamp(this.text.y, -400, 300);
             }
 
         });
 
-        this.closedialoge()
+        this.mask.visible = false;
+        this.questtext.visible = false;
+        this.zone.visible = false;
+        this.frameopen = false;
+
     }
 
-    opendialoge() {
+    opendialoge(npc) {
 
+        this.npc = npc;
+
+        this.gf.fillStyle(0x0000ff)
+        this.gf.fillRect(152, 115, 320, 133);
         this.gf.fillStyle(0x000000)
-        this.gf.fillRect(152, 133, 320, 250);
+        this.gf.fillRect(152, 133, 320, 260);
+
         this.ClsdBtndrop.visible = true;
-        this.mask.visible = true;
-        this.text.visible = true;
-        this.zone.visible = true;
-        this.frameopen = true;
+
+        this.npcName.setText(npc.name);
+        this.npcName.visible = true;
+
+        this.phrase.setText(npc.phrases[getRndInteger(1, npc.phrases.length) - 1]);
+        this.phrase.visible = true;
+
+        if (npc.quests.length) {
+            this.command1.setText('Задания')
+            this.command1.visible = true;
+        }
+        // this.command2.visible = true;
+        // this.command3.visible = true;
+        // this.command4.visible = true;
+        // this.command5.visible = true;
+        // this.command6.visible = true;
+        // this.command7.visible = true;
+
+        // this.mask.visible = true;
+        // this.text.visible = true;
+        // this.zone.visible = true;
+        // this.frameopen = true;
 
     }
 
     closedialoge() {
 
+        this.page = dialogePage.Main;
+
+        this.npc = null;
+        this.selectionquest = null;
+        player.target = null;
+
         this.gf.clear();
         this.ClsdBtndrop.visible = false;
+        this.npcName.visible = false;
+        this.phrase.visible = false;
+        this.command1.visible = false;
+        this.command2.visible = false;
+        this.command3.visible = false;
+        this.command4.visible = false;
+        this.command5.visible = false;
+        this.command6.visible = false;
+        this.command7.visible = false;
+        this.commandback.visible = false;
+        this.acceptquest.visible = false;
         this.mask.visible = false;
-        this.text.visible = false;
+        this.questtext.visible = false;
         this.zone.visible = false;
         this.frameopen = false;
+
+    }
+
+    openQuestsList() {
+        this.page = dialogePage.QuestsList;
+
+        this.phrase.setText('Ну давай подумаем чем ты можешь помочь');
+
+        this.command1.visible = false;
+        this.command2.visible = false;
+        this.command3.visible = false;
+        this.command4.visible = false;
+        this.command5.visible = false;
+        this.command6.visible = false;
+        this.command7.visible = false;
+        this.commandback.visible = false;
+        this.acceptquest.visible = false;
+
+        this.mask.visible = false;
+        this.questtext.visible = false;
+        this.zone.visible = false;
+        this.frameopen = false;
+
+        let counter = 1;
+        for (let i in this.npc.quests) {
+            let textlink = null;
+            if (counter == 1) {
+                textlink = this.command1;
+            }
+            else if (counter == 2) {
+                textlink = this.command2;
+            }
+            else if (counter == 3) {
+                textlink = this.command3;
+            }
+            else if (counter == 4) {
+                textlink = this.command4;
+            }
+            else if (counter == 5) {
+                textlink = this.command5;
+            }
+            else if (counter == 6) {
+                textlink = this.command6;
+            }
+            else if (counter == 7) {
+                textlink = this.command7;
+            }
+
+            let addquest = true;
+            let questtext = '';
+
+            let quest = this.npc.quests[i];
+
+            for (let qi in player.quests) {
+                let playerquest = player.quests[qi];
+                if (playerquest.id == quest.id) {
+                    if (playerquest.done) {
+                        addquest = false;
+                        break;
+                    }
+                    questtext = '? '
+                }
+            }
+
+            if (questtext == '') {
+                questtext = '! ';
+            }
+
+            questtext = questtext + quest.name;
+
+            if (addquest) {
+                textlink.setText(questtext)
+                textlink.visible = true;
+                counter += 1;
+            }
+        }
+
+        this.commandback.visible = true;
+
+    }
+
+    openQuest(ind){
+
+        this.page = dialogePage.QuestsElementList;
+
+        this.quest = this.npc.quests[ind].name;
+
+        this.command1.visible = false;
+        this.command2.visible = false;
+        this.command3.visible = false;
+        this.command4.visible = false;
+        this.command5.visible = false;
+        this.command6.visible = false;
+        this.command7.visible = false;
+        this.commandback.visible = true;
+        this.acceptquest.visible = true;
+        this.mask.visible = true;
+        this.questtext.visible = true;
+        this.zone.visible = true;
+        this.frameopen = true;
+
+        this.phrase.setText(this.quest.name);
+
+        this.questtext.setText(this.quest.description)
+
+    }
+
+    backPage(){
+
+        this.commandback.visible = false;
+        this.acceptquest.visible = false;
 
     }
 
@@ -3539,7 +3795,7 @@ class MainScene extends Phaser.Scene {
                     if (npcelement.sprite == gameObject[0]) {
                         if (player.target == npcelement) {
                             if (!scene_NpcDialoge.frameopen) {
-                                scene_NpcDialoge.opendialoge()
+                                scene_NpcDialoge.opendialoge(npcelement);
                             }
                         }
                         else {
@@ -3598,15 +3854,15 @@ class MainScene extends Phaser.Scene {
             CreateNPC(npcsdata[i]);
         }
 
-        for (let i in questdata){
+        for (let i in questdata) {
             let quest = new Quest(questdata[i]);
-            for (let ni in npcs){
+            for (let ni in npcs) {
                 let npc = npcs[ni];
-                if (npc.id == quest.outstanding || npc.id == quest.recipient){
+                if (npc.id == quest.outstanding || npc.id == quest.recipient) {
                     npc.quests.push(quest);
-                    if (quest.recipient == quest.outstanding){
+                    if (quest.recipient == quest.outstanding) {
                         break;
-                    }   
+                    }
                 }
 
             }
@@ -3687,7 +3943,7 @@ function createplayer(data) {
         player.runestones[i].index = i;
     }
 
-    let item = new Item({ id: 11, name: 'spell1',  description: ['Рунный камушек второго скила', 'Вставлять в таблицу камней'], image: 'spell1', itemtype: itemType.Runestone, equiptype: null, spell: 1, stack: false, stacksize: 0 });
+    let item = new Item({ id: 11, name: 'spell1', description: ['Рунный камушек второго скила', 'Вставлять в таблицу камней'], image: 'spell1', itemtype: itemType.Runestone, equiptype: null, spell: 1, stack: false, stacksize: 0 });
     player.bag[0].item = item;
     player.bag[0].quantity = 1;
 
@@ -3714,7 +3970,7 @@ function createplayer(data) {
     }
 
     game.input.addPointer(1);
-    
+
 }
 
 function createMob(data) {
@@ -3725,6 +3981,10 @@ function createMob(data) {
 function CreateNPC(data) {
     let npc = new NPC(data)
     npcs.push(npc)
+}
+
+function getRndInteger(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 
