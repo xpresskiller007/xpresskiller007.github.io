@@ -202,7 +202,7 @@ questdata.push({
   id: 0,
   name: 'Гаси чушпанов',
   description: 'Надо убить 5 чушпанов',
-  usloviya: [{Uslovie: questuslovie.Kill, target:}],
+  usloviya: [{Uslovie: questuslovie.Kill, target: 2, }],
   vidayyoshiy: 6,
   prinimayushiy: 7
 });
