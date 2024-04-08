@@ -196,19 +196,51 @@ loot.push({
   'chance': 10
 })
 
-questdata = [];
+var questdata = [];
 
 questdata.push({
   id: 0,
   name: 'Гаси чушпанов',
   description: 'Надо убить 5 чушпанов',
-  usloviya: [{Uslovie: questuslovie.Kill, target: 2, }],
-  vidayyoshiy: 6,
-  prinimayushiy: 7
+  condition: [{condition: questuslovie.Kill, target: 2, quantity: 2}],
+  outstanding: 6,
+  recipient: 7,
+  chain: null
 });
 
 var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 };
 
+class Quest {
+
+    constructor(data) {
+        
+        this.id = data.id;
+        this.name = data.name;
+        this.condition = [];
+        this.outstanding = data.outstanding;
+        this.recipient = data.recipient;
+
+        this.addCondition(data.condition)
+
+    }
+
+    addCondition(conditiondata){
+        for (let i in conditiondata){
+            this.condition.push(new Condition(conditiondata[i]));
+        }
+    }
+
+}
+
+class Condition {
+
+    constructor(data) {
+        this.condition = data.condition;
+        this.target = data.target;
+        this.quantity = data.quantity;
+    }
+
+}
 
 class Player {
 
@@ -917,6 +949,7 @@ class Mob {
 class NPC {
 
     constructor(data) {
+
         this.sprite = scene_main.physics.add.sprite(data.respx, data.respy, data.skin).setInteractive();
         this.type = targetType.NPC
         this.id = data.id;
@@ -937,6 +970,8 @@ class NPC {
         if (data.skin == 'Male3') {
             this.sprite.anims.play('m3turn');
         }
+
+        this.quests = [];
     }
 
 }
@@ -3211,6 +3246,18 @@ class UI extends Phaser.Scene {
 
         });
 
+        this.questlist = this.add.sprite(windowInnerWidth - 350, windowInnerHeight - 50, 'QuestList').setInteractive();
+        this.questlist.on('pointerdown', function (pointer, gameObject) {
+
+            if (scene_MagicBook.isopen) {
+                scene_MagicBook.close()
+            }
+            else {
+                scene_MagicBook.open()
+            }
+
+        });
+
     }
 
     update(p1, p2) {
@@ -3342,6 +3389,7 @@ class MainScene extends Phaser.Scene {
         this.load.image('Heart', 'assets/Heart.png')
         this.load.image('Book', 'assets/Book.png');
         this.load.image('Pearl', 'assets/Pearl.png');
+        this.load.image('QuestList', 'assets/QuestList.png');
 
         this.load.image('spell1', 'assets/spell1.png');
         this.load.image('spell2', 'assets/spell2.png');
@@ -3533,44 +3581,11 @@ class MainScene extends Phaser.Scene {
             // ws = new WebSocket(`ws://192.168.0.10:8000/ws/${client_id}`);
             // ws.onmessage = function (event) {
 
-            let data = JSON.parse(event.data);
+            // let data = JSON.parse(event.data);
 
-            if (data.cmd == 'CreatePlayer') {
-                createplayer(data);
-            }
-            else if (data.cmd == 'NewPlayer') {
-                addPlayer(data);
-            }
-            else if (data.cmd == 'PlayerMoving') {
-                setСoordinates(data);
-            }
-            else if (data.cmd == 'Disconnect') {
-                disconnectPlayer(data);
-            }
-            else if (data.cmd == 'CreateMob') {
-                createMob(data);
-            }
-            else if (data.cmd == 'CreateNPC') {
-                CreateNPC(data);
-            }
-            else if (data.cmd == 'setMobParameters') {
-                setMobParameters(data);
-            }
-            else if (data.cmd == 'PlayerDamageReceived') {
-                playerDamageReceived(data)
-            }
-            else if (data.cmd == 'MobAttack') {
-                mobAttack(data)
-            }
-            else if (data.cmd == 'TargetAttack') {
-                targetAttack(data)
-            }
-            else if (data.cmd == 'respPlayer') {
-                respPlayer(data)
-            }
-            else if (data.cmd == 'mobDead') {
-                mobDead(data)
-            }
+            // if (data.cmd == 'CreatePlayer') {
+            //     createplayer(data);
+            // }
 
         };
 
@@ -3581,6 +3596,20 @@ class MainScene extends Phaser.Scene {
 
         for (let i in npcsdata) {
             CreateNPC(npcsdata[i]);
+        }
+
+        for (let i in questdata){
+            let quest = new Quest(questdata[i]);
+            for (let ni in npcs){
+                let npc = npcs[ni];
+                if (npc.id == quest.outstanding || npc.id == quest.recipient){
+                    npc.quests.push(quest);
+                    if (quest.recipient == quest.outstanding){
+                        break;
+                    }   
+                }
+
+            }
         }
 
 
@@ -3611,144 +3640,6 @@ class MainScene extends Phaser.Scene {
         }
     }
 
-}
-
-function mobDead(data) {
-    for (let i in mobs) {
-        let mob = mobs[i]
-        if (mob.uid == data.uid) {
-            if (mob.status == mobStatus.Expectation) {
-                return
-            }
-            let resplootx = mob.x;
-            let resplooty = mob.y;
-            mob.status = mobStatus.Dead;
-            mob.sprite.setPosition(mob.respx, mob.respy);
-            mob.x = mob.respx;
-            mob.y = mob.respy;
-            mob.hp = mob.maxhp;
-            mob.status = mobStatus.Expectation
-            playerelement = null
-            if (player.id == data.player) {
-                playerelement = player
-            }
-            else {
-                for (let i in players) {
-                    if (players[i].id == data.player) {
-                        playerelement = players[i]
-                        break
-                    }
-                }
-            }
-            if (data.loot != null) {
-                let drop = new Drop(scene_main.physics.add.sprite(resplootx, resplooty, 'Chest').setInteractive());
-                for (let i in data.loot) {
-                    let loot = data.loot[i];
-
-                    drop.loot.push({
-                        'item': new Item(loot),
-                        'quantity': loot.quantity
-                    })
-
-                }
-                drops.push(drop);
-            }
-            playerelement.xp = playerelement.xp + data.xp
-            if (playerelement.xp >= 100) {
-                playerelement.xp = playerelement.xp - 100
-                playerelement.lvl = playerelement.lvl + 1
-                playerelement.maxhp = playerelement.maxhp + 50
-                playerelement.hp = playerelement.maxhp
-                playerelement.maxmp = playerelement.maxmp + 50
-                playerelement.mp = playerelement.maxmp
-            }
-            return
-        }
-    }
-}
-
-function respPlayer(data) {
-    let playerelement = null
-    if (player.id == data.id) {
-        playerelement = player;
-    }
-    else {
-        for (let i in players) {
-            if (players[i].id == data.id) {
-                playerelement = players[i];
-                break
-            }
-        }
-    }
-    if (playerelement != null) {
-        playerelement.sprite.setPosition(data.x, data.y);
-        playerelement.x = data.x;
-        playerelement.y = data.y;
-        playerelement.hp = player.maxhp
-    }
-}
-
-function targetAttack(data) {
-    playerelement = null;
-    if (player.id == data.player) {
-        playerelement = player;
-    }
-    else {
-        let pl;
-        for (let i in players) {
-            pl = players[i].id;
-            if (pl == data.player) {
-                playerelement = pl;
-                break
-            }
-        }
-    }
-    if (playerelement == null) {
-        return
-    }
-    playerelement.mp = playerelement.mp - data.mp;
-    if (data.cell == 1) {
-        playerelement.spell1.timeattack = data.timeattack;
-    }
-    if (data.cell == 2) {
-        playerelement.spell2.timeattack = data.timeattack;
-    }
-    if (data.cell == 3) {
-        playerelement.spell3.timeattack = data.timeattack;
-    }
-    if (data.targettype == targetType.Mob) {
-        let mob;
-        for (let i in mobs) {
-            mob = mobs[i]
-            if (mob.uid == data.target) {
-                mob.hp = mob.hp - data.damage;
-                return
-            }
-        }
-    }
-
-}
-
-function mobAttack(data) {
-    let mob;
-    for (let i in mobs) {
-        mob = mobs[i];
-        if (mob.uid == data.uid) {
-            mob.target.hp = mob.target.hp - data.damage;
-        }
-    }
-}
-
-function playerDamageReceived(data) {
-    let player;
-    for (let i in players) {
-        player = players[i]
-        if (player.id == data.id) {
-            player.hp = player.hp - data.damage;
-            break
-        }
-
-    }
 }
 
 function createplayer(data) {
@@ -3826,49 +3717,6 @@ function createplayer(data) {
     
 }
 
-function addPlayer(data) {
-
-    let newplayer = new Player(scene_main.physics.add.sprite(data.x, data.y, 'dude').setScale(2));
-    newplayer.sprite.setInteractive();
-    newplayer.id = data.id;
-    newplayer.thisplayer = false;
-    newplayer.x = data.x;
-    newplayer.y = data.y;
-
-    newplayer.sprite.anims.play('turn');
-
-    players.push(newplayer);
-
-}
-
-function disconnectPlayer(data) {
-
-    let pl;
-    for (let i in players) {
-        pl = players[i];
-        if (pl.id == data.id) {
-            pl.sprite.destroy();
-            players.splice(i, 1);
-            break
-        }
-    }
-
-}
-
-function setСoordinates(data) {
-
-    let pl;
-    for (let i in players) {
-        pl = players[i];
-        if (pl.id == data.id) {
-            pl.x = data.x;
-            pl.y = data.y;
-            break
-        }
-    }
-
-}
-
 function createMob(data) {
     let mob = new Mob(data)
     mobs.push(mob)
@@ -3879,30 +3727,6 @@ function CreateNPC(data) {
     npcs.push(npc)
 }
 
-function setMobParameters(data) {
-
-    for (let i in mobs) {
-        let mobelement = mobs[i];
-        if (mobelement.uid == data.uid) {
-            mobelement.status = mobStatus[data.status]
-            if (data.target == null) {
-                mobelement.target = null;
-            }
-            else {
-                for (let i in players) {
-                    let playelement = players[i];
-                    if (playelement.id == data.target) {
-                        mobelement.target = playelement;
-                        break
-                    }
-                }
-            }
-            return
-
-        }
-    }
-
-}
 
 var app = {
     width: 0,
