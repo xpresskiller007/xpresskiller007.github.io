@@ -1,5 +1,5 @@
-const windowInnerWidth = window.innerWidth
-const windowInnerHeight = window.innerHeight
+const windowInnerWidth = window.innerWidth;
+const windowInnerHeight = window.innerHeight;
 
 
 var client_id = Date.now()
@@ -9,6 +9,7 @@ const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectat
 const targetType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC' }
 const playerStatus = { Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn', Battle: 'Battle' }
 const itemType = { Runestone: 'Runestone', Equipment: 'Equipment', Meal: 'Meal', Drink: 'Drink' };
+const questuslovie = {Kill: 'Kill', Sbor: 'Sbor'};
 const equipType = {};
 var player;
 var players = [];
@@ -195,6 +196,16 @@ loot.push({
   'chance': 10
 })
 
+questdata = [];
+
+questdata.push({
+  id: 0,
+  name: 'Гаси чушпанов',
+  description: 'Надо убить 5 чушпанов',
+  usloviya: [{Uslovie: questuslovie.Kill, target:}],
+  vidayyoshiy: 6,
+  prinimayushiy: 7
+});
 
 var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 };
 
@@ -1030,6 +1041,10 @@ class ItemsSprites extends Phaser.Scene {
                                 scene_ItemsSprites.input.setDraggable(item.spell.sprite);
                             }
                             else {
+                                if (scene_SpellItemInfo.isopen) {
+                                  scene_SpellItemInfo.close();
+                                }
+                                scene_SpellItemInfo.open(item);
                                 obj.setPosition(player.runestones[i].x, player.runestones[i].y);
                                 scene_ItemsSprites.dragobg = null;
                                 return;
@@ -1086,7 +1101,7 @@ class ItemsSprites extends Phaser.Scene {
 
             if (dragitem != null) {
                 if (scene_MagicBook.isopen) {
-                    scene_ItemsSprites.mbspell(dragcell);
+                    scene_ItemsSprites.mbspell(dragitem);
                 }
                 else {
                     scene_ItemsSprites.runeitem(dragcell, dragitem);
@@ -1390,14 +1405,26 @@ class ItemsSprites extends Phaser.Scene {
 
     }
 
-    mbspell(dragcell) {
+    mbspell(dragitem) {
 
         scene_ItemsSprites.dragobg = null;
+        
+        let distance = Math.sqrt((dragitem.sprite.x - 16 - dragitem.spell.sprite.x) ** 2 + (dragitem.sprite.y - 16 - dragitem.spell.sprite.y) ** 2);
+        
+        
+        if (distance <= 25) {
+          if (scene_SpellItemInfo.isopen) {
+            scene_SpellItemInfo.close();
+          }
+          scene_SpellItemInfo.open(dragitem);
+          dragitem.sprite.setPosition(dragitem.spell.sprite.x, dragitem.spell.sprite.y);
+          dragitem.spell.sprite.destroy();
+          dragitem.spell.sprite = null;
+          return;
+        }
 
         let replacecell = null;
         
-        let dragitem = dragcell.item;
-
         for (let i in player.panel) {
             let replaceelement = player.panel[i];
             let replacedistance = Math.sqrt((dragitem.sprite.x - 16 - replaceelement.x) ** 2 + (dragitem.sprite.y - 16 - replaceelement.y) ** 2);
@@ -1831,7 +1858,6 @@ class CastFrame extends Phaser.Scene {
             if (lastdirection != direction) {
                 lastdirection = direction;
                 dirarray.push({ 'direction': direction, 'counter': 1 });
-                console.log(direction);
             }
             else {
                 if (dirarray.length) {
@@ -1869,7 +1895,6 @@ class CastFrame extends Phaser.Scene {
             }
 
             if (arr) {
-                console.log('не шмогла');
                 this.drawGraph.clear();
                 this.drawGraph.lineStyle(5, 0x0000ff);
                 return;
@@ -3087,29 +3112,9 @@ class SpellItemInfo extends Phaser.Scene {
 
     open(item) {
 
-      let xsize = 0;
-      let ysize = 0;
-      
-      if (item.sprite != null){
-        xsize = item.sprite.x;
-        ysize = item.sprite.y;
-      }
-      else{
-        
-        if (item.spell != null){
-          if (item.spell.sprite != null){
-            xsize = item.spell.sprite.x;
-            ysize = item.spell.sprite.y;
-          }
-          else {
-            return;
-          }
-        }
-        else {
-          return;
-        }
-      }
-
+      let xsize = windowInnerWidth/2-150;
+      let ysize = windowInnerHeight/2-250;
+  
 
         this.graphics.fillStyle(0x000000, 0.7);
         this.graphics.fillRect(xsize, ysize, 150, 250);
@@ -3488,7 +3493,6 @@ class MainScene extends Phaser.Scene {
                             if (!scene_NpcDialoge.frameopen) {
                                 scene_NpcDialoge.opendialoge()
                             }
-                            console.log('он показывал пиструн');
                         }
                         else {
                             player.target = npcelement;
@@ -3528,8 +3532,6 @@ class MainScene extends Phaser.Scene {
 
             // ws = new WebSocket(`ws://192.168.0.10:8000/ws/${client_id}`);
             // ws.onmessage = function (event) {
-
-            console.log(event.data);
 
             let data = JSON.parse(event.data);
 
@@ -3723,9 +3725,6 @@ function targetAttack(data) {
                 return
             }
         }
-    }
-    else {
-        console.log('Еще не готово');
     }
 
 }
