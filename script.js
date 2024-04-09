@@ -9,8 +9,8 @@ const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectat
 const targetType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC' }
 const playerStatus = { Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn', Battle: 'Battle' }
 const itemType = { Runestone: 'Runestone', Equipment: 'Equipment', Meal: 'Meal', Drink: 'Drink' };
-const questuslovie = { Kill: 'Kill', Sbor: 'Sbor' };
-const dialogePage = { Main: 'Main', QuestsList: 'QuestsList', QuestsElementList: 'QuestsElementList' };
+const questCondition = { Kill: 'Kill', Sbor: 'Sbor' };
+const dialogePage = { Main: 'Main', QuestsList: 'QuestsList', QuestsElement: 'QuestsElement' };
 const equipType = {};
 var player;
 var players = [];
@@ -199,15 +199,20 @@ loot.push({
 
 var questdata = [];
 
+let description = ['что то много чушпанов развелось в округе, надо шугануть', 'Убей 5 чушпанов'];
+
 questdata.push({
     id: 0,
     name: 'Гаси чушпанов',
-    description: 'Надо убить 5 чушпанов',
-    condition: [{ condition: questuslovie.Kill, target: 2, quantity: 2 }],
+    description: description,
+    condition: [{ condition: questCondition.Kill, target: 2, quantity: 5, currentquantity: 0 }],
     outstanding: 6,
     recipient: 7,
+    exp: 100,
+    gold: 100,
     chain: null,
-    done: false
+    done: false,
+    passed: false
 });
 
 var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 };
@@ -222,7 +227,10 @@ class Quest {
         this.condition = [];
         this.outstanding = data.outstanding;
         this.recipient = data.recipient;
+        this.exp = data.exp;
+        this.gold = data.gold;
         this.done = data.done;
+        this.passed = data.passed;
 
         this.addCondition(data.condition)
 
@@ -242,6 +250,7 @@ class Condition {
         this.condition = data.condition;
         this.target = data.target;
         this.quantity = data.quantity;
+        this.currentquantity = data.currentquantity;
     }
 
 }
@@ -277,6 +286,7 @@ class Player {
         this.y = this.sprite.y;
         this.respx = 800;
         this.respy = 800;
+        this.gold = 0;
         this.quests = [];
         this.runestones = [null, null, null, null];
         this.panel = [null, null, null, null,
@@ -930,6 +940,38 @@ class Mob {
             let Chest = new Drop(scene_main.physics.add.sprite(resplootx, resplooty, 'Chest').setInteractive());
             Chest.loot = drop;
             drops.push(Chest);
+        }
+
+        let questsarray = [];
+
+        for (let i in player.quests) {
+
+            let quest = player.quests[i];
+
+            if (quest.done || quest.passed) {
+                continue;
+            }
+
+            for (let ii in quest.condition) {
+                let condition = quest.condition[ii];
+                if (condition.condition != questCondition.Kill
+                    || condition.quantity == condition.currentquantity) {
+                    continue;
+                }
+
+                if (condition.target == this.id) {
+                    condition.currentquantity += 1;
+                    if (condition.quantity == condition.currentquantity) {
+                        questsarray.push(quest);
+                    }
+                }
+
+            }
+
+        }
+
+        if (questsarray.length) {
+            checkQuests(questsarray);
         }
 
     }
@@ -2527,6 +2569,74 @@ class CharFrame extends Phaser.Scene {
 
 }
 
+class PlayerQuest extends Phaser.Scene {
+
+    create() {
+
+        return
+
+        const content = [
+            'The sky above the port was the color of television, tuned to a dead channel.',
+            '`It\'s not like I\'m using,\' Case heard someone say, as he shouldered his way ',
+            'through the crowd around the door of the Chat. `It\'s like my body\'s developed',
+            'this massive drug deficiency.\' It was a Sprawl voice and a Sprawl joke.',
+            'The Chatsubo was a bar for professional expatriates; you could drink there for',
+            'a week and never hear two words in Japanese.',
+            '',
+            'Ratz was tending bar, his prosthetic arm jerking monotonously as he filled a tray',
+            'of glasses with draft Kirin. He saw Case and smiled, his teeth a webwork of',
+            'East European steel and brown decay. Case found a place at the bar, between the',
+            'unlikely tan on one of Lonny Zone\'s whores and the crisp naval uniform of a tall',
+            'African whose cheekbones were ridged with precise rows of tribal scars. `Wage was',
+            'in here early, with two joeboys,\' Ratz said, shoving a draft across the bar with',
+            'his good hand. `Maybe some business with you, Case?\'',
+            '',
+            'Case shrugged. The girl to his right giggled and nudged him.',
+            'The bartender\'s smile widened. His ugliness was the stuff of legend. In an age of',
+            'affordable beauty, there was something heraldic about his lack of it. The antique',
+            'arm whined as he reached for another mug.',
+            '',
+            '',
+            'From Neuromancer by William Gibson'
+        ];
+
+        const graphics = this.make.graphics();
+
+        graphics.fillRect(152, 155, 320, 250);
+
+        const mask = new Phaser.Display.Masks.GeometryMask(this, graphics);
+
+        const text = this.add.text(160, 160, content, { fontFamily: 'Arial', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+
+        text.setMask(mask);
+
+        //  The rectangle they can 'drag' within
+        const zone = this.add.zone(152, 130, 320, 256).setOrigin(0).setInteractive();
+
+        zone.on('pointermove', pointer => {
+
+            if (pointer.isDown) {
+                text.y += (pointer.velocity.y / 2);
+
+                text.y = Phaser.Math.Clamp(text.y, -400, 300);
+            }
+
+        });
+    }
+
+    open() {
+
+
+    }
+
+    close() {
+
+
+    }
+
+
+}
+
 class BagFrame extends Phaser.Scene {
 
     create() {
@@ -3282,13 +3392,13 @@ class NpcDialoge extends Phaser.Scene {
         this.selectionquest = null;
         this.gf = this.add.graphics();
 
-        this.npcName = this.add.text(155, 115, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.npcName = this.add.text(155, 115, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.npcName.visible = false;
 
-        this.phrase = this.add.text(160, 150, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.phrase = this.add.text(160, 150, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.phrase.visible = false;
 
-        this.command1 = this.add.text(170, 190, 'Задания', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command1 = this.add.text(170, 190, 'Задания', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.command1.setInteractive();
         this.command1.on('pointerdown', function () {
 
@@ -3297,107 +3407,104 @@ class NpcDialoge extends Phaser.Scene {
                 return;
             }
 
-            if (scene_NpcDialoge.page == dialogePage.QuestsList){
-                scene_NpcDialoge.openQuest(0); 
-                return;  
+            if (scene_NpcDialoge.page == dialogePage.QuestsList) {
+                scene_NpcDialoge.openQuest(0);
+                return;
             }
 
         });
 
         this.command1.visible = false;
 
-        this.command2 = this.add.text(170, 220, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command2 = this.add.text(170, 220, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.command2.setInteractive();
         this.command2.on('pointerdown', function () {
 
-            if (scene_NpcDialoge.page == dialogePage.QuestsList){
-                scene_NpcDialoge.openQuest(1); 
-                return;  
+            if (scene_NpcDialoge.page == dialogePage.QuestsList) {
+                scene_NpcDialoge.openQuest(1);
+                return;
             }
 
         });
         this.command2.visible = false;
 
-        this.command3 = this.add.text(170, 250, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command3 = this.add.text(170, 250, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.command3.setInteractive();
         this.command3.on('pointerdown', function () {
 
-            if (scene_NpcDialoge.page == dialogePage.QuestsList){
-                scene_NpcDialoge.openQuest(2); 
-                return;  
+            if (scene_NpcDialoge.page == dialogePage.QuestsList) {
+                scene_NpcDialoge.openQuest(2);
+                return;
             }
 
         });
         this.command3.visible = false;
 
-        this.command4 = this.add.text(170, 280, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command4 = this.add.text(170, 280, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.command4.setInteractive();
         this.command4.on('pointerdown', function () {
 
-            if (scene_NpcDialoge.page == dialogePage.QuestsList){
-                scene_NpcDialoge.openQuest(3); 
-                return;  
+            if (scene_NpcDialoge.page == dialogePage.QuestsList) {
+                scene_NpcDialoge.openQuest(3);
+                return;
             }
 
         });
         this.command4.visible = false;
 
-        this.command5 = this.add.text(170, 310, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command5 = this.add.text(170, 310, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.command5.setInteractive();
         this.command5.on('pointerdown', function () {
 
-            if (scene_NpcDialoge.page == dialogePage.QuestsList){
-                scene_NpcDialoge.openQuest(4); 
-                return;  
+            if (scene_NpcDialoge.page == dialogePage.QuestsList) {
+                scene_NpcDialoge.openQuest(4);
+                return;
             }
 
         });
         this.command5.visible = false;
 
-        this.command6 = this.add.text(170, 340, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command6 = this.add.text(170, 340, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.command6.setInteractive();
         this.command6.on('pointerdown', function () {
 
-            if (scene_NpcDialoge.page == dialogePage.QuestsList){
-                scene_NpcDialoge.openQuest(5); 
-                return;  
+            if (scene_NpcDialoge.page == dialogePage.QuestsList) {
+                scene_NpcDialoge.openQuest(5);
+                return;
             }
 
         });
         this.command6.visible = false;
 
-        this.command7 = this.add.text(170, 370, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.command7 = this.add.text(170, 370, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.command7.setInteractive();
         this.command7.on('pointerdown', function () {
 
-            if (scene_NpcDialoge.page == dialogePage.QuestsList){
-                scene_NpcDialoge.openQuest(6); 
-                return;  
+            if (scene_NpcDialoge.page == dialogePage.QuestsList) {
+                scene_NpcDialoge.openQuest(6);
+                return;
             }
 
         });
         this.command7.visible = false;
 
-        this.commandback = this.add.text(170, 370, 'Назад', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.commandback = this.add.text(170, 370, 'Назад', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.commandback.setInteractive();
         this.commandback.on('pointerdown', function () {
 
-            if (scene_NpcDialoge.page == dialogePage.QuestsList){
-                scene_NpcDialoge.backPage(); 
-                return;  
-            }
+            scene_NpcDialoge.backPage();
 
         });
         this.commandback.visible = false;
 
-        this.acceptquest = this.add.text(300, 370, 'Принять', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.acceptquest = this.add.text(300, 370, 'Принять', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.acceptquest.setInteractive();
         this.acceptquest.on('pointerdown', function () {
 
-            // if (scene_NpcDialoge.page == dialogePage.QuestsList){
-            //     scene_NpcDialoge.backPage(); 
-            //     return;  
-            // }
+            if (scene_NpcDialoge.page == dialogePage.QuestsElement) {
+                scene_NpcDialoge.takeTheQuest();
+                return;
+            }
 
         });
         this.acceptquest.visible = false;
@@ -3409,24 +3516,23 @@ class NpcDialoge extends Phaser.Scene {
         });
         this.ClsdBtndrop.visible = false;
 
-        this.maskgf = this.make.graphics('black', 1);
-        this.maskgf.fillRect(155, 120, 320, 250);
+        this.maskgf = this.make.graphics();
+        this.maskgf.fillRect(155, 200, 320, 340);
 
         this.mask = new Phaser.Display.Masks.GeometryMask(this, this.maskgf);
 
-        this.questtext = this.add.text(155, 120, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.questtext = this.add.text(155, 200, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
 
         this.questtext.setMask(this.mask);
 
-        //  The rectangle they can 'drag' within
-        this.zone = this.add.zone(152, 130, 320, 256).setOrigin(0).setInteractive();
+        this.zone = this.add.zone(155, 200, 320, 300).setInteractive();
 
         this.zone.on('pointermove', pointer => {
 
             if (pointer.isDown) {
                 scene_NpcDialoge.questtext.y += (pointer.velocity.y / 2);
 
-                scene_NpcDialoge.questtext.y = Phaser.Math.Clamp(this.text.y, -400, 300);
+                scene_NpcDialoge.questtext.y = Phaser.Math.Clamp(scene_NpcDialoge.questtext.y, -400, 300);
             }
 
         });
@@ -3439,6 +3545,8 @@ class NpcDialoge extends Phaser.Scene {
     }
 
     opendialoge(npc) {
+
+        this.page = dialogePage.Main;
 
         this.npc = npc;
 
@@ -3455,7 +3563,45 @@ class NpcDialoge extends Phaser.Scene {
         this.phrase.setText(npc.phrases[getRndInteger(1, npc.phrases.length) - 1]);
         this.phrase.visible = true;
 
-        if (npc.quests.length) {
+        let havequests = false;
+        for (let i in this.npc.quests) {
+
+            let quest = this.npc.quests[i];
+            let playerquest = null;
+            for (let qi in player.quests) {
+                playerquest = player.quests[qi];
+                if (playerquest.id == quest.id) {
+                    break;
+                }
+                else {
+                    playerquest = null;
+                }
+            }
+
+            if (playerquest == null) {
+
+                if (quest.recipient == this.npc.id) {
+                    continue;
+                }
+
+            }
+            else {
+
+                if (quest.outstanding == this.npc.id) {
+                    continue;
+                }
+
+            }
+
+            havequests = true;
+
+            if (havequests) {
+                break;
+            }
+
+        }
+
+        if (havequests) {
             this.command1.setText('Задания')
             this.command1.visible = true;
         }
@@ -3466,10 +3612,13 @@ class NpcDialoge extends Phaser.Scene {
         // this.command6.visible = true;
         // this.command7.visible = true;
 
-        // this.mask.visible = true;
-        // this.text.visible = true;
-        // this.zone.visible = true;
-        // this.frameopen = true;
+        this.mask.visible = false;
+        this.questtext.visible = false;
+        this.zone.visible = false;
+        this.frameopen = false;
+
+        this.commandback.visible = false;
+        this.acceptquest.visible = false;
 
     }
 
@@ -3496,6 +3645,8 @@ class NpcDialoge extends Phaser.Scene {
         this.acceptquest.visible = false;
         this.mask.visible = false;
         this.questtext.visible = false;
+        this.questtext.x = 155;
+        this.questtext.y = 200;
         this.zone.visible = false;
         this.frameopen = false;
 
@@ -3521,6 +3672,7 @@ class NpcDialoge extends Phaser.Scene {
         this.zone.visible = false;
         this.frameopen = false;
 
+        let havequests = false;
         let counter = 1;
         for (let i in this.npc.quests) {
             let textlink = null;
@@ -3546,44 +3698,70 @@ class NpcDialoge extends Phaser.Scene {
                 textlink = this.command7;
             }
 
-            let addquest = true;
             let questtext = '';
 
             let quest = this.npc.quests[i];
-
+            let playerquest = null;
             for (let qi in player.quests) {
-                let playerquest = player.quests[qi];
+                playerquest = player.quests[qi];
                 if (playerquest.id == quest.id) {
-                    if (playerquest.done) {
-                        addquest = false;
-                        break;
-                    }
-                    questtext = '? '
+                    break;
+                }
+                else {
+                    playerquest = null;
                 }
             }
 
-            if (questtext == '') {
-                questtext = '! ';
+            if (playerquest == null) {
+
+                if (quest.recipient == this.npc.id) {
+                    continue;
+                }
+                else {
+                    questtext = '! ';
+                }
+
             }
+            else {
+
+                if (quest.outstanding == this.npc.id) {
+                    continue;
+                }
+                else {
+                    if (playerquest.done) {
+                        questtext = '+ ';
+                    }
+                    else {
+                        questtext = '? ';
+                    }
+
+                }
+
+            }
+
+            havequests = true;
 
             questtext = questtext + quest.name;
 
-            if (addquest) {
-                textlink.setText(questtext)
-                textlink.visible = true;
-                counter += 1;
-            }
+            textlink.setText(questtext)
+            textlink.visible = true;
+            counter += 1;
+
+        }
+
+        if (!havequests) {
+            this.opendialoge(this.npc);
         }
 
         this.commandback.visible = true;
 
     }
 
-    openQuest(ind){
+    openQuest(ind) {
 
-        this.page = dialogePage.QuestsElementList;
+        this.page = dialogePage.QuestsElement;
 
-        this.quest = this.npc.quests[ind].name;
+        this.selectionquest = this.npc.quests[ind];
 
         this.command1.visible = false;
         this.command2.visible = false;
@@ -3593,25 +3771,53 @@ class NpcDialoge extends Phaser.Scene {
         this.command6.visible = false;
         this.command7.visible = false;
         this.commandback.visible = true;
-        this.acceptquest.visible = true;
         this.mask.visible = true;
         this.questtext.visible = true;
         this.zone.visible = true;
         this.frameopen = true;
 
-        this.phrase.setText(this.quest.name);
+        this.phrase.setText(this.selectionquest.name);
+        this.phrase.visible = true;
 
-        this.questtext.setText(this.quest.description)
+        this.questtext.setText(this.selectionquest.description);
+        this.questtext.visible = true;
+
+        if (this.selectionquest.outstanding == this.npc.id) {
+            this.acceptquest.setText('Принять');
+            this.acceptquest.visible = true;
+        }
+        else {
+            if (this.selectionquest.done) {
+                this.acceptquest.setText('Завершить');
+                this.acceptquest.visible = true;
+            }
+            else{
+                this.acceptquest.visible = true;   
+            }
+        }
+
 
     }
 
-    backPage(){
+    backPage() {
 
-        this.commandback.visible = false;
-        this.acceptquest.visible = false;
+        if (this.page == dialogePage.QuestsElement) {
+            this.openQuestsList();
+            return;
+        }
+
+        if (this.page == dialogePage.QuestsList) {
+            this.opendialoge(this.npc);
+            return;
+        }
 
     }
 
+    takeTheQuest() {
+        let quest = new Quest(this.selectionquest);
+        player.quests.push(quest);
+        this.openQuestsList();
+    }
 }
 
 class MainScene extends Phaser.Scene {
@@ -3822,8 +4028,8 @@ class MainScene extends Phaser.Scene {
 
         let playerdata = {
             id: client_id,
-            x: 500,
-            y: 500
+            x: 900,
+            y: 150
         }
 
         for (let i in spellsdata) {
@@ -3964,6 +4170,8 @@ function createplayer(data) {
     scene_main.scene.add('MagicBook', MagicBook, true, { x: 400, y: 300 });
     scene_main.scene.add('ItemsSprites', ItemsSprites, true, { x: 400, y: 300 });
     scene_main.scene.add('SpellItemInfo', SpellItemInfo, true, { x: 400, y: 300 });
+    scene_main.scene.add('PlayerQuest', PlayerQuest, true, { x: 400, y: 300 });
+
 
     if (player.performancepoints) {
         scene_CharFrame.open();
@@ -3985,6 +4193,34 @@ function CreateNPC(data) {
 
 function getRndInteger(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function checkQuests(questsarray) {
+
+    for (let i in questsarray) {
+
+        let quest = questsarray[i];
+
+        if (quest.done || quest.passed) {
+            continue
+        }
+
+        let questdone = true;
+
+        for (let ii in quest.condition) {
+            let condition = quest.condition[ii];
+            if (condition.quantity != condition.currentquantity) {
+                questdone = false;
+                break;
+            }
+        }
+
+        if (questdone) {
+            quest.done = true;
+        }
+
+    }
+
 }
 
 
