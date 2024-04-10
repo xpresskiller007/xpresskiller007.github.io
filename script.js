@@ -2570,68 +2570,105 @@ class CharFrame extends Phaser.Scene {
 
 }
 
-class PlayerQuest extends Phaser.Scene {
+class PlayerQuests extends Phaser.Scene {
 
     create() {
 
-        return;
+        scene_PlayerQuests = this;
 
-        const content = [
-            'The sky above the port was the color of television, tuned to a dead channel.',
-            '`It\'s not like I\'m using,\' Case heard someone say, as he shouldered his way ',
-            'through the crowd around the door of the Chat. `It\'s like my body\'s developed',
-            'this massive drug deficiency.\' It was a Sprawl voice and a Sprawl joke.',
-            'The Chatsubo was a bar for professional expatriates; you could drink there for',
-            'a week and never hear two words in Japanese.',
-            '',
-            'Ratz was tending bar, his prosthetic arm jerking monotonously as he filled a tray',
-            'of glasses with draft Kirin. He saw Case and smiled, his teeth a webwork of',
-            'East European steel and brown decay. Case found a place at the bar, between the',
-            'unlikely tan on one of Lonny Zone\'s whores and the crisp naval uniform of a tall',
-            'African whose cheekbones were ridged with precise rows of tribal scars. `Wage was',
-            'in here early, with two joeboys,\' Ratz said, shoving a draft across the bar with',
-            'his good hand. `Maybe some business with you, Case?\'',
-            '',
-            'Case shrugged. The girl to his right giggled and nudged him.',
-            'The bartender\'s smile widened. His ugliness was the stuff of legend. In an age of',
-            'affordable beauty, there was something heraldic about his lack of it. The antique',
-            'arm whined as he reached for another mug.',
-            '',
-            '',
-            'From Neuromancer by William Gibson'
-        ];
+        this.isopen = false;
+        this.selectedquest = null;
 
-        const graphics = this.add.graphics();
+        this.graphics = this.add.graphics();
 
-        graphics.fillRect(152, 155, 320, 155);
+        this.ClsdBtn = this.add.sprite(0, 0, 'ClsdBtn').setInteractive();
+        this.ClsdBtn.visible = false;
+        this.ClsdBtn.on('pointerdown', function (pointer, gameObject) {
+            scene_PlayerQuests.close();
+        });
 
-        const mask = new Phaser.Display.Masks.GeometryMask(this, graphics);
+        this.questinfogf = this.add.graphics();
 
-        const text = this.add.text(160, 160, content, { fontFamily: 'Arial', color: '#00ff00', wordWrap: { width: 310 } }).setOrigin(0);
+        this.ClsdBtninfo = this.add.sprite(0, 0, 'ClsdBtn').setInteractive();
+        this.ClsdBtninfo.visible = false;
+        this.ClsdBtninfo.on('pointerdown', function (pointer, gameObject) {
+            scene_PlayerQuests.closequestinfo();
+        });
 
-        text.setMask(mask);
+        this.maskgd = this.add.graphics();
 
-        //  The rectangle they can 'drag' within
-        const zone = this.add.zone(152, 130, 320, 256).setOrigin(0).setInteractive();
+        this.maskgd.fillRect(152, 155, 320, 155);
 
-        zone.on('pointermove', pointer => {
+        this.mask = new Phaser.Display.Masks.GeometryMask(this, this.maskgd);
 
-            if (pointer.isDown) {
-                text.y += (pointer.velocity.y / 2);
+        this.questinfo = this.add.text(160, 160, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
 
-                text.y = Phaser.Math.Clamp(text.y, -400, 300);
-            }
+        this.questinfo.setMask(this.mask);
+
+        this.zone = this.add.zone(152, 130, 320, 256).setOrigin(0).setInteractive();
+
+        this.zone.on('pointermove', pointer => {
+
+            // if (pointer.isDown) {
+            //     text.y += (pointer.velocity.y / 2);
+
+            //     text.y = Phaser.Math.Clamp(text.y, -400, 300);
+            // }
 
         });
+
+        this.mask.visible = false;
+        this.questinfo.visible = false;
+        this.zone.visible = false;
     }
 
     open() {
+
+
+        this.isopen = true;
+
+        this.graphics.fillStyle(0x0000ff)
+        this.graphics.fillRect(10, 10, 300, 20);
+        this.graphics.fillStyle(0x000000);
+        this.graphics.fillRect(10, 30, 300, 310);
+        this.ClsdBtn.setPosition(300, 20);
+        this.ClsdBtn.visible = true;
+
+        this.questinfogf.fillStyle(0x0000ff)
+        this.questinfogf.fillRect(315, 10, 605, 20);
+        this.questinfogf.fillStyle(0x000000);
+        this.questinfogf.fillRect(315, 30, 605, 310);
+        this.ClsdBtninfo.setPosition(605, 20);
+        this.ClsdBtninfo.visible = true;
 
 
     }
 
     close() {
 
+        this.isopen = false;
+
+        this.graphics.clear();
+        this.ClsdBtn.visible = false;
+
+        this.questinfogf.clear();
+        this.ClsdBtninfo.visible = false;
+
+        this.mask.visible = false;
+        this.questinfo.visible = false;
+        this.zone.visible = false;
+
+
+    }
+
+    closequestinfo(){
+
+        this.questinfogf.clear();
+        this.ClsdBtninfo.visible = false;
+
+        this.mask.visible = false;
+        this.questinfo.visible = false;
+        this.zone.visible = false;
 
     }
 
@@ -3366,11 +3403,11 @@ class UI extends Phaser.Scene {
         this.questlist = this.add.sprite(windowInnerWidth - 350, windowInnerHeight - 50, 'QuestList').setInteractive();
         this.questlist.on('pointerdown', function (pointer, gameObject) {
 
-            if (scene_MagicBook.isopen) {
-                scene_MagicBook.close()
+            if (scene_PlayerQuests.isopen) {
+                scene_PlayerQuests.close()
             }
             else {
-                scene_MagicBook.open()
+                scene_PlayerQuests.open()
             }
 
         });
@@ -4274,7 +4311,7 @@ function createplayer(data) {
     scene_main.scene.add('MagicBook', MagicBook, true, { x: 400, y: 300 });
     scene_main.scene.add('ItemsSprites', ItemsSprites, true, { x: 400, y: 300 });
     scene_main.scene.add('SpellItemInfo', SpellItemInfo, true, { x: 400, y: 300 });
-    scene_main.scene.add('PlayerQuest', PlayerQuest, true, { x: 400, y: 300 });
+    scene_main.scene.add('PlayerQuests', PlayerQuests, true);
 
 
     if (player.performancepoints) {
