@@ -66,6 +66,7 @@ var scene_RunesTableFrame;
 var scene_ItemsSprites;
 var scene_MagicBook;
 var scene_SpellItemInfo;
+var scene_PlayerQuests;
 
 var spellsdata = [];
 var spells = [];
@@ -2573,7 +2574,7 @@ class PlayerQuest extends Phaser.Scene {
 
     create() {
 
-        return
+        return;
 
         const content = [
             'The sky above the port was the color of television, tuned to a dead channel.',
@@ -2600,9 +2601,9 @@ class PlayerQuest extends Phaser.Scene {
             'From Neuromancer by William Gibson'
         ];
 
-        const graphics = this.make.graphics();
+        const graphics = this.add.graphics();
 
-        graphics.fillRect(152, 155, 320, 250);
+        graphics.fillRect(152, 155, 320, 155);
 
         const mask = new Phaser.Display.Masks.GeometryMask(this, graphics);
 
@@ -3516,13 +3517,12 @@ class NpcDialoge extends Phaser.Scene {
         });
         this.ClsdBtndrop.visible = false;
 
-        this.maskgf = this.make.graphics();
-        this.maskgf.fillRect(155, 200, 320, 340);
+        this.maskgf = this.add.graphics();
+        this.maskgf.fillRect(155, 185, 320, 140);
 
         this.mask = new Phaser.Display.Masks.GeometryMask(this, this.maskgf);
 
-        this.questtext = this.add.text(155, 200, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
-
+        this.questtext = this.add.text(160, 185, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.questtext.setMask(this.mask);
 
         this.zone = this.add.zone(155, 200, 320, 300).setInteractive();
@@ -3586,6 +3586,10 @@ class NpcDialoge extends Phaser.Scene {
 
             }
             else {
+
+                if (playerquest.passed) {
+                    continue;
+                }
 
                 if (quest.outstanding == this.npc.id) {
                     continue;
@@ -3724,6 +3728,10 @@ class NpcDialoge extends Phaser.Scene {
             }
             else {
 
+                if (playerquest.passed){
+                    continue;
+                }
+
                 if (quest.outstanding == this.npc.id) {
                     continue;
                 }
@@ -3779,21 +3787,28 @@ class NpcDialoge extends Phaser.Scene {
         this.phrase.setText(this.selectionquest.name);
         this.phrase.visible = true;
 
-        this.questtext.setText(this.selectionquest.description);
-        this.questtext.visible = true;
+        let description = [];
 
-        if (this.selectionquest.outstanding == this.npc.id) {
-            this.acceptquest.setText('Принять');
-            this.acceptquest.visible = true;
+        for (let i in this.selectionquest.description) {
+            description.push(this.selectionquest.description[i]);
         }
-        else {
-            let playerquest = null;
-            for (let i in player.quests) {
-                if (player.quests[i].id == this.selectionquest.id) {
-                    playerquest = player.quests[i];
-                    break;
-                }
+
+        let playerquest = null;
+        for (let i in player.quests) {
+            if (player.quests[i].id == this.selectionquest.id) {
+                playerquest = player.quests[i];
+                break;
             }
+        }
+
+        let conditionquest = null;
+        let outputcurrentquantity = false;
+
+        if (playerquest) {
+
+            outputcurrentquantity = true;
+            conditionquest = playerquest.condition;
+
             if (playerquest) {
                 if (playerquest.done) {
                     this.acceptquest.setText('Завершить');
@@ -3806,8 +3821,60 @@ class NpcDialoge extends Phaser.Scene {
             else {
                 this.acceptquest.visible = false;
             }
+        } 
+        else{
 
+            conditionquest = this.selectionquest.condition;
+
+            this.acceptquest.setText('Принять');
+            this.acceptquest.visible = true;
         }
+
+        description.push('');
+        description.push('Условия:');
+
+        for (let i in conditionquest){
+
+            let strcondition = conditionquest[i];
+            let textcondition = '';
+
+            if (strcondition.condition == questCondition.Kill){
+
+                if (outputcurrentquantity){
+                    
+                    textcondition += 'Убито ' + strcondition.currentquantity + '/' + strcondition.quantity;
+                }
+                else{
+                    textcondition += 'Убить ' + strcondition.quantity;
+                }
+
+                let mob = null;
+                for (let ni in mobs){
+                    if (mobs[ni].id == strcondition.target){
+                        mob = mobs[ni];
+                        break;   
+                    }
+                }
+                if (mob!=null){
+                    textcondition += ' ' + mob.name;
+                }
+
+                if (strcondition.currentquantity == strcondition.quantity){
+                    textcondition += ' ✔';    
+                }
+
+                description.push(textcondition);
+                 
+            }
+        }
+
+        description.push('');
+        description.push('Награда:');
+        description.push('xp: ' + this.selectionquest.xp);
+        description.push('Gold: ' + this.selectionquest.gold);
+
+        this.questtext.setText(description);
+        this.questtext.visible = true;
 
 
     }
@@ -3838,12 +3905,12 @@ class NpcDialoge extends Phaser.Scene {
                 }
             }
 
-            if (playerquest.done){
-                playerquest.passed = true; 
+            if (playerquest.done) {
+                playerquest.passed = true;
                 player.xp += playerquest.xp;
                 player.gold += playerquest.gold;
                 scene_XpBar.updatexpbar();
-                this.openQuestsList();   
+                this.openQuestsList();
             }
 
         }
@@ -3854,6 +3921,7 @@ class NpcDialoge extends Phaser.Scene {
         }
 
     }
+
 }
 
 class MainScene extends Phaser.Scene {
@@ -4258,7 +4326,6 @@ function checkQuests(questsarray) {
     }
 
 }
-
 
 var app = {
     width: 0,
