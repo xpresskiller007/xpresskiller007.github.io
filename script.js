@@ -3787,13 +3787,26 @@ class NpcDialoge extends Phaser.Scene {
             this.acceptquest.visible = true;
         }
         else {
-            if (this.selectionquest.done) {
-                this.acceptquest.setText('Завершить');
-                this.acceptquest.visible = true;
+            let playerquest = null;
+            for (let i in player.quests) {
+                if (player.quests[i].id == this.selectionquest.id) {
+                    playerquest = player.quests[i];
+                    break;
+                }
             }
-            else{
-                this.acceptquest.visible = true;   
+            if (playerquest) {
+                if (playerquest.done) {
+                    this.acceptquest.setText('Завершить');
+                    this.acceptquest.visible = true;
+                }
+                else {
+                    this.acceptquest.visible = false;
+                }
             }
+            else {
+                this.acceptquest.visible = false;
+            }
+
         }
 
 
@@ -3814,9 +3827,32 @@ class NpcDialoge extends Phaser.Scene {
     }
 
     takeTheQuest() {
-        let quest = new Quest(this.selectionquest);
-        player.quests.push(quest);
-        this.openQuestsList();
+
+        if (this.selectionquest.recipient == this.npc.id) {
+
+            let playerquest = null;
+            for (let i in player.quests) {
+                if (player.quests[i].id == this.selectionquest.id) {
+                    playerquest = player.quests[i];
+                    break;
+                }
+            }
+
+            if (playerquest.done){
+                playerquest.passed = true; 
+                player.xp += playerquest.xp;
+                player.gold += playerquest.gold;
+                scene_XpBar.updatexpbar();
+                this.openQuestsList();   
+            }
+
+        }
+        else {
+            let quest = new Quest(this.selectionquest);
+            player.quests.push(quest);
+            this.openQuestsList();
+        }
+
     }
 }
 
