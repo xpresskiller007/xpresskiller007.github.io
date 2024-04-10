@@ -208,7 +208,7 @@ questdata.push({
     condition: [{ condition: questCondition.Kill, target: 2, quantity: 5, currentquantity: 0 }],
     outstanding: 6,
     recipient: 7,
-    exp: 100,
+    xp: 100,
     gold: 100,
     chain: null,
     done: false,
@@ -227,7 +227,7 @@ class Quest {
         this.condition = [];
         this.outstanding = data.outstanding;
         this.recipient = data.recipient;
-        this.exp = data.exp;
+        this.xp = data.xp;
         this.gold = data.gold;
         this.done = data.done;
         this.passed = data.passed;
