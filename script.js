@@ -4359,32 +4359,35 @@ class NpcDialoge extends Phaser.Scene {
     }
 
     takeTheQuest() {
-
-        if (this.selectedquest.outstanding != this.selectedquest.recipient 
-            && this.selectedquest.recipient == this.npc.id) {
-
-            let playerquest = null;
-            for (let i in player.quests) {
-                if (player.quests[i].id == this.selectedquest.id) {
-                    playerquest = player.quests[i];
-                    break;
-                }
-            }
-
-            if (playerquest.done) {
-                playerquest.passed = true;
-                player.xp += playerquest.xp;
-                player.gold += playerquest.gold;
-                scene_XpBar.updatexpbar();
-                this.openQuestsList();
-            }
-
+      
+      let playerquest = null;
+      for (let i in player.quests) {
+        if (player.quests[i].id == this.selectedquest.id) {
+          playerquest = player.quests[i];
+          break;
         }
-        else {
-            let quest = new Quest(this.selectedquest);
-            player.quests.push(quest);
-            this.openQuestsList();
+      }
+      
+      if (playerquest == null) {
+        
+        if (this.selectedquest.outstanding == this.npc.id){
+          let quest = new Quest(this.selectedquest);
+          player.quests.push(quest);
         }
+        
+      } else {
+        
+        if (this.selectedquest.recipient == this.npc.id 
+        && playerquest.done) {
+          playerquest.passed = true;
+          player.xp += playerquest.xp;
+          player.gold += playerquest.gold;
+          scene_XpBar.updatexpbar();
+        }
+        
+      }
+        
+        this.openQuestsList();
 
     }
 
