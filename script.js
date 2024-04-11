@@ -2587,6 +2587,62 @@ class PlayerQuests extends Phaser.Scene {
             scene_PlayerQuests.close();
         });
 
+        this.command1 = this.add.text(20, 40, 'Задания', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } });
+        this.command1.setInteractive();
+        this.command1.on('pointerdown', function () {
+            scene_PlayerQuests.openQuestInfo(1);
+        });
+        this.command1.visible = false;
+        this.quest1 = null;
+
+        this.command2 = this.add.text(20, 70, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } });
+        this.command2.setInteractive();
+        this.command2.on('pointerdown', function () {
+            scene_PlayerQuests.openQuestInfo(2);
+        });
+        this.command2.visible = false;
+        this.quest2 = null;
+
+        this.command3 = this.add.text(20, 100, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } });
+        this.command3.setInteractive();
+        this.command3.on('pointerdown', function () {
+            scene_PlayerQuests.openQuestInfo(3);
+        });
+        this.command3.visible = false;
+        this.quest3 = null;
+
+        this.command4 = this.add.text(20, 130, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } });
+        this.command4.setInteractive();
+        this.command4.on('pointerdown', function () {
+            scene_PlayerQuests.openQuestInfo(4);
+        });
+        this.command4.visible = false;
+        this.quest4 = null;
+
+        this.command5 = this.add.text(20, 160, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } });
+        this.command5.setInteractive();
+        this.command5.on('pointerdown', function () {
+            scene_PlayerQuests.openQuestInfo(5);
+        });
+        this.command5.visible = false;
+        this.quest5 = null;
+
+        this.command6 = this.add.text(20, 190, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } });
+        this.command6.setInteractive();
+        this.command6.on('pointerdown', function () {
+            scene_PlayerQuests.openQuestInfo(6);
+        });
+        this.command6.visible = false;
+        this.quest6 = null;
+
+        this.command7 = this.add.text(20, 210, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } });
+        this.command7.setInteractive();
+        this.command7.on('pointerdown', function () {
+            scene_PlayerQuests.openQuestInfo(7);
+        });
+        this.command7.visible = false;
+        this.quest7 = null;
+
         this.questinfogf = this.add.graphics();
 
         this.ClsdBtninfo = this.add.sprite(0, 0, 'ClsdBtn').setInteractive();
@@ -2595,35 +2651,44 @@ class PlayerQuests extends Phaser.Scene {
             scene_PlayerQuests.closequestinfo();
         });
 
+        this.questname = this.add.text(320, 40, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } }).setOrigin(0);
+
         this.maskgd = this.add.graphics();
 
-        this.maskgd.fillRect(152, 155, 320, 155);
+        this.maskgd.fillRect(315, 70, 300, 170);
 
         this.mask = new Phaser.Display.Masks.GeometryMask(this, this.maskgd);
 
-        this.questinfo = this.add.text(160, 160, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } }).setOrigin(0);
+        this.questinfo = this.add.text(320, 70, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } }).setOrigin(0);
 
         this.questinfo.setMask(this.mask);
 
-        this.zone = this.add.zone(152, 130, 320, 256).setOrigin(0).setInteractive();
+        this.zone = this.add.zone(315, 70, 300, 170).setOrigin(0).setInteractive();
 
         this.zone.on('pointermove', pointer => {
 
-            // if (pointer.isDown) {
-            //     text.y += (pointer.velocity.y / 2);
+            if (pointer.isDown) {
+                this.questinfo.y += (pointer.velocity.y / 2);
 
-            //     text.y = Phaser.Math.Clamp(text.y, -400, 300);
-            // }
+                this.questinfo.y = Phaser.Math.Clamp(this.questinfo.y, -400, 300);
+            }
 
         });
 
+        this.cancel = this.add.text(520, 310, 'Отменить', { fontFamily: 'Arial', color: 'white'});
+        this.cancel.setInteractive();
+        this.cancel.on('pointerdown', function () {
+            scene_PlayerQuests.cancelQuest();
+        });
+        this.cancel.visible = false;
+
+        this.questname.visible = false;
         this.mask.visible = false;
         this.questinfo.visible = false;
         this.zone.visible = false;
     }
 
     open() {
-
 
         this.isopen = true;
 
@@ -2634,12 +2699,67 @@ class PlayerQuests extends Phaser.Scene {
         this.ClsdBtn.setPosition(300, 20);
         this.ClsdBtn.visible = true;
 
-        this.questinfogf.fillStyle(0x0000ff)
-        this.questinfogf.fillRect(315, 10, 605, 20);
-        this.questinfogf.fillStyle(0x000000);
-        this.questinfogf.fillRect(315, 30, 605, 310);
-        this.ClsdBtninfo.setPosition(605, 20);
-        this.ClsdBtninfo.visible = true;
+        this.command1.visible = false;
+        this.command2.visible = false;
+        this.command3.visible = false;
+        this.command4.visible = false;
+        this.command5.visible = false;
+        this.command6.visible = false;
+        this.command7.visible = false;
+
+        let counter = 1;
+        for (let i in player.quests){
+            let quest = player.quests[i];
+            if (quest.passed){
+                continue
+            }
+
+            let questtext = '';
+
+            if (quest.done){
+                questtext = '✔ '    
+            }
+
+            questtext += quest.name;
+
+            if (counter == 1) {
+                this.command1.setText(questtext);
+                this.command1.visible = true;
+                this.quest1 = quest;
+            }
+            else if (counter == 2) {
+                this.command2.setText(questtext);
+                this.command2.visible = true;
+                this.quest2 = quest;
+            }
+            else if (counter == 3) {
+                this.command3.setText(questtext);
+                this.command3.visible = true;
+                this.quest3 = quest;
+            }
+            else if (counter == 4) {
+                this.command4.setText(questtext);
+                this.command4.visible = true;
+                this.quest4 = quest;
+            }
+            else if (counter == 5) {
+                this.command5.setText(questtext);
+                this.command5.visible = true;
+                this.quest5 = quest;
+            }
+            else if (counter == 6) {
+                this.command6.setText(questtext);
+                this.command6.visible = true;
+                this.quest6 = quest;
+            }
+            else if (counter == 7) {
+                this.command7.setText(questtext);
+                this.command7.visible = true;
+                this.quest7 = quest;
+            }
+
+            counter += 1;
+        }
 
 
     }
@@ -2655,8 +2775,28 @@ class PlayerQuests extends Phaser.Scene {
         this.ClsdBtninfo.visible = false;
 
         this.mask.visible = false;
-        this.questinfo.visible = false;
         this.zone.visible = false;
+
+        this.questname.visible = false;
+        this.questinfo.visible = false;
+
+        this.command1.visible = false;
+        this.command2.visible = false;
+        this.command3.visible = false;
+        this.command4.visible = false;
+        this.command5.visible = false;
+        this.command6.visible = false;
+        this.command7.visible = false;
+
+        this.quest1 = null;
+        this.quest2 = null;
+        this.quest3 = null;
+        this.quest4 = null;
+        this.quest5 = null;
+        this.quest6 = null;
+        this.quest7 = null;
+
+        this.cancel.visible = false;
 
 
     }
@@ -2669,6 +2809,110 @@ class PlayerQuests extends Phaser.Scene {
         this.mask.visible = false;
         this.questinfo.visible = false;
         this.zone.visible = false;
+
+        this.questname.visible = false;
+        this.questinfo.visible = false;
+        this.cancel.visible = false;
+
+        this.selectedquest = null;
+
+        this.cancel.visible = false;
+
+    }
+
+    openQuestInfo(commandnum){
+
+        this.questinfogf.fillStyle(0x0000ff)
+        this.questinfogf.fillRect(315, 10, 300, 20);
+        this.questinfogf.fillStyle(0x000000);
+        this.questinfogf.fillRect(315, 30, 300, 310);
+        this.ClsdBtninfo.setPosition(605, 20);
+        this.ClsdBtninfo.visible = true;
+
+        if (commandnum == 1){
+            this.selectedquest = this.quest1;   
+        }
+        else if (commandnum == 2){
+            this.selectedquest = this.quest2;   
+        }
+        else if (commandnum == 3){
+            this.selectedquest = this.quest3;   
+        }
+        else if (commandnum == 4){
+            this.selectedquest = this.quest4;   
+        }
+        else if (commandnum == 5){
+            this.selectedquest = this.quest5;   
+        }
+        else if (commandnum == 6){
+            this.selectedquest = this.quest6;   
+        }
+        else if (commandnum == 7){
+            this.selectedquest = this.quest7;   
+        }
+
+        this.questname.setText(this.selectedquest.name);
+        this.questname.visible = true;
+
+        this.mask.visible = true;
+        this.zone.visible = true;
+        this.frameopen = true;
+
+        let description = [];
+
+        for (let i in this.selectedquest.description) {
+            description.push(this.selectedquest.description[i]);
+        }
+
+        description.push('');
+        description.push('Условия:');
+
+        let conditionquest = this.selectedquest.condition;
+
+        for (let i in conditionquest){
+
+            let strcondition = conditionquest[i];
+            let textcondition = '';
+
+            if (strcondition.condition == questCondition.Kill){
+
+                textcondition += 'Убито ' + strcondition.currentquantity + '/' + strcondition.quantity;
+
+                let mob = null;
+                for (let ni in mobs){
+                    if (mobs[ni].id == strcondition.target){
+                        mob = mobs[ni];
+                        break;   
+                    }
+                }
+                if (mob!=null){
+                    textcondition += ' ' + mob.name;
+                }
+
+                if (strcondition.currentquantity == strcondition.quantity){
+                    textcondition += ' ✔';    
+                }
+
+                description.push(textcondition);
+                 
+            }
+        }
+
+        description.push('');
+        description.push('Награда:');
+        description.push('xp: ' + this.selectedquest.xp);
+        description.push('Gold: ' + this.selectedquest.gold);
+
+        this.questinfo.setText(description);
+        this.questinfo.visible = true;
+
+        this.cancel.visible = true;
+
+    }
+
+    cancelQuest(){
+
+        
 
     }
 
@@ -3427,7 +3671,7 @@ class NpcDialoge extends Phaser.Scene {
         this.page = dialogePage.Main;
         this.frameopen = false;
         this.npc = null;
-        this.selectionquest = null;
+        this.selectedquest = null;
         this.gf = this.add.graphics();
 
         this.npcName = this.add.text(155, 115, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
@@ -3446,29 +3690,17 @@ class NpcDialoge extends Phaser.Scene {
             }
 
             if (scene_NpcDialoge.page == dialogePage.QuestsList) {
-                scene_NpcDialoge.openQuest(0);
-                return;
-            }
-
-        });
-
-        this.command1.visible = false;
-
-        this.command2 = this.add.text(170, 220, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
-        this.command2.setInteractive();
-        this.command2.on('pointerdown', function () {
-
-            if (scene_NpcDialoge.page == dialogePage.QuestsList) {
                 scene_NpcDialoge.openQuest(1);
                 return;
             }
 
         });
-        this.command2.visible = false;
+        this.command1.visible = false;
+        this.quest1 = null;
 
-        this.command3 = this.add.text(170, 250, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
-        this.command3.setInteractive();
-        this.command3.on('pointerdown', function () {
+        this.command2 = this.add.text(170, 220, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
+        this.command2.setInteractive();
+        this.command2.on('pointerdown', function () {
 
             if (scene_NpcDialoge.page == dialogePage.QuestsList) {
                 scene_NpcDialoge.openQuest(2);
@@ -3476,11 +3708,12 @@ class NpcDialoge extends Phaser.Scene {
             }
 
         });
-        this.command3.visible = false;
+        this.command2.visible = false;
+        this.quest2 = null;
 
-        this.command4 = this.add.text(170, 280, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
-        this.command4.setInteractive();
-        this.command4.on('pointerdown', function () {
+        this.command3 = this.add.text(170, 250, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
+        this.command3.setInteractive();
+        this.command3.on('pointerdown', function () {
 
             if (scene_NpcDialoge.page == dialogePage.QuestsList) {
                 scene_NpcDialoge.openQuest(3);
@@ -3488,11 +3721,12 @@ class NpcDialoge extends Phaser.Scene {
             }
 
         });
-        this.command4.visible = false;
+        this.command3.visible = false;
+        this.quest3 = null;
 
-        this.command5 = this.add.text(170, 310, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
-        this.command5.setInteractive();
-        this.command5.on('pointerdown', function () {
+        this.command4 = this.add.text(170, 280, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
+        this.command4.setInteractive();
+        this.command4.on('pointerdown', function () {
 
             if (scene_NpcDialoge.page == dialogePage.QuestsList) {
                 scene_NpcDialoge.openQuest(4);
@@ -3500,11 +3734,12 @@ class NpcDialoge extends Phaser.Scene {
             }
 
         });
-        this.command5.visible = false;
+        this.command4.visible = false;
+        this.quest4 = null;
 
-        this.command6 = this.add.text(170, 340, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
-        this.command6.setInteractive();
-        this.command6.on('pointerdown', function () {
+        this.command5 = this.add.text(170, 310, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
+        this.command5.setInteractive();
+        this.command5.on('pointerdown', function () {
 
             if (scene_NpcDialoge.page == dialogePage.QuestsList) {
                 scene_NpcDialoge.openQuest(5);
@@ -3512,11 +3747,12 @@ class NpcDialoge extends Phaser.Scene {
             }
 
         });
-        this.command6.visible = false;
+        this.command5.visible = false;
+        this.quest5 = null;
 
-        this.command7 = this.add.text(170, 370, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
-        this.command7.setInteractive();
-        this.command7.on('pointerdown', function () {
+        this.command6 = this.add.text(170, 340, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
+        this.command6.setInteractive();
+        this.command6.on('pointerdown', function () {
 
             if (scene_NpcDialoge.page == dialogePage.QuestsList) {
                 scene_NpcDialoge.openQuest(6);
@@ -3524,7 +3760,21 @@ class NpcDialoge extends Phaser.Scene {
             }
 
         });
+        this.command6.visible = false;
+        this.quest6 = null;
+
+        this.command7 = this.add.text(170, 370, 'Торговать', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
+        this.command7.setInteractive();
+        this.command7.on('pointerdown', function () {
+
+            if (scene_NpcDialoge.page == dialogePage.QuestsList) {
+                scene_NpcDialoge.openQuest(7);
+                return;
+            }
+
+        });
         this.command7.visible = false;
+        this.quest7 = null;
 
         this.commandback = this.add.text(170, 370, 'Назад', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.commandback.setInteractive();
@@ -3668,8 +3918,15 @@ class NpcDialoge extends Phaser.Scene {
         this.page = dialogePage.Main;
 
         this.npc = null;
-        this.selectionquest = null;
+        this.selectedquest = null;
         player.target = null;
+        this.quest1 = null;
+        this.quest2 = null;
+        this.quest3 = null;
+        this.quest4 = null;
+        this.quest5 = null;
+        this.quest6 = null;
+        this.quest7 = null;
 
         this.gf.clear();
         this.ClsdBtndrop.visible = false;
@@ -3716,28 +3973,6 @@ class NpcDialoge extends Phaser.Scene {
         let havequests = false;
         let counter = 1;
         for (let i in this.npc.quests) {
-            let textlink = null;
-            if (counter == 1) {
-                textlink = this.command1;
-            }
-            else if (counter == 2) {
-                textlink = this.command2;
-            }
-            else if (counter == 3) {
-                textlink = this.command3;
-            }
-            else if (counter == 4) {
-                textlink = this.command4;
-            }
-            else if (counter == 5) {
-                textlink = this.command5;
-            }
-            else if (counter == 6) {
-                textlink = this.command6;
-            }
-            else if (counter == 7) {
-                textlink = this.command7;
-            }
 
             let questtext = '';
 
@@ -3774,7 +4009,7 @@ class NpcDialoge extends Phaser.Scene {
                 }
                 else {
                     if (playerquest.done) {
-                        questtext = '+ ';
+                        questtext = '✔ ';
                     }
                     else {
                         questtext = '? ';
@@ -3788,8 +4023,42 @@ class NpcDialoge extends Phaser.Scene {
 
             questtext = questtext + quest.name;
 
-            textlink.setText(questtext)
-            textlink.visible = true;
+            if (counter == 1) {
+                this.command1.setText(questtext);
+                this.command1.visible = true;
+                this.quest1 = quest;
+            }
+            else if (counter == 2) {
+                this.command2.setText(questtext);
+                this.command2.visible = true;
+                this.quest2 = quest;
+            }
+            else if (counter == 3) {
+                this.command3.setText(questtext);
+                this.command3.visible = true;
+                this.quest3 = quest;
+            }
+            else if (counter == 4) {
+                this.command4.setText(questtext);
+                this.command4.visible = true;
+                this.quest4 = quest;
+            }
+            else if (counter == 5) {
+                this.command5.setText(questtext);
+                this.command5.visible = true;
+                this.quest5 = quest;
+            }
+            else if (counter == 6) {
+                this.command6.setText(questtext);
+                this.command6.visible = true;
+                this.quest6 = quest;
+            }
+            else if (counter == 7) {
+                this.command7.setText(questtext);
+                this.command7.visible = true;
+                this.quest7 = quest;
+            }
+
             counter += 1;
 
         }
@@ -3802,11 +4071,31 @@ class NpcDialoge extends Phaser.Scene {
 
     }
 
-    openQuest(ind) {
+    openQuest(commandnum) {
 
         this.page = dialogePage.QuestsElement;
 
-        this.selectionquest = this.npc.quests[ind];
+        if (commandnum == 1){
+            this.selectedquest = this.quest1;   
+        }
+        else if (commandnum == 2){
+            this.selectedquest = this.quest2;   
+        }
+        else if (commandnum == 3){
+            this.selectedquest = this.quest3;   
+        }
+        else if (commandnum == 4){
+            this.selectedquest = this.quest4;   
+        }
+        else if (commandnum == 5){
+            this.selectedquest = this.quest5;   
+        }
+        else if (commandnum == 6){
+            this.selectedquest = this.quest6;   
+        }
+        else if (commandnum == 7){
+            this.selectedquest = this.quest7;   
+        }
 
         this.command1.visible = false;
         this.command2.visible = false;
@@ -3821,18 +4110,18 @@ class NpcDialoge extends Phaser.Scene {
         this.zone.visible = true;
         this.frameopen = true;
 
-        this.phrase.setText(this.selectionquest.name);
+        this.phrase.setText(this.selectedquest.name);
         this.phrase.visible = true;
 
         let description = [];
 
-        for (let i in this.selectionquest.description) {
-            description.push(this.selectionquest.description[i]);
+        for (let i in this.selectedquest.description) {
+            description.push(this.selectedquest.description[i]);
         }
 
         let playerquest = null;
         for (let i in player.quests) {
-            if (player.quests[i].id == this.selectionquest.id) {
+            if (player.quests[i].id == this.selectedquest.id) {
                 playerquest = player.quests[i];
                 break;
             }
@@ -3861,7 +4150,7 @@ class NpcDialoge extends Phaser.Scene {
         } 
         else{
 
-            conditionquest = this.selectionquest.condition;
+            conditionquest = this.selectedquest.condition;
 
             this.acceptquest.setText('Принять');
             this.acceptquest.visible = true;
@@ -3907,12 +4196,11 @@ class NpcDialoge extends Phaser.Scene {
 
         description.push('');
         description.push('Награда:');
-        description.push('xp: ' + this.selectionquest.xp);
-        description.push('Gold: ' + this.selectionquest.gold);
+        description.push('xp: ' + this.selectedquest.xp);
+        description.push('Gold: ' + this.selectedquest.gold);
 
         this.questtext.setText(description);
         this.questtext.visible = true;
-
 
     }
 
@@ -3932,11 +4220,11 @@ class NpcDialoge extends Phaser.Scene {
 
     takeTheQuest() {
 
-        if (this.selectionquest.recipient == this.npc.id) {
+        if (this.selectedquest.recipient == this.npc.id) {
 
             let playerquest = null;
             for (let i in player.quests) {
-                if (player.quests[i].id == this.selectionquest.id) {
+                if (player.quests[i].id == this.selectedquest.id) {
                     playerquest = player.quests[i];
                     break;
                 }
@@ -3952,7 +4240,7 @@ class NpcDialoge extends Phaser.Scene {
 
         }
         else {
-            let quest = new Quest(this.selectionquest);
+            let quest = new Quest(this.selectedquest);
             player.quests.push(quest);
             this.openQuestsList();
         }
