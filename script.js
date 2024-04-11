@@ -67,6 +67,7 @@ var scene_ItemsSprites;
 var scene_MagicBook;
 var scene_SpellItemInfo;
 var scene_PlayerQuests;
+var scene_Question;
 
 var spellsdata = [];
 var spells = [];
@@ -200,17 +201,57 @@ loot.push({
 
 var questdata = [];
 
-let description = ['что то много чушпанов развелось в округе, надо шугануть', 'Убей 5 чушпанов'];
-
 questdata.push({
     id: 0,
     name: 'Гаси чушпанов',
-    description: description,
+    description: ['Что то много чушпанов развелось в округе, надо шугануть', 'Убей 5 чушпанов'],
     condition: [{ condition: questCondition.Kill, target: 2, quantity: 5, currentquantity: 0 }],
     outstanding: 6,
     recipient: 7,
     xp: 100,
     gold: 100,
+    chain: null,
+    done: false,
+    passed: false
+});
+
+questdata.push({
+    id: 0,
+    name: 'Гаси чушпанселов',
+    description: ['Что то много чушпанселов развелось в округе, надо шугануть', 'Убей 5 чушпанов'],
+    condition: [{ condition: questCondition.Kill, target: 3, quantity: 5, currentquantity: 0 }],
+    outstanding: 6,
+    recipient: 8,
+    xp: 200,
+    gold: 200,
+    chain: 0,
+    done: false,
+    passed: false
+});
+
+questdata.push({
+    id: 1,
+    name: 'Гаси чушпанселов',
+    description: ['Что то много чушпанселов развелось в округе, надо шугануть', 'Убей 5 чушпанов'],
+    condition: [{ condition: questCondition.Kill, target: 3, quantity: 2, currentquantity: 0 }],
+    outstanding: 6,
+    recipient: 8,
+    xp: 200,
+    gold: 200,
+    chain: 0,
+    done: false,
+    passed: false
+});
+
+questdata.push({
+    id: 2,
+    name: 'Убить чушпанище',
+    description: ['Чушпанище кошмарит честный народ', 'Убей Чушпанище'],
+    condition: [{ condition: questCondition.Kill, target: 4, quantity: 1, currentquantity: 0 }],
+    outstanding: 6,
+    recipient: 6,
+    xp: 500,
+    gold: 500,
     chain: null,
     done: false,
     passed: false
@@ -228,6 +269,7 @@ class Quest {
         this.condition = [];
         this.outstanding = data.outstanding;
         this.recipient = data.recipient;
+        this.chain = data.chain;
         this.xp = data.xp;
         this.gold = data.gold;
         this.done = data.done;
@@ -2675,7 +2717,7 @@ class PlayerQuests extends Phaser.Scene {
 
         });
 
-        this.cancel = this.add.text(520, 310, 'Отменить', { fontFamily: 'Arial', color: 'white'});
+        this.cancel = this.add.text(520, 310, 'Отменить', { fontFamily: 'Arial', color: 'white' });
         this.cancel.setInteractive();
         this.cancel.on('pointerdown', function () {
             scene_PlayerQuests.cancelQuest();
@@ -2708,16 +2750,16 @@ class PlayerQuests extends Phaser.Scene {
         this.command7.visible = false;
 
         let counter = 1;
-        for (let i in player.quests){
+        for (let i in player.quests) {
             let quest = player.quests[i];
-            if (quest.passed){
+            if (quest.passed) {
                 continue
             }
 
             let questtext = '';
 
-            if (quest.done){
-                questtext = '✔ '    
+            if (quest.done) {
+                questtext = '✔ '
             }
 
             questtext += quest.name;
@@ -2801,7 +2843,7 @@ class PlayerQuests extends Phaser.Scene {
 
     }
 
-    closequestinfo(){
+    closequestinfo() {
 
         this.questinfogf.clear();
         this.ClsdBtninfo.visible = false;
@@ -2820,7 +2862,7 @@ class PlayerQuests extends Phaser.Scene {
 
     }
 
-    openQuestInfo(commandnum){
+    openQuestInfo(commandnum) {
 
         this.questinfogf.fillStyle(0x0000ff)
         this.questinfogf.fillRect(315, 10, 300, 20);
@@ -2829,26 +2871,26 @@ class PlayerQuests extends Phaser.Scene {
         this.ClsdBtninfo.setPosition(605, 20);
         this.ClsdBtninfo.visible = true;
 
-        if (commandnum == 1){
-            this.selectedquest = this.quest1;   
+        if (commandnum == 1) {
+            this.selectedquest = this.quest1;
         }
-        else if (commandnum == 2){
-            this.selectedquest = this.quest2;   
+        else if (commandnum == 2) {
+            this.selectedquest = this.quest2;
         }
-        else if (commandnum == 3){
-            this.selectedquest = this.quest3;   
+        else if (commandnum == 3) {
+            this.selectedquest = this.quest3;
         }
-        else if (commandnum == 4){
-            this.selectedquest = this.quest4;   
+        else if (commandnum == 4) {
+            this.selectedquest = this.quest4;
         }
-        else if (commandnum == 5){
-            this.selectedquest = this.quest5;   
+        else if (commandnum == 5) {
+            this.selectedquest = this.quest5;
         }
-        else if (commandnum == 6){
-            this.selectedquest = this.quest6;   
+        else if (commandnum == 6) {
+            this.selectedquest = this.quest6;
         }
-        else if (commandnum == 7){
-            this.selectedquest = this.quest7;   
+        else if (commandnum == 7) {
+            this.selectedquest = this.quest7;
         }
 
         this.questname.setText(this.selectedquest.name);
@@ -2869,32 +2911,32 @@ class PlayerQuests extends Phaser.Scene {
 
         let conditionquest = this.selectedquest.condition;
 
-        for (let i in conditionquest){
+        for (let i in conditionquest) {
 
             let strcondition = conditionquest[i];
             let textcondition = '';
 
-            if (strcondition.condition == questCondition.Kill){
+            if (strcondition.condition == questCondition.Kill) {
 
                 textcondition += 'Убито ' + strcondition.currentquantity + '/' + strcondition.quantity;
 
                 let mob = null;
-                for (let ni in mobs){
-                    if (mobs[ni].id == strcondition.target){
+                for (let ni in mobs) {
+                    if (mobs[ni].id == strcondition.target) {
                         mob = mobs[ni];
-                        break;   
+                        break;
                     }
                 }
-                if (mob!=null){
+                if (mob != null) {
                     textcondition += ' ' + mob.name;
                 }
 
-                if (strcondition.currentquantity == strcondition.quantity){
-                    textcondition += ' ✔';    
+                if (strcondition.currentquantity == strcondition.quantity) {
+                    textcondition += ' ✔';
                 }
 
                 description.push(textcondition);
-                 
+
             }
         }
 
@@ -2910,12 +2952,85 @@ class PlayerQuests extends Phaser.Scene {
 
     }
 
-    cancelQuest(){
+    cancelQuest() {
+        let question = 'Вы действительно хотите отказаться от задания '
+        + this.selectedquest.name + ' ?. Прогресс задания будет утерян.';
+        scene_Question.ask(question, scene_PlayerQuests, this.selectedquest)
+    }
 
-        
+    delete(value, element){
+
+        if (value){
+            for (let i in player.quests){
+                if (player.quests[i].id == element.id){
+                    player.quests.splice(i,1);
+                    element = null;
+                    scene_PlayerQuests.closequestinfo();
+                    scene_PlayerQuests.open();       
+                }
+            }
+        }
 
     }
 
+}
+
+class Question extends Phaser.Scene {
+
+    create() {
+        scene_Question = this;
+
+        this.scenelink = null;
+        this.element = null;
+
+        this.graphics = this.add.graphics();
+
+        this.question = this.add.text(windowInnerWidth / 2 - 140, windowInnerHeight / 2 - 40, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 280 } });
+        this.question.visible = false;
+
+        this.requestyes = this.add.text(windowInnerWidth / 2 - 120, windowInnerHeight / 2 + 20, 'Да', { fontFamily: 'Arial', fontSize: '25px', color: 'white', wordWrap: { width: 280 } });
+        this.requestyes.setInteractive();
+        this.requestyes.on('pointerdown', function () {
+            scene_Question.scenelink.delete(true, scene_Question.element);
+            scene_Question.close();
+        });
+        this.requestyes.visible = false;
+
+        this.requestnot = this.add.text(windowInnerWidth / 2 + 70, windowInnerHeight / 2 + 20, 'Нет', { fontFamily: 'Arial', fontSize: '25px', color: 'white', wordWrap: { width: 280 } });
+        this.requestnot.setInteractive();
+        this.requestnot.on('pointerdown', function () {
+            scene_Question.scenelink.delete(false, null);
+            scene_Question.close();
+        });
+        this.requestnot.visible = false;
+
+    }
+
+    ask(question, scene, element) {
+
+        this.scenelink = scene;
+        this.element = element;
+
+        this.graphics.fillStyle('black');
+        this.graphics.fillRect(windowInnerWidth / 2 - 150, windowInnerHeight / 2 - 50, 300, 100);
+
+        this.question.setText(question);
+
+        this.question.visible = true;
+        this.requestyes.visible = true;
+        this.requestnot.visible = true;
+
+    }
+
+    close(){
+        this.graphics.clear();  
+        this.question.setText('');
+        this.scenelink = null;
+        this.element = null;
+        this.question.visible = false;
+        this.requestyes.visible = false;
+        this.requestnot.visible = false;
+    }
 
 }
 
@@ -3867,8 +3982,21 @@ class NpcDialoge extends Phaser.Scene {
 
             if (playerquest == null) {
 
-                if (quest.recipient == this.npc.id) {
+                if (quest.recipient != quest.outstanding && quest.recipient == this.npc.id) {
                     continue;
+                }
+
+                if (quest.chain != null){
+                    let havequestchain = false;
+                    for (let pi in player.quests){
+                        if (player.quests[pi].id == quest.chain && player.quests[pi].passed){
+                            havequestchain = true;
+                            break;    
+                        }
+                    }
+                    if (!havequestchain){
+                        continue;
+                    }
                 }
 
             }
@@ -3878,7 +4006,7 @@ class NpcDialoge extends Phaser.Scene {
                     continue;
                 }
 
-                if (quest.outstanding == this.npc.id) {
+                if (quest.recipient != quest.outstanding && quest.outstanding == this.npc.id) {
                     continue;
                 }
 
@@ -3990,21 +4118,33 @@ class NpcDialoge extends Phaser.Scene {
 
             if (playerquest == null) {
 
-                if (quest.recipient == this.npc.id) {
+                if (quest.recipient != quest.outstanding && quest.recipient == this.npc.id) {
                     continue;
                 }
                 else {
+                    if (quest.chain != null){
+                        let havequestchain = false;
+                        for (let pi in player.quests){
+                            if (player.quests[pi].id == quest.chain && player.quests[pi].passed){
+                                havequestchain = true;
+                                break;    
+                            }
+                        }
+                        if (!havequestchain){
+                            continue;
+                        }
+                    }
                     questtext = '! ';
                 }
 
             }
             else {
 
-                if (playerquest.passed){
+                if (playerquest.passed) {
                     continue;
                 }
 
-                if (quest.outstanding == this.npc.id) {
+                if (quest.recipient != quest.outstanding && quest.outstanding == this.npc.id) {
                     continue;
                 }
                 else {
@@ -4075,26 +4215,26 @@ class NpcDialoge extends Phaser.Scene {
 
         this.page = dialogePage.QuestsElement;
 
-        if (commandnum == 1){
-            this.selectedquest = this.quest1;   
+        if (commandnum == 1) {
+            this.selectedquest = this.quest1;
         }
-        else if (commandnum == 2){
-            this.selectedquest = this.quest2;   
+        else if (commandnum == 2) {
+            this.selectedquest = this.quest2;
         }
-        else if (commandnum == 3){
-            this.selectedquest = this.quest3;   
+        else if (commandnum == 3) {
+            this.selectedquest = this.quest3;
         }
-        else if (commandnum == 4){
-            this.selectedquest = this.quest4;   
+        else if (commandnum == 4) {
+            this.selectedquest = this.quest4;
         }
-        else if (commandnum == 5){
-            this.selectedquest = this.quest5;   
+        else if (commandnum == 5) {
+            this.selectedquest = this.quest5;
         }
-        else if (commandnum == 6){
-            this.selectedquest = this.quest6;   
+        else if (commandnum == 6) {
+            this.selectedquest = this.quest6;
         }
-        else if (commandnum == 7){
-            this.selectedquest = this.quest7;   
+        else if (commandnum == 7) {
+            this.selectedquest = this.quest7;
         }
 
         this.command1.visible = false;
@@ -4147,8 +4287,8 @@ class NpcDialoge extends Phaser.Scene {
             else {
                 this.acceptquest.visible = false;
             }
-        } 
-        else{
+        }
+        else {
 
             conditionquest = this.selectedquest.condition;
 
@@ -4159,38 +4299,38 @@ class NpcDialoge extends Phaser.Scene {
         description.push('');
         description.push('Условия:');
 
-        for (let i in conditionquest){
+        for (let i in conditionquest) {
 
             let strcondition = conditionquest[i];
             let textcondition = '';
 
-            if (strcondition.condition == questCondition.Kill){
+            if (strcondition.condition == questCondition.Kill) {
 
-                if (outputcurrentquantity){
-                    
+                if (outputcurrentquantity) {
+
                     textcondition += 'Убито ' + strcondition.currentquantity + '/' + strcondition.quantity;
                 }
-                else{
+                else {
                     textcondition += 'Убить ' + strcondition.quantity;
                 }
 
                 let mob = null;
-                for (let ni in mobs){
-                    if (mobs[ni].id == strcondition.target){
+                for (let ni in mobs) {
+                    if (mobs[ni].id == strcondition.target) {
                         mob = mobs[ni];
-                        break;   
+                        break;
                     }
                 }
-                if (mob!=null){
+                if (mob != null) {
                     textcondition += ' ' + mob.name;
                 }
 
-                if (strcondition.currentquantity == strcondition.quantity){
-                    textcondition += ' ✔';    
+                if (strcondition.currentquantity == strcondition.quantity) {
+                    textcondition += ' ✔';
                 }
 
                 description.push(textcondition);
-                 
+
             }
         }
 
@@ -4220,7 +4360,8 @@ class NpcDialoge extends Phaser.Scene {
 
     takeTheQuest() {
 
-        if (this.selectedquest.recipient == this.npc.id) {
+        if (this.selectedquest.outstanding != this.selectedquest.recipient 
+            && this.selectedquest.recipient == this.npc.id) {
 
             let playerquest = null;
             for (let i in player.quests) {
@@ -4600,6 +4741,7 @@ function createplayer(data) {
     scene_main.scene.add('ItemsSprites', ItemsSprites, true, { x: 400, y: 300 });
     scene_main.scene.add('SpellItemInfo', SpellItemInfo, true, { x: 400, y: 300 });
     scene_main.scene.add('PlayerQuests', PlayerQuests, true);
+    scene_main.scene.add('Question', Question, true);
 
 
     if (player.performancepoints) {
