@@ -679,18 +679,18 @@ class Player {
         this.xp += xp;
 
         let lvlinf = lvldata[this.lvl];
-
-        if (lvlinf) {
-            if (this.xp > lvlinf) {
-                this.xp -= lvlinf;
-                this.lvl += 1;
-                this.hp = this.maxhp;
-                this.mp = this.maxmp;
-                this.performancepoints += 10;
-            }
+        
+        while (lvlinf && this.xp >= lvlinf) {
+          this.xp -= lvlinf;
+          this.lvl += 1;
+          this.hp = this.maxhp;
+          this.mp = this.maxmp;
+          this.performancepoints += 10;
+          lvlinf = lvldata[this.lvl];
         }
 
     }
+    
 }
 
 class Mob {
@@ -4380,7 +4380,7 @@ class NpcDialoge extends Phaser.Scene {
         if (this.selectedquest.recipient == this.npc.id 
         && playerquest.done) {
           playerquest.passed = true;
-          player.xp += playerquest.xp;
+          player.addXp(playerquest.xp);
           player.gold += playerquest.gold;
           scene_XpBar.updatexpbar();
         }
