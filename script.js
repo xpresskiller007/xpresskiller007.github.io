@@ -679,18 +679,18 @@ class Player {
         this.xp += xp;
 
         let lvlinf = lvldata[this.lvl];
-        
+
         while (lvlinf && this.xp >= lvlinf) {
-          this.xp -= lvlinf;
-          this.lvl += 1;
-          this.hp = this.maxhp;
-          this.mp = this.maxmp;
-          this.performancepoints += 10;
-          lvlinf = lvldata[this.lvl];
+            this.xp -= lvlinf;
+            this.lvl += 1;
+            this.hp = this.maxhp;
+            this.mp = this.maxmp;
+            this.performancepoints += 10;
+            lvlinf = lvldata[this.lvl];
         }
 
     }
-    
+
 }
 
 class Mob {
@@ -1665,20 +1665,29 @@ class PlayerFrame extends Phaser.Scene {
         this.hpmpbar.fillStyle(0x0000ff, 1);
         this.hpmpbar.fillRect(12, 45, 198, 15);
         this.mpText = this.add.text(12, 45, player.mp, { fontSize: '20px', fill: '#000' });
+        this.lasthp = 0;
+        this.lastmp = 0;
 
     }
 
     update() {
 
-        this.hpText.setText(player.hp);
-        this.mpText.setText(player.mp);
+        if (this.lasthp != player.hp || this.lastmp != player.mp) {
 
-        this.hpmpbar.clear();
+            this.hpText.setText(player.hp);
+            this.mpText.setText(player.mp);
+            
+            this.hpmpbar.clear();
 
-        this.hpmpbar.fillStyle(0xff0000, 1);
-        this.hpmpbar.fillRect(12, 30, 198 * (player.hp / player.maxhp), 15);
-        this.hpmpbar.fillStyle(0x0000ff, 1);
-        this.hpmpbar.fillRect(12, 45, 198 * (player.mp / player.maxmp), 15);
+            this.hpmpbar.fillStyle(0xff0000, 1);
+            this.hpmpbar.fillRect(12, 30, 198 * (player.hp / player.maxhp), 15);
+            this.hpmpbar.fillStyle(0x0000ff, 1);
+            this.hpmpbar.fillRect(12, 45, 198 * (player.mp / player.maxmp), 15);
+
+            this.lasthp = player.hp;
+            this.lastmp = player.mp;
+
+        }
 
     }
 
@@ -2954,19 +2963,19 @@ class PlayerQuests extends Phaser.Scene {
 
     cancelQuest() {
         let question = 'Вы действительно хотите отказаться от задания '
-        + this.selectedquest.name + ' ?. Прогресс задания будет утерян.';
+            + this.selectedquest.name + ' ?. Прогресс задания будет утерян.';
         scene_Question.ask(question, scene_PlayerQuests, this.selectedquest)
     }
 
-    delete(value, element){
+    delete(value, element) {
 
-        if (value){
-            for (let i in player.quests){
-                if (player.quests[i].id == element.id){
-                    player.quests.splice(i,1);
+        if (value) {
+            for (let i in player.quests) {
+                if (player.quests[i].id == element.id) {
+                    player.quests.splice(i, 1);
                     element = null;
                     scene_PlayerQuests.closequestinfo();
-                    scene_PlayerQuests.open();       
+                    scene_PlayerQuests.open();
                 }
             }
         }
@@ -3022,8 +3031,8 @@ class Question extends Phaser.Scene {
 
     }
 
-    close(){
-        this.graphics.clear();  
+    close() {
+        this.graphics.clear();
         this.question.setText('');
         this.scenelink = null;
         this.element = null;
@@ -3986,15 +3995,15 @@ class NpcDialoge extends Phaser.Scene {
                     continue;
                 }
 
-                if (quest.chain != null){
+                if (quest.chain != null) {
                     let havequestchain = false;
-                    for (let pi in player.quests){
-                        if (player.quests[pi].id == quest.chain && player.quests[pi].passed){
+                    for (let pi in player.quests) {
+                        if (player.quests[pi].id == quest.chain && player.quests[pi].passed) {
                             havequestchain = true;
-                            break;    
+                            break;
                         }
                     }
-                    if (!havequestchain){
+                    if (!havequestchain) {
                         continue;
                     }
                 }
@@ -4122,15 +4131,15 @@ class NpcDialoge extends Phaser.Scene {
                     continue;
                 }
                 else {
-                    if (quest.chain != null){
+                    if (quest.chain != null) {
                         let havequestchain = false;
-                        for (let pi in player.quests){
-                            if (player.quests[pi].id == quest.chain && player.quests[pi].passed){
+                        for (let pi in player.quests) {
+                            if (player.quests[pi].id == quest.chain && player.quests[pi].passed) {
                                 havequestchain = true;
-                                break;    
+                                break;
                             }
                         }
-                        if (!havequestchain){
+                        if (!havequestchain) {
                             continue;
                         }
                     }
@@ -4359,34 +4368,34 @@ class NpcDialoge extends Phaser.Scene {
     }
 
     takeTheQuest() {
-      
-      let playerquest = null;
-      for (let i in player.quests) {
-        if (player.quests[i].id == this.selectedquest.id) {
-          playerquest = player.quests[i];
-          break;
+
+        let playerquest = null;
+        for (let i in player.quests) {
+            if (player.quests[i].id == this.selectedquest.id) {
+                playerquest = player.quests[i];
+                break;
+            }
         }
-      }
-      
-      if (playerquest == null) {
-        
-        if (this.selectedquest.outstanding == this.npc.id){
-          let quest = new Quest(this.selectedquest);
-          player.quests.push(quest);
+
+        if (playerquest == null) {
+
+            if (this.selectedquest.outstanding == this.npc.id) {
+                let quest = new Quest(this.selectedquest);
+                player.quests.push(quest);
+            }
+
+        } else {
+
+            if (this.selectedquest.recipient == this.npc.id
+                && playerquest.done) {
+                playerquest.passed = true;
+                player.addXp(playerquest.xp);
+                player.gold += playerquest.gold;
+                scene_XpBar.updatexpbar();
+            }
+
         }
-        
-      } else {
-        
-        if (this.selectedquest.recipient == this.npc.id 
-        && playerquest.done) {
-          playerquest.passed = true;
-          player.addXp(playerquest.xp);
-          player.gold += playerquest.gold;
-          scene_XpBar.updatexpbar();
-        }
-        
-      }
-        
+
         this.openQuestsList();
 
     }
