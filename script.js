@@ -11,6 +11,7 @@ const playerStatus = { Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn'
 const itemType = { Runestone: 'Runestone', Equipment: 'Equipment', Meal: 'Meal', Drink: 'Drink' };
 const questCondition = { Kill: 'Kill', Sbor: 'Sbor' };
 const dialogePage = { Main: 'Main', QuestsList: 'QuestsList', QuestsElement: 'QuestsElement' };
+const rewardTypy = {Choice: 'Choice', All: 'All'}
 const equipType = {};
 var player;
 var players = [];
@@ -193,12 +194,6 @@ loot.push({
     'chance': 20
 })
 
-loot.push({
-    'item': { id: 10, name: 'spell4', description: ['Рунный камушек четвертого скила', 'Вставлять в таблицу камней'], image: 'spell4', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 },
-    'quantity': 1,
-    'chance': 10
-})
-
 var questdata = [];
 
 questdata.push({
@@ -210,38 +205,32 @@ questdata.push({
     recipient: 7,
     xp: 100,
     gold: 100,
+    reward: [{id: 10, quantity: 1, quantitytext: null, sprite: null}],
+    rewardtypy: rewardTypy.All,
     chain: null,
     done: false,
     passed: false
-});
 
-questdata.push({
-    id: 0,
-    name: 'Гаси чушпанселов',
-    description: ['Что то много чушпанселов развелось в округе, надо шугануть', 'Убей 5 чушпанов'],
-    condition: [{ condition: questCondition.Kill, target: 3, quantity: 5, currentquantity: 0 }],
-    outstanding: 6,
-    recipient: 8,
-    xp: 200,
-    gold: 200,
-    chain: 0,
-    done: false,
-    passed: false
 });
 
 questdata.push({
     id: 1,
     name: 'Гаси чушпанселов',
     description: ['Что то много чушпанселов развелось в округе, надо шугануть', 'Убей 5 чушпанов'],
-    condition: [{ condition: questCondition.Kill, target: 3, quantity: 2, currentquantity: 0 }],
-    outstanding: 6,
-    recipient: 8,
+    condition: [{ condition: questCondition.Kill, target: 3, quantity: 5, currentquantity: 0 }],
+    outstanding: 8,
+    recipient: 9,
     xp: 200,
     gold: 200,
+    reward: [{id: 1, quantity: 1, quantitytext: null, sprite: null}, 
+            {id: 2, quantity: 2, quantitytext: null, sprite: null},
+            {id: 3, quantity: 2, quantitytext: null, sprite: null}],
+    rewardtypy: rewardTypy.All,
     chain: 0,
     done: false,
     passed: false
 });
+
 
 questdata.push({
     id: 2,
@@ -252,7 +241,10 @@ questdata.push({
     recipient: 6,
     xp: 500,
     gold: 500,
-    chain: null,
+    reward: [{id: 1, quantity: 1, quantitytext: null, sprite: null}, 
+        {id: 2, quantity: 2, quantitytext: null, sprite: null}],
+    rewardtypy: rewardTypy.Choice,
+    chain: 1,
     done: false,
     passed: false
 });
@@ -691,6 +683,17 @@ class Player {
 
     }
 
+    havequest(quest) {
+
+        for (let i in player.quests) {
+            if (player.quests[i].id == quest.id) {
+                return player.quests[i];
+            }
+        }
+
+        return null;
+    }
+
 }
 
 class Mob {
@@ -1033,7 +1036,6 @@ class Mob {
 
     }
 
-
 }
 
 class NPC {
@@ -1045,6 +1047,12 @@ class NPC {
         this.id = data.id;
         this.uid = data.uid;
         this.name = data.name;
+
+        this.nametext = scene_main.add.text(data.respx - 25, data.respy - 35, this.name, { fontSize: '15px', fill: 'white' });
+        this.nametext.setStroke('black', 5);
+
+        this.questindicator = null;
+
         if (data.skin == 'Female1') {
             this.sprite.anims.play('f1turn');
         }
@@ -1135,7 +1143,6 @@ class XPBar extends Phaser.Scene {
         this.xpbar.fillRect(51, windowInnerHeight - 30, xp, 18);
 
     }
-
 
 }
 
@@ -1676,7 +1683,7 @@ class PlayerFrame extends Phaser.Scene {
 
             this.hpText.setText(player.hp);
             this.mpText.setText(player.mp);
-            
+
             this.hpmpbar.clear();
 
             this.hpmpbar.fillStyle(0xff0000, 1);
@@ -1690,7 +1697,6 @@ class PlayerFrame extends Phaser.Scene {
         }
 
     }
-
 
 }
 
@@ -1798,7 +1804,6 @@ class TargetFrame extends Phaser.Scene {
 
 
     }
-
 
 }
 
@@ -2220,6 +2225,7 @@ class CastFrame extends Phaser.Scene {
 }
 
 class Spell {
+
     constructor(data) {
         this.id = data.id;
         this.damage = data.damage;
@@ -2387,73 +2393,10 @@ class CharFrame extends Phaser.Scene {
             }
         });
 
-        this.input.on('drag', (pointer, obj, dragX, dragY) => {
-            // obj.setPosition(dragX, dragY);
-            // scene_BagFrame.dragobg = obj;
-        });
-
-        this.input.on('pointerup', function (pointer, obj) {
-            // if (obj.length == 0) {
-            //     return;
-            // }
-            // let dragobg = scene_BagFrame.dragobg;
-            // let dragcell = null;
-            // let dragitem = null;
-            // for (let i in player.bag) {
-            //     if (player.bag[i].item != null) {
-            //         if (player.bag[i].item.sprite == dragobg) {
-            //             dragcell = player.bag[i];
-            //             dragitem = dragcell.item;
-            //             break
-            //         }
-            //     }
-            // }
-
-            // if (dragitem != null) {
-            //     let distance = Math.sqrt((dragitem.sprite.x - dragcell.x) ** 2 + (dragitem.sprite.y - dragcell.y) ** 2);
-
-            //     if (distance <= 25) {
-            //         dragitem.sprite.setPosition(dragcell.x, dragcell.y);
-            //         return
-            //     }
-
-            //     let replacecell = null;
-
-            //     for (let i in player.bag) {
-            //         if (dragcell.index == i) {
-            //             continue;
-            //         }
-            //         let replaceelement = player.bag[i];
-            //         let replacedistance = Math.sqrt((dragitem.sprite.x - replaceelement.x) ** 2 + (dragitem.sprite.y - replaceelement.y) ** 2);
-            //         if (replacedistance <= 25) {
-            //             replacecell = replaceelement;
-            //             break;
-            //         }
-            //     }
-
-            //     if (replacecell == null) {
-            //         dragitem.sprite.setPosition(dragcell.x, dragcell.y);
-            //     }
-            //     else {
-
-            //         let replaceitem = replacecell.item;
-            //         replaceitem = replacecell.item;
-            //         replacecell.item = dragitem;
-            //         dragitem.sprite.setPosition(replacecell.x, replacecell.y);
-            //         dragcell.item = replaceitem;
-            //         if (replaceitem != null) {
-            //             replaceitem.sprite.setPosition(dragcell.x, dragcell.y);
-            //         }
-
-            //     }
-            // }
-
-        });
 
     }
 
     open() {
-
 
         this.isopen = true;
 
@@ -2491,88 +2434,6 @@ class CharFrame extends Phaser.Scene {
             this.luckplus.visible = true;
 
         }
-
-
-
-        return;
-
-        let xsize = windowInnerWidth / 2 + 50;
-        let ysize = windowInnerHeight / 2 - 200;
-
-        let columns = Math.floor(Math.sqrt(player.bag.length)) + 1;
-
-        let rows = Math.floor(player.bag.length / columns);
-
-        if (rows < player.bag.length / columns) {
-            rows += 1;
-        }
-
-        this.graphics.fillStyle(0x0000ff, 0.5);
-        this.graphics.fillRect(xsize, ysize, columns * 50, rows * 50 + 25);
-
-        let cellxsize = xsize;
-        let cellysize = ysize + 20;
-
-        this.graphics.fillStyle(0x0000ff);
-        this.graphics.fillRect(xsize, ysize, columns * 50, rows + 15);
-
-        this.graphics.fillStyle(0x000000);
-        this.graphics.fillRect(xsize + columns * 50 - 20, ysize, 20, rows + 15);
-
-        this.ClsdBtn.visible = true;
-        this.ClsdBtn.setPosition(xsize + columns * 50 - 10, ysize + 11)
-
-        cellysize = ysize + 25;
-
-        let counterstring = 0;
-
-        for (let i in player.bag) {
-
-            if (i == 0) {
-                cellxsize = cellxsize + 5;
-                cellysize = cellysize + 5;
-            }
-            else if (i % columns == 0) {
-                counterstring = counterstring + 1;
-                cellxsize = xsize;
-                cellysize = ysize + 25 + 50 * counterstring;
-
-                cellxsize = cellxsize + 5;
-                cellysize = cellysize + 5;
-            }
-            else {
-                cellxsize = cellxsize + 45;
-                cellysize = cellysize - 5;
-            }
-
-            this.graphics.fillStyle(0x000000, 0.5);
-            this.graphics.fillRect(cellxsize, cellysize, 40, 40);
-
-            cellxsize = cellxsize + 5;
-            cellysize = cellysize + 5;
-            this.graphics.fillStyle(0x000000, 1);
-            this.graphics.fillRect(cellxsize, cellysize, 30, 30);
-
-            let bagcell = player.bag[i];
-            bagcell.x = cellxsize + 16;
-            bagcell.y = cellysize + 16;
-            let item = bagcell.item;
-            if (item != null) {
-
-                if (item.name != null) {
-                    if (item.sprite == null) {
-                        item.sprite = this.add.sprite(bagcell.x, bagcell.y, item.image).setInteractive();
-                        scene_BagFrame.input.setDraggable(item.sprite);
-                    }
-                    item.sprite.visible = true;
-                }
-                item.sprite.setPosition(bagcell.x, bagcell.y);
-
-            }
-
-        }
-
-        this.isopen = true;
 
     }
 
@@ -2976,6 +2837,7 @@ class PlayerQuests extends Phaser.Scene {
                     element = null;
                     scene_PlayerQuests.closequestinfo();
                     scene_PlayerQuests.open();
+                    updateQuestIndicators(element);
                 }
             }
         }
@@ -3544,7 +3406,6 @@ class DropFrame extends Phaser.Scene {
         });
 
     }
-
 
     opendrop() {
 
@@ -4382,6 +4243,7 @@ class NpcDialoge extends Phaser.Scene {
             if (this.selectedquest.outstanding == this.npc.id) {
                 let quest = new Quest(this.selectedquest);
                 player.quests.push(quest);
+                updateQuestIndicators(quest);
             }
 
         } else {
@@ -4392,6 +4254,7 @@ class NpcDialoge extends Phaser.Scene {
                 player.addXp(playerquest.xp);
                 player.gold += playerquest.gold;
                 scene_XpBar.updatexpbar();
+                updateQuestIndicators(playerquest);
             }
 
         }
@@ -4642,20 +4505,20 @@ class MainScene extends Phaser.Scene {
             CreateNPC(npcsdata[i]);
         }
 
-        for (let i in questdata) {
+        for (let i in questdata){
             let quest = new Quest(questdata[i]);
-            for (let ni in npcs) {
+            for (let ni in npcs){
                 let npc = npcs[ni];
-                if (npc.id == quest.outstanding || npc.id == quest.recipient) {
-                    npc.quests.push(quest);
-                    if (quest.recipient == quest.outstanding) {
-                        break;
-                    }
+                if (quest.recipient == npc.id || quest.outstanding == npc.id){
+                    npc.quests.push(quest);  
                 }
-
+                if (quest.recipient == npc.id && quest.outstanding == npc.id){
+                    break;
+                }
             }
         }
 
+        updateQuestIndicators(null);
 
     }
 
@@ -4683,6 +4546,93 @@ class MainScene extends Phaser.Scene {
             player.update();
         }
     }
+
+}
+
+function updateQuestIndicators(element) {
+
+    for (let i in npcs){
+
+        let npc = npcs[i];
+
+        // if (element != null){
+        //     if (element.recipient != npc.id && element.outstanding != npc.id){
+        //         continue;
+        //     }
+        // }
+
+        if (npc.questindicator != null){
+            npc.questindicator.destroy();
+        }
+
+        let havequestforplayer = [];
+
+        for (let qi in npc.quests){
+            let quest = npc.quests[qi];
+            let playerquest = player.havequest(quest);
+            if (playerquest != null){
+                if (playerquest.passed){
+                    continue;
+                }
+                if (playerquest.recipient == npc.id){
+
+                    if (playerquest.done){
+                        npc.questindicator = scene_main.add.text(npc.sprite.x, npc.sprite.y - 70, '?', { fontSize: '30px', fill: 'yellow' });
+                        npc.questindicator.setStroke('black', 10);
+                    }
+                    else{
+                        npc.questindicator = scene_main.add.text(npc.sprite.x, npc.sprite.y - 70, '?', { fontSize: '30px', fill: 'white' });
+                        npc.questindicator.setStroke('black', 10);
+                    }
+
+                    break;
+                }
+
+            }
+            else{
+                if (quest.outstanding == npc.id){
+                    havequestforplayer.push(quest);
+                }
+            }
+
+        }
+
+        if (havequestforplayer.length){
+
+            let uotindicatorquest = false;
+
+            for (let qfp in havequestforplayer){
+
+                let questforplayer = havequestforplayer[qfp];
+
+                if (questforplayer.chain == null){
+                    uotindicatorquest = true;
+                    break;   
+                }
+                else{
+                    for (let pq in player.quests){
+                        let plquest = player.quests[pq];
+                        if (plquest.passed && plquest.id == questforplayer.chain){
+                            uotindicatorquest = true;
+                            break;   
+                        }
+                    }
+                    if (uotindicatorquest){
+                        break;
+                    }
+                }
+
+            }
+
+            if (uotindicatorquest){
+                npc.questindicator = scene_main.add.text(npc.sprite.x, npc.sprite.y - 70, '!', { fontSize: '30px', fill: 'yellow' });
+                npc.questindicator.setStroke('black', 10);
+            }
+        }
+
+
+    }
+
 
 }
 
@@ -4800,6 +4750,7 @@ function checkQuests(questsarray) {
 
         if (questdone) {
             quest.done = true;
+            updateQuestIndicators(quest);
         }
 
     }
@@ -4829,7 +4780,7 @@ let config = {
     physics: {
         default: 'arcade',
         arcade: {
-            debug: true
+            debug: false
         }
     },              // Размеры холста в целых числах
     scene: MainScene                  // Сцена
