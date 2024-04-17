@@ -6,12 +6,12 @@ var client_id = Date.now()
 
 
 const mobStatus = { Chase: 'Chase', Attack: 'Attack', Revert: 'Revert', Expectation: 'Expectation', Dead: 'Dead', Respawn: 'Respawn' }
-const targetType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC' }
+const globalType = { Player: 'Player', Mob: 'Mob', NPC: 'NPC', ItemElement: 'Item' }
 const playerStatus = { Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn', Battle: 'Battle' }
 const itemType = { Runestone: 'Runestone', Equipment: 'Equipment', Meal: 'Meal', Drink: 'Drink' };
-const questCondition = { Kill: 'Kill', Sbor: 'Sbor' };
+const questCondition = { Kill: 'Kill', Collecting: 'Collecting' };
 const dialogePage = { Main: 'Main', QuestsList: 'QuestsList', QuestsElement: 'QuestsElement' };
-const rewardTypy = {Choice: 'Choice', All: 'All'}
+const rewardTypy = { Choice: 'Choice', All: 'All' }
 const equipType = {};
 var player;
 var players = [];
@@ -19,6 +19,11 @@ var bombs;
 var mobs = [];
 var npcs = [];
 var drops = [];
+
+var keyW;
+var  keyA;
+var  keyS;
+var  keyD;
 
 var mobsdata = [
     { "uid": 1, "id": 2, "skin": "bomb", "name": "Чушпан", "hp": 50, "maxhp": 50, "mp": 30, "maxmp": 30, "x": 100, "y": 100, "respx": 100, "respy": 100, "status": "Expectation", "lvl": 1, xp: 25 },
@@ -74,6 +79,18 @@ var spellsdata = [];
 var spells = [];
 
 let exemp = [];
+
+let items = [];
+items.push({ id: 1, name: 'Apple', description: ['Вроде яблоко', 'Но не уверен', '', , 'Проверка отступа'], image: 'Apple', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 });
+items.push({ id: 2, name: 'Bread', description: ['Просто хлебушек', 'Жрать низя'], image: 'Bread', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 });
+items.push({ id: 3, name: 'Cheese', description: ['Сырок'], image: 'Cheese', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 10 });
+items.push({ id: 4, name: 'Ham', description: ['Окорок'], image: 'Ham', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 5 });
+items.push({ id: 5, name: 'Mushroom', description: ['Гриб'], image: 'Mushroom', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 3 });
+items.push({ id: 6, name: 'Wine', description: ['Винишка много не бывает'], image: 'Wine', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 });
+items.push({ id: 7, name: 'Beer', description: ['Жидкое злато'], image: 'Beer', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 });
+items.push({ id: 8, name: 'spell2', description: ['Рунный камушек второго скила', 'Вставлять в таблицу камней'], image: 'spell2', itemtype: itemType.Runestone, equiptype: null, spell: 2, stack: false, stacksize: 0 });
+items.push({ id: 9, name: 'spell3', description: ['Рунный камушек третьего скила', 'Вставлять в таблицу камней'], image: 'spell3', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 });
+items.push({ id: 11, name: 'spell1', description: ['Рунный камушек второго скила', 'Вставлять в таблицу камней'], image: 'spell1', itemtype: itemType.Runestone, equiptype: null, spell: 1, stack: false, stacksize: 0 });
 
 exemp = [{
     startx: - 250, starty: - 50, x: 0, y: 0,
@@ -141,55 +158,55 @@ spellsdata.push({ 'id': 4, damage: 100, mp: 25, cooldown: 5000, distance: 300, '
 var loot = []
 
 loot.push({
-    'item': { id: 1, name: 'Apple', description: ['Вроде яблоко', 'Но не уверен', '', , 'Проверка отступа'], image: 'Apple', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 },
+    'item': 1,
     'quantity': 1,
     'chance': 100
 })
 
 loot.push({
-    'item': { id: 2, name: 'Bread', description: ['Просто хлебушек', 'Жрать низя'], image: 'Bread', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 20 },
+    'item': 2,
     'quantity': 1,
     'chance': 90
 })
 
 loot.push({
-    'item': { id: 3, name: 'Cheese', description: ['Сырок'], image: 'Cheese', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 10 },
+    'item': 3,
     'quantity': 1,
     'chance': 80
 })
 
 loot.push({
-    'item': { id: 4, name: 'Ham', description: ['Окорок'], image: 'Ham', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 5 },
+    'item': 4,
     'quantity': 1,
     'chance': 70
 })
 
 loot.push({
-    'item': { id: 5, name: 'Mushroom', description: ['Гриб'], image: 'Mushroom', itemtype: itemType.Meal, equiptype: null, spell: null, stack: true, stacksize: 3 },
+    'item': 5,
     'quantity': 1,
     'chance': 50
 })
 
 loot.push({
-    'item': { id: 6, name: 'Wine', description: ['Винишка много не бывает'], image: 'Wine', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 },
+    'item': 6,
     'quantity': 1,
     'chance': 25
 })
 
 loot.push({
-    'item': { id: 7, name: 'Beer', description: ['Жидкое злато'], image: 'Beer', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 },
+    'item': 7,
     'quantity': 1,
     'chance': 10
 })
 
 loot.push({
-    'item': { id: 8, name: 'spell2', description: ['Рунный камушек второго скила', 'Вставлять в таблицу камней'], image: 'spell2', itemtype: itemType.Runestone, equiptype: null, spell: 2, stack: false, stacksize: 0 },
+    'item': 8,
     'quantity': 1,
     'chance': 40
 })
 
 loot.push({
-    'item': { id: 9, name: 'spell3', description: ['Рунный камушек третьего скила', 'Вставлять в таблицу камней'], image: 'spell3', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 },
+    'item': 9,
     'quantity': 1,
     'chance': 20
 })
@@ -205,7 +222,7 @@ questdata.push({
     recipient: 7,
     xp: 100,
     gold: 100,
-    reward: [{id: 10, quantity: 1, quantitytext: null, sprite: null}],
+    reward: [{ id: 10, quantity: 1, quantitytext: null, sprite: null }],
     rewardtypy: rewardTypy.All,
     chain: null,
     done: false,
@@ -222,15 +239,14 @@ questdata.push({
     recipient: 9,
     xp: 200,
     gold: 200,
-    reward: [{id: 1, quantity: 1, quantitytext: null, sprite: null}, 
-            {id: 2, quantity: 2, quantitytext: null, sprite: null},
-            {id: 3, quantity: 2, quantitytext: null, sprite: null}],
+    reward: [{ id: 1, quantity: 1, quantitytext: null, sprite: null },
+    { id: 2, quantity: 2, quantitytext: null, sprite: null },
+    { id: 3, quantity: 2, quantitytext: null, sprite: null }],
     rewardtypy: rewardTypy.All,
     chain: 0,
     done: false,
     passed: false
 });
-
 
 questdata.push({
     id: 2,
@@ -241,12 +257,47 @@ questdata.push({
     recipient: 6,
     xp: 500,
     gold: 500,
-    reward: [{id: 1, quantity: 1, quantitytext: null, sprite: null}, 
-        {id: 2, quantity: 2, quantitytext: null, sprite: null}],
+    reward: [{ id: 1, quantity: 1, quantitytext: null, sprite: null },
+    { id: 2, quantity: 2, quantitytext: null, sprite: null }],
     rewardtypy: rewardTypy.Choice,
     chain: 1,
     done: false,
     passed: false
+});
+
+questdata.push({
+    id: 3,
+    name: 'Пивандопола',
+    description: ['Принеси бутылку пивандополы'],
+    condition: [{ condition: questCondition.Collecting, target: 7, quantity: 1, currentquantity: 0 }],
+    outstanding: 6,
+    recipient: 6,
+    xp: 500,
+    gold: 100,
+    reward: [{ id: 10, quantity: 1, quantitytext: null, sprite: null }],
+    rewardtypy: rewardTypy.All,
+    chain: null,
+    done: false,
+    passed: false
+
+});
+
+questdata.push({
+    id: 4,
+    name: 'Кущить хочется',
+    description: ['Сообрази на пару бутеров'],
+    condition: [{ condition: questCondition.Collecting, target: 2, quantity: 2, currentquantity: 0 },
+    { condition: questCondition.Collecting, target: 3, quantity: 2, currentquantity: 0 }],
+    outstanding: 6,
+    recipient: 6,
+    xp: 500,
+    gold: 100,
+    reward: [{ id: 10, quantity: 1, quantitytext: null, sprite: null }],
+    rewardtypy: rewardTypy.All,
+    chain: null,
+    done: false,
+    passed: false
+
 });
 
 var lvldata = { 1: 100, 2: 200, 3: 300, 4: 400, 5: 500, 6: 600, 7: 700, 8: 800, 9: 900, 10: 0 };
@@ -297,7 +348,7 @@ class Player {
         this.status = playerStatus.Traveling;
         this.sprite = sprite;
         this.thisplayer = true;
-        this.type = targetType.Player
+        this.globaltype = globalType.Player
         this.name = String(client_id);
         this.lvl = 1;
         this.xp = 0;
@@ -519,10 +570,10 @@ class Player {
             }
 
             if (!joystick) {
-                left = cursors.left.isDown;
-                right = cursors.right.isDown;
-                up = cursors.up.isDown;
-                down = cursors.down.isDown;
+                left = cursors.left.isDown || keyA.isDown;
+                right = cursors.right.isDown || keyD.isDown;
+                up = cursors.up.isDown || keyW.isDown;
+                down = cursors.down.isDown || keyS.isDown;
             }
 
             if (left && up) {
@@ -700,7 +751,7 @@ class Mob {
 
     constructor(data) {
         this.sprite = bombs.create(data.x, data.y, data.skin).setScale(2).setInteractive();
-        this.type = targetType.Mob
+        this.globaltype = globalType.Mob
         this.id = data.id;
         this.uid = data.uid;
         this.name = data.name;
@@ -971,7 +1022,12 @@ class Mob {
                 if (rand > element.chance) {
                     continue
                 }
-                let item = element.item;
+                let item = null;
+                for (let ii in items){
+                    if (element.item == items[ii].id){
+                        item = items[ii];  
+                    }
+                }
                 drop.push(
                     {
                         'item': new Item(item),
@@ -988,37 +1044,7 @@ class Mob {
             drops.push(Chest);
         }
 
-        let questsarray = [];
-
-        for (let i in player.quests) {
-
-            let quest = player.quests[i];
-
-            if (quest.done || quest.passed) {
-                continue;
-            }
-
-            for (let ii in quest.condition) {
-                let condition = quest.condition[ii];
-                if (condition.condition != questCondition.Kill
-                    || condition.quantity == condition.currentquantity) {
-                    continue;
-                }
-
-                if (condition.target == this.id) {
-                    condition.currentquantity += 1;
-                    if (condition.quantity == condition.currentquantity) {
-                        questsarray.push(quest);
-                    }
-                }
-
-            }
-
-        }
-
-        if (questsarray.length) {
-            checkQuests(questsarray);
-        }
+        checkQuestCondition(this, 1);
 
     }
 
@@ -1043,7 +1069,7 @@ class NPC {
     constructor(data) {
 
         this.sprite = scene_main.physics.add.sprite(data.respx, data.respy, data.skin).setInteractive();
-        this.type = targetType.NPC
+        this.globaltype = globalType.NPC
         this.id = data.id;
         this.uid = data.uid;
         this.name = data.name;
@@ -1079,6 +1105,7 @@ class NPC {
 class Item {
     constructor(data) {
         this.id = data.id;
+        this.globaltype = globalType.ItemElement;
         this.name = data.name;
         this.description = data.description;
         this.image = data.image;
@@ -1364,6 +1391,7 @@ class ItemsSprites extends Phaser.Scene {
                 distance = Math.sqrt((dragitem.sprite.x - centralpanelelement.x) ** 2 + (dragitem.sprite.y - centralpanelelement.y) ** 2);
 
                 if (distance > 200) {
+                    checkQuestCondition(dragcell.item, -dragcell.quantity);
                     dragitem.sprite.destroy();
                     dragitem.sprite = null;
                     dragcell.item = null;
@@ -1767,14 +1795,14 @@ class TargetFrame extends Phaser.Scene {
                 if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 700) {
                     player.target = null;
                 }
-                if (player.target.type == targetType.NPC) {
+                if (player.target.globaltype == globalType.NPC) {
                     if (Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2) > 200) {
                         scene_NpcDialoge.closedialoge();
                     }
                 }
             }
 
-            if (player.target != null && player.target.type != targetType.NPC) {
+            if (player.target != null && player.target.globaltype != globalType.NPC) {
                 this.frback.visible = true;
                 this.hpmpbar.visible = true;
                 this.nameTexttarget.visible = true;
@@ -2801,13 +2829,28 @@ class PlayerQuests extends Phaser.Scene {
                     textcondition += ' ' + mob.name;
                 }
 
-                if (strcondition.currentquantity == strcondition.quantity) {
-                    textcondition += ' ✔';
+            }
+            else if (strcondition.condition == questCondition.Collecting){
+                textcondition += 'Получено ' + strcondition.currentquantity + '/' + strcondition.quantity;
+
+                let item = null;
+                for (let ni in item) {
+                    if (items[ni].id == strcondition.target) {
+                        item = items[ni];
+                        break;
+                    }
+                }
+                if (item != null) {
+                    textcondition += ' ' + mob.name;
                 }
 
-                description.push(textcondition);
-
             }
+
+            if (strcondition.currentquantity == strcondition.quantity) {
+                textcondition += ' ✔';
+            }
+
+            description.push(textcondition);
         }
 
         description.push('');
@@ -3327,6 +3370,7 @@ class DropFrame extends Phaser.Scene {
                             if (!loot.item.stack) {
                                 player.bag[bi].item = loot.item;
                                 player.bag[bi].quantity = loot.quantity;
+                                checkQuestCondition(loot.item, loot.quantity);
                                 loot.item.sprite.destroy();
                                 loot.item.sprite = null;
                                 scene_DropFrame.drop.loot.splice(i, 1);
@@ -3352,11 +3396,14 @@ class DropFrame extends Phaser.Scene {
                         if (loot.quantity > 0 && player.bag[bi].item.id == loot.item.id
                             && player.bag[bi].quantity < player.bag[bi].item.stacksize) {
                             player.bag[bi].quantity += loot.quantity;
+                            let quantityforquest = loot.quantity;
                             loot.quantity = 0;
                             if (player.bag[bi].quantity > player.bag[bi].item.stacksize) {
                                 loot.quantity = player.bag[bi].quantity - player.bag[bi].item.stacksize;
+                                quantityforquest -= loot.quantity;
                                 player.bag[bi].quantity = player.bag[bi].item.stacksize;
                             }
+                            checkQuestCondition(loot.item, quantityforquest);
                             if (loot.quantity == 0) {
                                 loot.item.sprite.destroy();
                                 loot.item.sprite = null;
@@ -3382,6 +3429,7 @@ class DropFrame extends Phaser.Scene {
                     if (firstEmptyCell != null) {
                         player.bag[firstEmptyCell].item = loot.item;
                         player.bag[firstEmptyCell].quantity = loot.quantity;
+                        checkQuestCondition(loot.item, loot.quantity);
                         loot.item.sprite.destroy();
                         loot.item.sprite = null;
                         scene_DropFrame.drop.loot.splice(i, 1);
@@ -4195,13 +4243,34 @@ class NpcDialoge extends Phaser.Scene {
                     textcondition += ' ' + mob.name;
                 }
 
-                if (strcondition.currentquantity == strcondition.quantity) {
-                    textcondition += ' ✔';
+            }
+            else if (strcondition.condition == questCondition.Collecting){
+                if (outputcurrentquantity) {
+
+                    textcondition += 'Собрано ' + strcondition.currentquantity + '/' + strcondition.quantity;
+                }
+                else {
+                    textcondition += 'Собрано ' + strcondition.quantity;
                 }
 
-                description.push(textcondition);
-
+                let item = null;
+                for (let ni in items) {
+                    if (items[ni].id == strcondition.target) {
+                        item = items[ni];
+                        break;
+                    }
+                }
+                if (item != null) {
+                    textcondition += ' ' + item.name;
+                }  
             }
+
+            if (strcondition.currentquantity == strcondition.quantity) {
+                textcondition += ' ✔';
+            }
+
+            description.push(textcondition);
+
         }
 
         description.push('');
@@ -4243,6 +4312,7 @@ class NpcDialoge extends Phaser.Scene {
             if (this.selectedquest.outstanding == this.npc.id) {
                 let quest = new Quest(this.selectedquest);
                 player.quests.push(quest);
+                checkPlayerQuest(quest);
                 updateQuestIndicators(quest);
             }
 
@@ -4317,6 +4387,11 @@ class MainScene extends Phaser.Scene {
         map = this.make.tilemap({ key: 'map' })
         const tiles = map.addTilesetImage('SummerTiles', 'SummerTiles')
         const layer = map.createLayer('layer1', tiles, 0, 0);
+
+        keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+        keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
 
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
@@ -4505,14 +4580,14 @@ class MainScene extends Phaser.Scene {
             CreateNPC(npcsdata[i]);
         }
 
-        for (let i in questdata){
+        for (let i in questdata) {
             let quest = new Quest(questdata[i]);
-            for (let ni in npcs){
+            for (let ni in npcs) {
                 let npc = npcs[ni];
-                if (quest.recipient == npc.id || quest.outstanding == npc.id){
-                    npc.quests.push(quest);  
+                if (quest.recipient == npc.id || quest.outstanding == npc.id) {
+                    npc.quests.push(quest);
                 }
-                if (quest.recipient == npc.id && quest.outstanding == npc.id){
+                if (quest.recipient == npc.id && quest.outstanding == npc.id) {
                     break;
                 }
             }
@@ -4551,7 +4626,7 @@ class MainScene extends Phaser.Scene {
 
 function updateQuestIndicators(element) {
 
-    for (let i in npcs){
+    for (let i in npcs) {
 
         let npc = npcs[i];
 
@@ -4561,26 +4636,27 @@ function updateQuestIndicators(element) {
         //     }
         // }
 
-        if (npc.questindicator != null){
+        if (npc.questindicator != null) {
             npc.questindicator.destroy();
+            npc.questindicator = null;
         }
 
         let havequestforplayer = [];
 
-        for (let qi in npc.quests){
+        for (let qi in npc.quests) {
             let quest = npc.quests[qi];
             let playerquest = player.havequest(quest);
-            if (playerquest != null){
-                if (playerquest.passed){
+            if (playerquest != null) {
+                if (playerquest.passed) {
                     continue;
                 }
-                if (playerquest.recipient == npc.id){
+                if (playerquest.recipient == npc.id) {
 
-                    if (playerquest.done){
+                    if (playerquest.done) {
                         npc.questindicator = scene_main.add.text(npc.sprite.x, npc.sprite.y - 70, '?', { fontSize: '30px', fill: 'yellow' });
                         npc.questindicator.setStroke('black', 10);
                     }
-                    else{
+                    else {
                         npc.questindicator = scene_main.add.text(npc.sprite.x, npc.sprite.y - 70, '?', { fontSize: '30px', fill: 'white' });
                         npc.questindicator.setStroke('black', 10);
                     }
@@ -4589,42 +4665,42 @@ function updateQuestIndicators(element) {
                 }
 
             }
-            else{
-                if (quest.outstanding == npc.id){
+            else {
+                if (quest.outstanding == npc.id) {
                     havequestforplayer.push(quest);
                 }
             }
 
         }
 
-        if (havequestforplayer.length){
+        if (havequestforplayer.length && npc.questindicator == null) {
 
             let uotindicatorquest = false;
 
-            for (let qfp in havequestforplayer){
+            for (let qfp in havequestforplayer) {
 
                 let questforplayer = havequestforplayer[qfp];
 
-                if (questforplayer.chain == null){
+                if (questforplayer.chain == null) {
                     uotindicatorquest = true;
-                    break;   
+                    break;
                 }
-                else{
-                    for (let pq in player.quests){
+                else {
+                    for (let pq in player.quests) {
                         let plquest = player.quests[pq];
-                        if (plquest.passed && plquest.id == questforplayer.chain){
+                        if (plquest.passed && plquest.id == questforplayer.chain) {
                             uotindicatorquest = true;
-                            break;   
+                            break;
                         }
                     }
-                    if (uotindicatorquest){
+                    if (uotindicatorquest) {
                         break;
                     }
                 }
 
             }
 
-            if (uotindicatorquest){
+            if (uotindicatorquest) {
                 npc.questindicator = scene_main.add.text(npc.sprite.x, npc.sprite.y - 70, '!', { fontSize: '30px', fill: 'yellow' });
                 npc.questindicator.setStroke('black', 10);
             }
@@ -4753,6 +4829,94 @@ function checkQuests(questsarray) {
             updateQuestIndicators(quest);
         }
 
+    }
+
+}
+
+function checkPlayerQuest(quest) {
+
+    let counter = 0;
+
+    for (let i in quest.condition) {
+        let condition = quest.condition[i];
+        if (condition.condition != questCondition.Collecting
+            || condition.quantity == condition.currentquantity) {
+            continue;
+        }
+
+        for (let bi in player.bag) {
+
+            let bagcell = player.bag[bi];
+
+            if (player.bag[bi].item == null) {
+                continue;
+            }
+
+            if (bagcell.item.id == condition.target) {
+                condition.currentquantity += bagcell.quantity;
+                if (condition.currentquantity >= condition.quantity) {
+                    condition.currentquantity = condition.quantity;
+                    counter += 1;
+                    break;
+                }
+            }
+
+        }
+
+    }
+
+    if (counter == quest.condition.length){
+        quest.done = true;
+        updateQuestIndicators(quest);
+    }
+
+}
+
+function checkQuestCondition(element, quantity) {
+
+    let questsarray = [];
+
+    for (let i in player.quests) {
+
+        let quest = player.quests[i];
+
+        if (quest.done || quest.passed) {
+            continue;
+        }
+
+        for (let ii in quest.condition) {
+            let condition = quest.condition[ii];
+
+            if (condition.quantity == condition.currentquantity) {
+                continue;
+            }
+
+            if (element.globaltype == globalType.Mob) {
+                if (condition.condition != questCondition.Kill) {
+                    continue;
+                }
+            }
+            else {
+                if (element.globaltype == globalType.ItemElement) {
+                    if (condition.condition != questCondition.Collecting) {
+                        continue;
+                    }
+                }
+            }
+
+            if (condition.target == element.id) {
+                condition.currentquantity += quantity;
+                if (condition.quantity == condition.currentquantity) {
+                    questsarray.push(quest);
+                }
+            }
+
+        }
+
+    }
+
+    if (questsarray.length) {
+        checkQuests(questsarray);
     }
 
 }
