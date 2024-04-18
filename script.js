@@ -4320,13 +4320,12 @@ class NpcDialoge extends Phaser.Scene {
 
             if (this.selectedquest.recipient == this.npc.id
                 && playerquest.done) {
-                if (checkDoneQuest(playerquest)) {
-                    playerquest.passed = true;
-                    player.addXp(playerquest.xp);
-                    player.gold += playerquest.gold;
-                    scene_XpBar.updatexpbar();
-                    updateQuestIndicators(playerquest);
-                }
+                playerquest.passed = true;
+                checkCollectingQuest(playerquest);
+                player.addXp(playerquest.xp);
+                player.gold += playerquest.gold;
+                scene_XpBar.updatexpbar();
+                updateQuestIndicators(playerquest);
             }
 
         }
@@ -4826,8 +4825,12 @@ function checkQuests(questsarray) {
             }
         }
 
-        if (questdone) {
+        if (questdone && !quest.done) {
             quest.done = true;
+            updateQuestIndicators(quest);
+        }
+        else if (!questdone && quest.done) {
+            quest.done = false;
             updateQuestIndicators(quest);
         }
 
@@ -4882,16 +4885,12 @@ function checkQuestCondition(element, quantity) {
 
         let quest = player.quests[i];
 
-        if (quest.done || quest.passed) {
+        if (quest.passed) {
             continue;
         }
 
         for (let ii in quest.condition) {
             let condition = quest.condition[ii];
-
-            if (condition.quantity == condition.currentquantity) {
-                continue;
-            }
 
             if (element.globaltype == globalType.Mob) {
                 if (condition.condition != questCondition.Kill) {
@@ -4907,8 +4906,17 @@ function checkQuestCondition(element, quantity) {
             }
 
             if (condition.target == element.id) {
-                condition.currentquantity += quantity;
-                if (condition.quantity == condition.currentquantity) {
+                if (quantity > 0 && condition.currentquantity == condition.quantity) {
+                    continue
+                }
+                else {
+                    condition.currentquantity += quantity;
+                    if (condition.currentquantity > condition.quantity) {
+                        condition.currentquantity = condition.quantity;
+                    }
+                    if (condition.currentquantity < 0){
+                        condition.currentquantity = 0;   
+                    }
                     questsarray.push(quest);
                 }
             }
@@ -4923,65 +4931,55 @@ function checkQuestCondition(element, quantity) {
 
 }
 
-function checkDoneQuest(playerquest) {
-
-    let resuls = true;
-
-    let bagcells = [];
-    let itemquantity = 0;
+function checkCollectingQuest(playerquest) {
 
     for (let i in playerquest.condition) {
-        if (!resuls) {
-            break;
-        }
+
         let condition = playerquest.condition[i];
-        if (condition.condition == questCondition.Kill) {
-            if (condition.quantity != condition.currentquantity) {
-                resuls = false;
-                break;
-            }
-            else if (condition.condition == questCondition.Collecting) {
-                for (let pb in player.bag) {
 
-                    let bagcell = player.bag[pb];
+        if (condition.condition == questCondition.Collecting) {
 
-                    if (bagcell.item == null) {
-                        continue;
-                    }
+            let conditionquantity = condition.currentquantity;
 
-                    if (bagcell.item.id != condition.target) {
-                        continue;
-                    }
+            for (let pb in player.bag) {
 
-                    if (itemquantity >= condition.currentquantity) {
-                        continue;
-                    }
+                let bagcell = player.bag[pb];
 
-                    itemquantity += bagcell.quantity;
-                    bagcells.push(bagcell)
-
+                if (bagcell.item == null) {
+                    continue;
                 }
 
-                if (itemquantity != condition.currentquantity) {
-                    resuls = false;
-                    bagcells.slice(1, bagcells.length);
+                if (bagcell.item.id != condition.target) {
+                    continue;
+                }
+
+                if (bagcell.quantity >= conditionquantity) {
+                    bagcell.quantity -= conditionquantity;
+                    conditionquantity = 0;
+                }
+                else {
+                    conditionquantity -= bagcell.quantity;
+                    bagcell.quantity = 0;
+                }
+
+                if (bagcell.quantity == 0) {
+                    if (bagcell.item.sprite != null) {
+                        bagcell.item.sprite.destroy();
+                        bagcell.item.sprite = null;
+                    }
+                    bagcell.item = null;
+                }
+
+                if (conditionquantity == 0) {
                     break;
                 }
 
             }
-        }
-    }
 
-    if (resuls && bagcells.length) {
-
-        for (let i in bagcells){
-            let bagcell = bagcells[i]; 
-               
         }
 
     }
 
-    return resuls;
 }
 
 var app = {
