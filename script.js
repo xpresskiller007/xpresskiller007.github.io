@@ -2834,14 +2834,14 @@ class PlayerQuests extends Phaser.Scene {
                 textcondition += 'Получено ' + strcondition.currentquantity + '/' + strcondition.quantity;
 
                 let item = null;
-                for (let ni in item) {
+                for (let ni in items) {
                     if (items[ni].id == strcondition.target) {
                         item = items[ni];
                         break;
                     }
                 }
                 if (item != null) {
-                    textcondition += ' ' + mob.name;
+                    textcondition += ' ' + item.name;
                 }
 
             }
@@ -4811,7 +4811,7 @@ function checkQuests(questsarray) {
 
         let quest = questsarray[i];
 
-        if (quest.done || quest.passed) {
+        if (quest.passed) {
             continue
         }
 
