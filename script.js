@@ -90,7 +90,8 @@ items.push({ id: 6, name: 'Wine', description: ['Винишка много не 
 items.push({ id: 7, name: 'Beer', description: ['Жидкое злато'], image: 'Beer', itemtype: itemType.Drink, equiptype: null, spell: null, stack: false, stacksize: 0 });
 items.push({ id: 8, name: 'spell2', description: ['Рунный камушек второго скила', 'Вставлять в таблицу камней'], image: 'spell2', itemtype: itemType.Runestone, equiptype: null, spell: 2, stack: false, stacksize: 0 });
 items.push({ id: 9, name: 'spell3', description: ['Рунный камушек третьего скила', 'Вставлять в таблицу камней'], image: 'spell3', itemtype: itemType.Runestone, equiptype: null, spell: 3, stack: false, stacksize: 0 });
-items.push({ id: 11, name: 'spell1', description: ['Рунный камушек второго скила', 'Вставлять в таблицу камней'], image: 'spell1', itemtype: itemType.Runestone, equiptype: null, spell: 1, stack: false, stacksize: 0 });
+items.push({ id: 10, name: 'spell4', description: ['Рунный камушек четвертого скила', 'Вставлять в таблицу камней'], image: 'spell4', itemtype: itemType.Runestone, equiptype: null, spell: 4, stack: false, stacksize: 0 })
+items.push({ id: 11, name: 'spell1', description: ['Рунный камушек первого скила', 'Вставлять в таблицу камней'], image: 'spell1', itemtype: itemType.Runestone, equiptype: null, spell: 1, stack: false, stacksize: 0 });
 
 exemp = [{
     startx: - 250, starty: - 50, x: 0, y: 0,
@@ -217,13 +218,14 @@ questdata.push({
     id: 0,
     name: 'Гаси чушпанов',
     description: ['Что то много чушпанов развелось в округе, надо шугануть', 'Убей 5 чушпанов'],
-    condition: [{ condition: questCondition.Kill, target: 2, quantity: 5, currentquantity: 0 }],
+    condition: [{ condition: questCondition.Kill, target: 2, quantity: 1, currentquantity: 0 }],
     outstanding: 6,
     recipient: 7,
     xp: 100,
     gold: 100,
-    reward: [{ id: 10, quantity: 1, quantitytext: null, sprite: null }],
-    rewardtypy: rewardTypy.All,
+    reward: [{ id: 1, item: null, quantity: 1, quantitytext: null, sprite: null },
+    { id: 2, item: null, quantity: 2, quantitytext: null, sprite: null }],
+    rewardtypy: rewardTypy.Choice,
     chain: null,
     done: false,
     passed: false
@@ -239,9 +241,7 @@ questdata.push({
     recipient: 9,
     xp: 200,
     gold: 200,
-    reward: [{ id: 1, quantity: 1, quantitytext: null, sprite: null },
-    { id: 2, quantity: 2, quantitytext: null, sprite: null },
-    { id: 3, quantity: 2, quantitytext: null, sprite: null }],
+    reward: [{ id: 10, item: null, quantity: 1, quantitytext: null, sprite: null }],
     rewardtypy: rewardTypy.All,
     chain: 0,
     done: false,
@@ -259,7 +259,7 @@ questdata.push({
     gold: 500,
     reward: [{ id: 1, quantity: 1, quantitytext: null, sprite: null },
     { id: 2, quantity: 2, quantitytext: null, sprite: null }],
-    rewardtypy: rewardTypy.Choice,
+    rewardtypy: rewardTypy.All,
     chain: 1,
     done: false,
     passed: false
@@ -274,8 +274,8 @@ questdata.push({
     recipient: 6,
     xp: 500,
     gold: 100,
-    reward: [{ id: 10, quantity: 1, quantitytext: null, sprite: null }],
-    rewardtypy: rewardTypy.All,
+    reward: [],
+    rewardtypy: null,
     chain: null,
     done: false,
     passed: false
@@ -292,8 +292,8 @@ questdata.push({
     recipient: 6,
     xp: 500,
     gold: 100,
-    reward: [{ id: 10, quantity: 1, quantitytext: null, sprite: null }],
-    rewardtypy: rewardTypy.All,
+    reward: [],
+    rewardtypy: null,
     chain: null,
     done: false,
     passed: false
@@ -315,16 +315,34 @@ class Quest {
         this.chain = data.chain;
         this.xp = data.xp;
         this.gold = data.gold;
+        this.reward = [];
+        this.rewardtypy = data.rewardtypy;
         this.done = data.done;
         this.passed = data.passed;
 
-        this.addCondition(data.condition)
+        this.addCondition(data.condition);
+        this.addReward(data.reward);
 
     }
 
     addCondition(conditiondata) {
         for (let i in conditiondata) {
             this.condition.push(new Condition(conditiondata[i]));
+        }
+    }
+
+    addReward(reward) {
+        for (let i in reward) {
+            let element = reward[i];
+            if (element.item == null) {
+                for (let ii in items) {
+                    if (element.id == items[ii].id) {
+                        element.item = items[ii];
+                        break;
+                    }
+                }
+            }
+            this.reward.push(element);
         }
     }
 
@@ -3705,6 +3723,7 @@ class NpcDialoge extends Phaser.Scene {
         this.frameopen = false;
         this.npc = null;
         this.selectedquest = null;
+        this.selectedreward = null;
         this.gf = this.add.graphics();
 
         this.npcName = this.add.text(155, 115, '', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
@@ -3818,7 +3837,7 @@ class NpcDialoge extends Phaser.Scene {
         });
         this.commandback.visible = false;
 
-        this.acceptquest = this.add.text(300, 370, 'Принять', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
+        this.acceptquest = this.add.text(400, 370, 'Принять', { fontFamily: 'Arial', color: 'white', wordWrap: { width: 310 } });
         this.acceptquest.setInteractive();
         this.acceptquest.on('pointerdown', function () {
 
@@ -3861,6 +3880,66 @@ class NpcDialoge extends Phaser.Scene {
         this.questtext.visible = false;
         this.zone.visible = false;
         this.frameopen = false;
+
+        this.rewardgf = this.add.graphics();
+
+        this.input.on('pointerdown', function (pointer, gameObject) {
+
+            if (!gameObject.length || scene_NpcDialoge.selectedquest == null || scene_NpcDialoge.npc == null) {
+                return;
+            }
+
+            if (!scene_NpcDialoge.selectedquest.reward.length) {
+                return;
+            }
+
+            for (let i in scene_NpcDialoge.selectedquest.reward) {
+
+                let element = scene_NpcDialoge.selectedquest.reward[i];
+
+                if (element.sprite == gameObject[0]) {
+
+                    let playerquest = null;
+                    for (let pi in player.quests) {
+                        if (player.quests[pi].id == scene_NpcDialoge.selectedquest.id) {
+                            playerquest = player.quests[pi];
+                            break;
+                        }
+                    }
+
+                    if (playerquest == null) {
+                        scene_SpellItemInfo.open(element.item);
+                    }
+                    else {
+                        if (playerquest.done) {
+                            if (playerquest.rewardtypy == rewardTypy.Choice) {
+                                if (scene_NpcDialoge.selectedreward == element) {
+                                    scene_SpellItemInfo.open(element.item);
+                                }
+                                else {
+                                    scene_NpcDialoge.selectedreward = element;
+                                    let gfx = 165 + 45 * i;
+                                    let gfy = 335;
+                                    scene_NpcDialoge.rewardgf.clear();
+                                    scene_NpcDialoge.rewardgf.fillStyle(0x0000ff)
+                                    scene_NpcDialoge.rewardgf.fillRect(gfx, gfy, 30, 30);
+                                }
+                            }
+                            else {
+                                scene_SpellItemInfo.open(element.item);
+                            }
+                        }
+                        else {
+                            scene_SpellItemInfo.open(element.item);
+                        }
+                    }
+
+                    return;
+                }
+
+            }
+
+        });
 
     }
 
@@ -3962,6 +4041,26 @@ class NpcDialoge extends Phaser.Scene {
     closedialoge() {
 
         this.page = dialogePage.Main;
+
+        scene_NpcDialoge.rewardgf.clear();
+        for (let nq in this.npc.quests) {
+            for (let i in this.npc.quests[nq].reward) {
+                let reward = this.npc.quests[nq].reward[i];
+
+                if (reward.item == null) {
+                    continue;
+                }
+
+                if (reward.sprite != null) {
+                    reward.sprite.visible = false;
+                }
+
+                if (reward.quantitytext != null) {
+                    reward.quantitytext.visible = false;
+                }
+            }
+        }
+
 
         this.npc = null;
         this.selectedquest = null;
@@ -4281,11 +4380,61 @@ class NpcDialoge extends Phaser.Scene {
         this.questtext.setText(description);
         this.questtext.visible = true;
 
+        // 155, 185, 475, 325
+        let spritex = 180;
+        let spritey = 350;
+        for (let i in this.selectedquest.reward) {
+            let reward = this.selectedquest.reward[i];
+
+            if (reward.item == null) {
+                continue;
+            }
+
+            if (reward.sprite == null) {
+                reward.sprite = this.physics.add.sprite(spritex, spritey, reward.item.image).setInteractive()
+            }
+            else {
+                reward.sprite.visible = true;
+            }
+
+            if (reward.quantity > 1) {
+                if (reward.quantitytext == null) {
+                    reward.quantitytext = this.add.text(spritex + 3, spritey, reward.quantity, { fontSize: 'bold Arial', fontSize: 15, fill: 'white' });
+                    reward.quantitytext.setStroke('black', 5);
+                }
+                else {
+                    reward.quantitytext.visible = true;
+                }
+            }
+
+            spritex += 45;
+
+        }
+
     }
 
     backPage() {
 
         if (this.page == dialogePage.QuestsElement) {
+
+            this.rewardgf.clear();
+
+            for (let i in this.selectedquest.reward) {
+                let reward = this.selectedquest.reward[i];
+
+                if (reward.item == null) {
+                    continue;
+                }
+
+                if (reward.sprite != null) {
+                    reward.sprite.visible = false;
+                }
+
+                if (reward.quantitytext != null) {
+                    reward.quantitytext.visible = false;
+                }
+            }
+
             this.openQuestsList();
             return;
         }
@@ -4320,14 +4469,38 @@ class NpcDialoge extends Phaser.Scene {
 
             if (this.selectedquest.recipient == this.npc.id
                 && playerquest.done) {
-                playerquest.passed = true;
-                checkCollectingQuest(playerquest);
-                player.addXp(playerquest.xp);
-                player.gold += playerquest.gold;
-                scene_XpBar.updatexpbar();
-                updateQuestIndicators(playerquest);
+
+                if (checkRewardQuest(playerquest)) {
+                    playerquest.passed = true;
+                    checkCollectingQuest(playerquest);
+                    player.addXp(playerquest.xp);
+                    player.gold += playerquest.gold;
+                    scene_XpBar.updatexpbar();
+                    updateQuestIndicators(playerquest);
+                }
+                else {
+                    return;
+                }
+
             }
 
+        }
+
+        this.rewardgf.clear();
+        for (let i in this.selectedquest.reward) {
+            let reward = this.selectedquest.reward[i];
+
+            if (reward.item == null) {
+                continue;
+            }
+
+            if (reward.sprite != null) {
+                reward.sprite.visible = false;
+            }
+
+            if (reward.quantitytext != null) {
+                reward.quantitytext.visible = false;
+            }
         }
 
         this.openQuestsList();
@@ -4914,8 +5087,8 @@ function checkQuestCondition(element, quantity) {
                     if (condition.currentquantity > condition.quantity) {
                         condition.currentquantity = condition.quantity;
                     }
-                    if (condition.currentquantity < 0){
-                        condition.currentquantity = 0;   
+                    if (condition.currentquantity < 0) {
+                        condition.currentquantity = 0;
                     }
                     questsarray.push(quest);
                 }
@@ -4978,6 +5151,63 @@ function checkCollectingQuest(playerquest) {
 
         }
 
+    }
+
+}
+
+function checkRewardQuest(playerquest) {
+
+    if (playerquest.rewardtypy == rewardTypy.Choice &&
+        scene_NpcDialoge.selectedreward == null) {
+        return false;
+    }
+    else if (!playerquest.reward.length) {
+        return true;
+    }
+
+    let rewards = [];
+
+    if (playerquest.rewardtypy == rewardTypy.Choice){
+        rewards.push(scene_NpcDialoge.selectedreward);
+    }
+    else{
+        rewards = playerquest.reward;
+    }
+
+    let bagcells = [];
+    for (let ri in rewards){
+        let reward = rewards[ri];
+        // let rewardquantity = reward.quantity;
+        let freespace = false;
+        for (let i in player.bag){
+
+            let bagcell = player.bag[i];
+
+            if (bagcell.item == null) {
+                if (!bagcells.includes(bagcell)){
+                    bagcells.push(bagcell);
+                    freespace = true;
+                    break;
+                }
+            }
+
+        }
+         
+    }
+
+    if(rewards.length == bagcells.length){
+
+        for (let ri in rewards){
+            let bagcell = bagcells[0];
+            bagcell.item = new Item(rewards[ri].item);
+            bagcell.quantity = rewards[ri].quantity;
+            bagcells.slice(0,1);
+        }
+        return true;
+
+    }
+    else{
+        return false;
     }
 
 }
