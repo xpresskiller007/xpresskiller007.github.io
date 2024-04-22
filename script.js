@@ -513,10 +513,10 @@ class Player {
             let joystick = false;
             if (drgX != dragpx && drgY != dragpy) {
 
-                left = (drgX < dragpx - 1);
-                right = (drgX > dragpx + 1);
-                up = (drgY < dragpy - 1);
-                down = (drgY > dragpy + 1);
+                left = (drgX < dragpx - 10);
+                right = (drgX > dragpx + 10);
+                up = (drgY < dragpy - 10);
+                down = (drgY > dragpy + 10);
 
                 let chacepointx = player.sprite.x;
                 let chacepointy = player.sprite.y;
