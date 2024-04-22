@@ -620,8 +620,8 @@ class Player {
                     this.sprite.setVelocityX(-1 * speed);
                     this.sprite.setVelocityY(speed);
                 }
-                if (player.sprite.anims.currentAnim.key != 'girlDownRight') {
-                    player.sprite.anims.play('girlDownRight');
+                if (player.sprite.anims.currentAnim.key != 'girlDownLeft') {
+                    player.sprite.anims.play('girlDownLeft');
                 }
             }
             else if (right && down) {
@@ -630,8 +630,8 @@ class Player {
                     this.sprite.setVelocityX(speed);
                     this.sprite.setVelocityY(speed);
                 }
-                if (player.sprite.anims.currentAnim.key != 'girlLeft') {
-                    player.sprite.anims.play('girlLeft');
+                if (player.sprite.anims.currentAnim.key != 'girlDownRight') {
+                    player.sprite.anims.play('girlDownRight');
                 }
             }
             else if (left) {
@@ -4649,7 +4649,7 @@ class MainScene extends Phaser.Scene {
         });
 
         this.anims.create({
-            key: 'girlDowlLeft',
+            key: 'girlDownLeft',
             frames: this.anims.generateFrameNumbers('Girl_DowlLeft', { start: 0, end: 4 }),
             frameRate: 10,
             repeat: -1
