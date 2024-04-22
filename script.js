@@ -600,7 +600,9 @@ class Player {
                     this.sprite.setVelocityX(-1 * speed);
                     this.sprite.setVelocityY(-1 * speed);
                 }
-                this.sprite.anims.play('upleft');
+                if (player.sprite.anims.currentAnim.key != 'girlUpLeft') {
+                    this.sprite.anims.play('girlUpLeft');
+                }
             }
             else if (right && up) {
                 if (!joystick) {
@@ -608,7 +610,9 @@ class Player {
                     this.sprite.setVelocityX(speed);
                     this.sprite.setVelocityY(-1 * speed);
                 }
-                this.sprite.anims.play('upright');
+                if (player.sprite.anims.currentAnim.key != 'girlUpRight') {
+                    player.sprite.anims.play('girlUpRight');
+                }
             }
             else if (left && down) {
                 if (!joystick) {
@@ -616,7 +620,9 @@ class Player {
                     this.sprite.setVelocityX(-1 * speed);
                     this.sprite.setVelocityY(speed);
                 }
-                this.sprite.anims.play('downleft');
+                if (player.sprite.anims.currentAnim.key != 'girlDownRight') {
+                    player.sprite.anims.play('girlDownRight');
+                }
             }
             else if (right && down) {
                 if (!joystick) {
@@ -624,41 +630,53 @@ class Player {
                     this.sprite.setVelocityX(speed);
                     this.sprite.setVelocityY(speed);
                 }
-                this.sprite.anims.play('downright');
+                if (player.sprite.anims.currentAnim.key != 'girlLeft') {
+                    player.sprite.anims.play('girlLeft');
+                }
             }
             else if (left) {
                 if (!joystick) {
                     this.sprite.setVelocityX(-1 * this.speed);
                     this.sprite.setVelocityY(0);
                 }
-                this.sprite.anims.play('left');
+                if (player.sprite.anims.currentAnim.key != 'girlLeft') {
+                    player.sprite.anims.play('girlLeft');
+                }
             }
             else if (right) {
                 if (!joystick) {
                     this.sprite.setVelocityX(this.speed);
                     this.sprite.setVelocityY(0);
                 }
-                this.sprite.anims.play('right');
+                if (player.sprite.anims.currentAnim.key != 'girlRight') {
+                    player.sprite.anims.play('girlRight');
+                }
             }
             else if (up) {
                 if (!joystick) {
                     this.sprite.setVelocityX(0);
                     this.sprite.setVelocityY(-1 * this.speed);
                 }
-                this.sprite.anims.play('up');
+                if (player.sprite.anims.currentAnim.key != 'girlUp') {
+                    player.sprite.anims.play('girlUp');
+                }
             }
             else if (down) {
                 if (!joystick) {
                     this.sprite.setVelocityX(0);
                     this.sprite.setVelocityY(this.speed);
                 }
-                this.sprite.anims.play('down');
+                if (player.sprite.anims.currentAnim.key != 'girlDown') {
+                    player.sprite.anims.play('girlDown');
+                }
             }
             else {
                 if (this.x != this.sprite.x || this.y != this.sprite.y) {
                     this.sprite.setVelocityX(0);
                     this.sprite.setVelocityY(0);
-                    this.sprite.anims.play('turn');
+                    if (player.sprite.anims.currentAnim.key != 'girlidle') {
+                        player.sprite.anims.play('girlidle');
+                    }
                 }
             }
 
@@ -4515,6 +4533,16 @@ class MainScene extends Phaser.Scene {
 
         this.load.image('bomb', 'assets/bomb.png');
         this.load.spritesheet('dude', 'assets/chars.png', { frameWidth: 16, frameHeight: 24 });
+        this.load.spritesheet('Girl_Idle', 'assets/Char/Girl_Idle.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('Girl_Up', 'assets/Char/Girl_Up.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('Girl_Down', 'assets/Char/Girl_Down.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('Girl_Left', 'assets/Char/Girl_Left.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('Girl_Right', 'assets/Char/Girl_Right.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('Girl_UpLeft', 'assets/Char/Girl_UpLeft.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('Girl_UpRight', 'assets/Char/Girl_UpRight.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('Girl_DowlLeft', 'assets/Char/Girl_DowlLeft.png', { frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('Girl_DownRight', 'assets/Char/Girl_DownRight.png', { frameWidth: 128, frameHeight: 128 });
+        
         this.load.image('btn', 'assets/star.png');
         this.load.image('SummerTiles', 'assets/map/SummerTiles.png')
         this.load.tilemapTiledJSON('map', 'assets/map/map.json')
@@ -4568,7 +4596,73 @@ class MainScene extends Phaser.Scene {
         keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
 
-        this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+        this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
+
+        //girl
+        this.anims.create({
+            key: 'girlidle',
+            frames: this.anims.generateFrameNumbers('Girl_Idle', { start: 0, end: 13 }),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'girlUp',
+            frames: this.anims.generateFrameNumbers('Girl_Up', { start: 0, end: 4 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'girlDown',
+            frames: this.anims.generateFrameNumbers('Girl_Down', { start: 0, end: 4 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'girlLeft',
+            frames: this.anims.generateFrameNumbers('Girl_Left', { start: 0, end: 4 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'girlRight',
+            frames: this.anims.generateFrameNumbers('Girl_Right', { start: 0, end: 4 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'girlUpLeft',
+            frames: this.anims.generateFrameNumbers('Girl_UpLeft', { start: 0, end: 4 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'girlUpRight',
+            frames: this.anims.generateFrameNumbers('Girl_UpRight', { start: 0, end: 4 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'girlDowlLeft',
+            frames: this.anims.generateFrameNumbers('Girl_DowlLeft', { start: 0, end: 4 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'girlDownRight',
+            frames: this.anims.generateFrameNumbers('Girl_DownRight', { start: 0, end: 4 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        //dude
 
         this.anims.create({
             key: 'left',
@@ -4887,12 +4981,12 @@ function updateQuestIndicators(element) {
 }
 
 function createplayer(data) {
-    player = new Player(scene_main.physics.add.sprite(data.x, data.y, 'dude').setScale(2));
+    player = new Player(scene_main.physics.add.sprite(data.x, data.y, 'girl_idle'));
     player.id = client_id;
     player.x = data.x;
     player.y = data.y;
 
-    player.sprite.anims.play('turn');
+    player.sprite.anims.play('girlidle');
 
     players.push(player)
 
@@ -5167,24 +5261,24 @@ function checkRewardQuest(playerquest) {
 
     let rewards = [];
 
-    if (playerquest.rewardtypy == rewardTypy.Choice){
+    if (playerquest.rewardtypy == rewardTypy.Choice) {
         rewards.push(scene_NpcDialoge.selectedreward);
     }
-    else{
+    else {
         rewards = playerquest.reward;
     }
 
     let bagcells = [];
-    for (let ri in rewards){
+    for (let ri in rewards) {
         let reward = rewards[ri];
         // let rewardquantity = reward.quantity;
         let freespace = false;
-        for (let i in player.bag){
+        for (let i in player.bag) {
 
             let bagcell = player.bag[i];
 
             if (bagcell.item == null) {
-                if (!bagcells.includes(bagcell)){
+                if (!bagcells.includes(bagcell)) {
                     bagcells.push(bagcell);
                     freespace = true;
                     break;
@@ -5192,21 +5286,21 @@ function checkRewardQuest(playerquest) {
             }
 
         }
-         
+
     }
 
-    if(rewards.length == bagcells.length){
+    if (rewards.length == bagcells.length) {
 
-        for (let ri in rewards){
+        for (let ri in rewards) {
             let bagcell = bagcells[0];
             bagcell.item = new Item(rewards[ri].item);
             bagcell.quantity = rewards[ri].quantity;
-            bagcells.slice(0,1);
+            bagcells.slice(0, 1);
         }
         return true;
 
     }
-    else{
+    else {
         return false;
     }
 
