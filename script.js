@@ -11,7 +11,9 @@ const playerStatus = { Traveling: 'Traveling', Death: 'Dead', Respawn: 'Respawn'
 const itemType = { Runestone: 'Runestone', Equipment: 'Equipment', Meal: 'Meal', Drink: 'Drink' };
 const questCondition = { Kill: 'Kill', Collecting: 'Collecting', Delivery: 'Delivery', Journey: 'Journey' };
 const dialogePage = { Main: 'Main', QuestsList: 'QuestsList', QuestsElement: 'QuestsElement' };
-const rewardTypy = { Choice: 'Choice', All: 'All' }
+const rewardTypy = { Choice: 'Choice', All: 'All' };
+const spellType = { Attack: 'Attack', Heal: 'Heal', Buff: 'Buff', Debuff: 'Debuff' };
+const damageType = { Physic: 'Physic', Magic: 'Magic' };
 const equipType = {};
 var player;
 var players = [];
@@ -106,7 +108,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 1, damage: 20, mp: 5, cooldown: 0, distance: 300, 'image': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 1, spelltype: spellType.Attack, script: '', value: 10, modifier: 20, mp: 5, cooldown: 0, distance: 300, 'image': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 50, starty: - 270, x: 0, y: 0,
@@ -121,7 +123,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 2, damage: 40, mp: 10, cooldown: 2000, distance: 300, 'image': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 2, spelltype: spellType.Heal, script: '', value: 10, modifier: 40, mp: 20, cooldown: 2000, distance: 300, 'image': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 100, starty: - 270, x: 0, y: 0,
@@ -136,7 +138,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 3, damage: 60, mp: 15, cooldown: 3000, distance: 300, 'image': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 3, spelltype: spellType.Debuff, script: '', value: 10, modifier: 60, mp: 15, cooldown: 3000, distance: 300, 'image': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 150, starty: - 260, x: 0, y: 0,
@@ -153,7 +155,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 4, damage: 100, mp: 25, cooldown: 5000, distance: 300, 'image': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 4, spelltype: spellType.Buff, script: '', value: 10, modifier: 100, mp: 25, cooldown: 5000, distance: 300, 'image': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
 
 
 var loot = []
@@ -838,6 +840,7 @@ class Mob {
             && this.target.hp > 0
             && Date.now() - this.lastattack >= this.timeattack) {
             player.hp -= this.damage;
+            addActionText(this.damage, 'red', player);
             player.status = playerStatus.Battle;
             this.lastattack = Date.now();
             if (player.target == null) {
@@ -2292,7 +2295,10 @@ class Spell {
 
     constructor(data) {
         this.id = data.id;
-        this.damage = data.damage;
+        this.type = data.spelltype;
+        this.script = data.script;
+        this.value = data.value;
+        this.modifier = data.modifier;
         this.mp = data.mp;
         this.cooldown = data.cooldown;
         this.distance = data.distance;
@@ -2306,20 +2312,70 @@ class Spell {
         this.targetarr = scene_main.sound.add('targetarr');
     }
 
-    use() {
+    Attack() {
 
         player.status = playerStatus.Battle;
-        player.mp -= this.mp;
-        player.target.hp -= this.damage + player.magicpower;
-        this.lastattack = Date.now();
+
+        if (this.script != '') {
+            return;
+        }
+
+        let value = this.value + Math.floor(player.magicpower * (this.modifier / 100));
+        player.target.hp -= value;
+
+        addActionText(value, 'yellow', player.target);
 
         if (player.target.hp <= 0) {
             player.addXp(player.target.xp);
+            addActionText(player.target.xp, 'blue', player);
             player.target = null;
             scene_XpBar.updatexpbar();
         }
         else if (player.target.target == null) {
             player.target.target = player;
+        }
+
+    }
+
+    Heal() {
+
+        let value = this.value + Math.floor(player.magicpower * (this.modifier / 100))
+        player.hp += value;
+
+        addActionText(value, 'green', player);
+
+        if (player.hp > player.maxhp) {
+            player.hp = player.maxhp;
+        }
+
+
+
+    }
+
+    Buff() {
+
+    }
+
+    Debuff() {
+
+    }
+
+    use() {
+
+        player.mp -= this.mp;
+        this.lastattack = Date.now();
+
+        if (this.type == spellType.Attack) {
+            this.Attack();
+        }
+        else if (this.type == spellType.Heal) {
+            this.Heal();
+        }
+        else if (this.type == spellType.Buff) {
+            this.Buff();
+        }
+        else if (this.type == spellType.Debuff) {
+            this.Debuff();
         }
 
     }
@@ -2331,22 +2387,27 @@ class Spell {
             return false;
         }
 
-        if (player.target == null) {
-            this.targetarr.play();
-            return;
-        }
-
         if (player.mp < this.mp) {
             this.mparr.play();
             return false;
         }
 
-        let distance = Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2);
+        if (this.type == spellType.Attack || this.type == spellType.Debuff) {
 
-        if (distance > this.distance) {
-            this.distancearr.play();
-            return false;
+            if (player.target == null) {
+                this.targetarr.play();
+                return;
+            }
+
+            let distance = Math.sqrt((player.sprite.x - player.target.sprite.x) ** 2 + (player.sprite.y - player.target.sprite.y) ** 2);
+
+            if (distance > this.distance) {
+                this.distancearr.play();
+                return false;
+            }
+
         }
+
 
         return true;
 
@@ -3621,10 +3682,6 @@ class SpellItemInfo extends Phaser.Scene {
         this.graphics.fillStyle(0x000000, 0.7);
         this.graphics.fillRect(xsize, ysize, 150, 250);
 
-        let cellxsize = xsize;
-        let cellysize = ysize + 20;
-
-
         this.graphics.fillStyle(0x000000);
         this.graphics.fillRect(xsize, ysize, 150, 20);
 
@@ -4492,6 +4549,7 @@ class NpcDialoge extends Phaser.Scene {
                     playerquest.passed = true;
                     checkCollectingQuest(playerquest);
                     player.addXp(playerquest.xp);
+                    addActionText(playerquest.xp, 'blue', player);
                     player.gold += playerquest.gold;
                     scene_XpBar.updatexpbar();
                     updateQuestIndicators(playerquest);
@@ -4542,7 +4600,7 @@ class MainScene extends Phaser.Scene {
         this.load.spritesheet('Girl_UpRight', 'assets/Char/Girl_UpRight.png', { frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('Girl_DowlLeft', 'assets/Char/Girl_DowlLeft.png', { frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('Girl_DownRight', 'assets/Char/Girl_DownRight.png', { frameWidth: 128, frameHeight: 128 });
-        
+
         this.load.image('btn', 'assets/star.png');
         this.load.image('SummerTiles', 'assets/map/SummerTiles.png')
         this.load.tilemapTiledJSON('map', 'assets/map/map.json')
@@ -4595,6 +4653,7 @@ class MainScene extends Phaser.Scene {
         keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
+        this.actiontext = [];
 
         this.physics.world.setBounds(0, 0, map.widthInPixels, map.heightInPixels);
 
@@ -4869,6 +4928,7 @@ class MainScene extends Phaser.Scene {
 
         this.playersUpdate();
         this.mobsUpdate();
+        this.updateActionText()
 
     }
 
@@ -4887,6 +4947,19 @@ class MainScene extends Phaser.Scene {
         for (let i in players) {
             player = players[i]
             player.update();
+        }
+    }
+
+    updateActionText() {
+        for (let i in this.actiontext) {
+            let actiontext = this.actiontext[i];
+            if (Date.now() - actiontext.nowtime >= 2000) {
+                actiontext.text.destroy();
+                this.actiontext.slice(i, 1);
+            }
+            else {
+                actiontext.text.y -= 1;
+            }
         }
     }
 
@@ -5303,6 +5376,14 @@ function checkRewardQuest(playerquest) {
     else {
         return false;
     }
+
+}
+
+function addActionText(text, color, obj) {
+
+    let actiontext = scene_main.add.text(obj.sprite.x + 30, obj.sprite.y + 15, text, { fontSize: 'bold Arial', fontSize: 20, fill: color });
+    actiontext.setStroke('black', 5);
+    scene_main.actiontext.push({ text: actiontext, nowtime: Date.now() });
 
 }
 
