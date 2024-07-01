@@ -108,7 +108,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 1, spelltype: spellType.Attack, script: '', value: 10, modifier: 20, mp: 5, cooldown: 0, distance: 300, 'image': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 1, spelltype: spellType.Attack, script: '', timeaction: 0, value: 10, modifier: 20, mp: 5, cooldown: 0, distance: 300, 'image': 'spell1', 'spelldata': [['rightup', 'left', 'rightdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 50, starty: - 270, x: 0, y: 0,
@@ -123,7 +123,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 2, spelltype: spellType.Heal, script: '', value: 10, modifier: 40, mp: 20, cooldown: 2000, distance: 300, 'image': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 2, spelltype: spellType.Heal, script: '', timeaction: 0, value: 10, modifier: 40, mp: 20, cooldown: 2000, distance: 300, 'image': 'spell2', 'spelldata': [['leftdown', 'right', 'leftup'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 100, starty: - 270, x: 0, y: 0,
@@ -138,7 +138,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 3, spelltype: spellType.Debuff, script: '', value: 10, modifier: 60, mp: 15, cooldown: 3000, distance: 300, 'image': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 3, spelltype: spellType.Debuff, script: '', timeaction: 6000, value: 10, modifier: 60, mp: 15, cooldown: 3000, distance: 300, 'image': 'spell3', 'spelldata': [['leftdown', 'right', 'leftdown'], ['up']], exemple: exemp })
 
 exemp = [{
     startx: - 150, starty: - 260, x: 0, y: 0,
@@ -155,7 +155,7 @@ exemp = [{
     direction: [{ stepx: 0, stepy: -10, steps: 25, stepcounter: 0 }]
 }
 ];
-spellsdata.push({ 'id': 4, spelltype: spellType.Buff, script: '', value: 10, modifier: 100, mp: 25, cooldown: 5000, distance: 300, 'image': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
+spellsdata.push({ 'id': 4, spelltype: spellType.Buff, script: '', timeaction: 6000, value: 10, modifier: 100, mp: 25, cooldown: 5000, distance: 300, 'image': 'spell4', 'spelldata': [['leftdown', 'rightdown', 'rightup', 'leftup'], ['up']], exemple: exemp })
 
 
 var loot = []
@@ -405,6 +405,8 @@ class Player {
         this.lastsetstatus = 0;
         this.deathtime = 0;
         this.respawntime = 5000;
+        this.buffs = [];
+        this.debuffs = [];
         this.recalculateParameters();
     }
 
@@ -812,6 +814,8 @@ class Mob {
         this.lastattack = 0;
         this.deathtime = 0;
         this.resptime = 20000;
+        this.buffs = [];
+        this.debuffs = [];
 
 
     }
